@@ -1,0 +1,8 @@
+{
+  "publishedAt": "2026-09-15T00:00:00Z",
+  "staff": ["Astrea Kreil Deruzza", "Cateherine Matthews", "Joseph Ricciardi", "Mariia Khemich", "Pietro Zino", "Sierrah Watson"],
+  "weeks": {
+    "2026-09-14": {"mon": [], "tue": [], "wed": [], "thu": [], "fri": [], "sat": [], "sun": []},
+    "2026-09-21": {"mon": [], "tue": [], "wed": [], "thu": [], "fri": [], "sat": [], "sun": []}
+  }
+}
