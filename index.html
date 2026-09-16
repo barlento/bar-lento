@@ -58,7 +58,8 @@
     header.top{flex-direction:column;align-items:stretch;gap:12px}
     .hdr-right{align-items:stretch}
     .hdr-actions{width:100%}
-    .hdr-actions .bellbtn,.hdr-actions .loginbtn{flex:1;text-align:center;padding:12px 10px}
+    .hdr-actions .bellbtn,.hdr-actions .loginbtn{flex:1;text-align:center;padding:12px 6px;font-size:.9rem;white-space:normal;line-height:1.2}
+    .hdr-actions .loginbtn{flex:1.25}
     .updated{text-align:left}
   }
 
@@ -208,7 +209,72 @@
   .log ul{margin:4px 0 0;padding-left:16px;font-size:.84rem}
   .log li{margin:2px 0}
 
-  @media (prefers-reduced-motion: reduce){*{transition:none !important}}
+  /* ---------- motion & polish ---------- */
+  body{background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(201,112,30,.10), transparent 60%),
+    radial-gradient(900px 500px at 110% 10%, rgba(45,126,114,.08), transparent 60%),
+    var(--bg)}
+  header.top{position:relative;overflow:hidden}
+  header.top::after{content:"";position:absolute;inset:-40% -60%;background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.55) 50%,transparent 60%);transform:translateX(-60%);animation:shine 9s ease-in-out infinite;pointer-events:none}
+  @keyframes shine{0%,70%{transform:translateX(-60%)}90%,100%{transform:translateX(60%)}}
+  .brand .mark{display:inline-block;animation:sway 6s ease-in-out infinite;transform-origin:50% 90%}
+  @keyframes sway{0%,100%{transform:rotate(0)}30%{transform:rotate(-6deg)}60%{transform:rotate(5deg)}}
+
+  .hero{transition:background .5s ease,color .5s ease}
+  .hero .led{position:relative}
+  .hero.open .led{animation:ledpulse 1.8s ease-out infinite}
+  .hero.open .led::after{content:"";position:absolute;inset:-3px;border-radius:50%;border:2px solid var(--good);animation:ring 1.8s ease-out infinite}
+  .hero:not(.open) .led{background:var(--danger);opacity:.85;animation:ledblink 2.6s ease-in-out infinite}
+  .hero.closedday .led{background:var(--ink-muted);animation:none}
+  @keyframes ledpulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--good) 45%,transparent)}70%{box-shadow:0 0 0 9px transparent}100%{box-shadow:0 0 0 0 transparent}}
+  @keyframes ring{0%{transform:scale(.6);opacity:.9}100%{transform:scale(2.2);opacity:0}}
+  @keyframes ledblink{0%,100%{opacity:.9}50%{opacity:.35}}
+  .hero .text{transition:transform .3s}
+  .hero.open .text{color:var(--good)}
+
+  .tab{position:relative;overflow:hidden;transition:background .25s,color .25s,border-color .25s,transform .15s}
+  .tab:hover{transform:translateY(-1px)}
+  .tab.active{box-shadow:0 6px 16px -8px color-mix(in srgb,var(--accent) 70%,transparent)}
+
+  .day-card{transition:transform .25s ease,box-shadow .25s ease;animation:rise .5s cubic-bezier(.2,.7,.2,1) both;animation-delay:calc(var(--i,0)*60ms)}
+  .day-card:hover{transform:translateY(-3px);box-shadow:0 2px 4px rgba(36,26,18,.06),0 16px 32px -14px rgba(36,26,18,.32)}
+  .day-card.today{position:relative}
+  .day-card.today::before{content:"";position:absolute;inset:-2px;border-radius:16px;border:2px solid var(--accent);opacity:0;animation:todayglow 2.4s ease-in-out infinite;pointer-events:none}
+  @keyframes todayglow{0%,100%{opacity:0}50%{opacity:.5}}
+  @keyframes rise{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+
+  .shift{transition:background .2s,border-color .2s,transform .12s,box-shadow .2s}
+  .shift:hover{transform:translateX(3px);box-shadow:0 4px 12px -8px rgba(36,26,18,.3)}
+  .shift .check{transition:transform .25s cubic-bezier(.34,1.56,.64,1),background .2s,border-color .2s,color .2s}
+  .shift.confirmed .check{animation:pop .45s cubic-bezier(.34,1.56,.64,1)}
+  .shift.confirmed{animation:flash .9s ease}
+  @keyframes pop{0%{transform:scale(.4)}60%{transform:scale(1.25)}100%{transform:scale(1)}}
+  @keyframes flash{0%{background:color-mix(in srgb,var(--good) 40%,var(--good-soft))}100%{background:var(--good-soft)}}
+  .confcount{transition:color .3s}
+  .confcount.full{color:var(--good);font-weight:700}
+
+  .btn,.abtn,.loginbtn,.bellbtn,.preset,.addshift,.daybtn{transition:transform .12s,box-shadow .2s,background .2s,border-color .2s,color .2s}
+  .btn:active,.abtn:active,.loginbtn:active,.bellbtn:active,.preset:active,.addshift:active,.daybtn:active,.tab:active{transform:scale(.96)}
+  .loginbtn{position:relative;overflow:hidden}
+  .loginbtn::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.35) 50%,transparent 70%);transform:translateX(-120%);animation:btnshine 6s ease-in-out infinite}
+  @keyframes btnshine{0%,60%{transform:translateX(-120%)}80%,100%{transform:translateX(120%)}}
+  .bellbtn:not(.on){animation:nudge 8s ease-in-out infinite}
+  @keyframes nudge{0%,90%,100%{transform:rotate(0)}92%{transform:rotate(-10deg)}94%{transform:rotate(9deg)}96%{transform:rotate(-6deg)}98%{transform:rotate(4deg)}}
+
+  .overlay{transition:opacity .2s;opacity:0}
+  .overlay.show{animation:fadein .2s forwards}
+  .overlay .sheet{animation:sheetup .3s cubic-bezier(.2,.8,.2,1)}
+  @keyframes fadein{to{opacity:1}}
+  @keyframes sheetup{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+  .toast{transition:opacity .3s,transform .35s cubic-bezier(.2,.8,.2,1)}
+  .adminbar{animation:sheetup .35s cubic-bezier(.2,.8,.2,1)}
+  .adminbar .dot{animation:ledpulse 1.6s ease-out infinite}
+  .badge.closed,.badge.holiday{animation:softblink 3s ease-in-out infinite}
+  @keyframes softblink{0%,100%{opacity:1}50%{opacity:.7}}
+  .updated::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--good);margin-right:6px;vertical-align:middle;animation:ledblink 2s ease-in-out infinite}
+  .flashnew{animation:flash .9s ease}
+
+  @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none !important;transition:none !important}}
   @media print{.adminbar,.weektools,.addrow2,footer,.toast,.archiverow{display:none !important}}
 </style>
 </head>
@@ -551,7 +617,9 @@
     if(!r.ok){ if(!silent) toast("Couldn't load the schedule. Please try again."); return false; }
     var j=r.json;
     if(state.saving || state.dirtyTimer){ state.confirmations=j.confirmations||{}; renderDays(); return true; }
+    var changedRemotely = silent && state.version && j.version!==state.version;
     state.version=j.version; state.updatedAt=j.updatedAt; state.data=j.data||{staff:[],weeks:{}};
+    if(changedRemotely){ setTimeout(function(){ var u=$("updatedNote"); u.classList.remove("flashnew"); void u.offsetWidth; u.classList.add("flashnew"); toast("Schedule updated ✨"); },50); }
     state.confirmations=j.confirmations||{}; state.features=j.features||state.features;
     ensureActiveWeek(); renderAll(); return true;
   }
@@ -654,9 +722,9 @@
       var hol=holidayOn(date), bdays=birthdaysOn(date);
       var chips=(hol?'<span class="holichip">'+hol.icon+' '+h(hol.name)+'</span>':"")+bdays.map(function(n){return '<span class="bdaychip">🎂 '+h(possessive(n))+' birthday</span>';}).join("");
       if(chips) noteHtml='<div class="chips">'+chips+'</div>'+noteHtml;
-      return '<div class="day-card'+(isLate?" late":"")+(isToday?" today":"")+(closed?" closed":"")+(isPast&&!state.admin?" past":"")+'">'
+      return '<div class="day-card'+(isLate?" late":"")+(isToday?" today":"")+(closed?" closed":"")+(isPast&&!state.admin?" past":"")+'" style="--i:'+i+'">'
         +'<div class="day-head"><span class="name">'+DAY_NAMES[key]+(isToday?' <span style="color:var(--accent);font-size:.75rem">· today</span>':"")+'</span><span class="date mono">'+MONTHS[date.getMonth()]+' '+date.getDate()+'</span></div>'
-        +'<div class="day-meta">'+(closed?badge:'<span class="day-hours mono">'+range12(hours.open,hours.close)+'</span>'+(badge?' '+badge:''))+(shifts.length&&state.features.storage?'<span class="confcount">'+confirmed+'/'+shifts.length+' confirmed</span>':"")+'</div>'
+        +'<div class="day-meta">'+(closed?badge:'<span class="day-hours mono">'+range12(hours.open,hours.close)+'</span>'+(badge?' '+badge:''))+(shifts.length&&state.features.storage?'<span class="confcount'+(confirmed===shifts.length?" full":"")+'">'+(confirmed===shifts.length?"✓ all confirmed":confirmed+'/'+shifts.length+' confirmed')+'</span>':"")+'</div>'
         +noteHtml
         +'<div class="shifts">'+rows+'</div>'
         +'<div class="addrow2"><button type="button" class="addshift" data-day="'+key+'">＋ Add shift</button><button type="button" class="daybtn" data-day="'+key+'" title="Day settings" aria-label="Day settings">⚙</button></div>'
