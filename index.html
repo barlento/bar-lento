@@ -507,7 +507,7 @@
     en:{
       adminMode:"Manager mode", staffBtn:"👥 Staff", historyBtn:"🕓 History", exportBtn:"⬇ Archive (CSV)", logoutBtn:"Log out", notifyBtn:"📣 Notify team",
       newWeekCopyBtn:"＋ Next week (copy of previous)", newWeekBtn:"＋ Empty week", copyWeekBtn:"↺ Copy previous week here", deleteWeekBtn:"Delete week",
-      copyConfirm:"Sure? This replaces the current shifts", deleteWeekConfirm:"Sure? Delete week", pastLocked:"Past weeks are archived and can't be deleted", onlyEmpty:"Only an empty week can be deleted",
+      copyConfirm:"Sure? This replaces the current shifts", deleteWeekConfirm:"Sure? Delete week", deleteWeekConfirmN:"Sure? Delete week and {k} shifts", deleteWeekLocked:"🔒 Past week · archived", pastLocked:"Past weeks are archived and can't be deleted", onlyEmpty:"Only an empty week can be deleted",
       footAdmin:"Tap a shift to edit it. Changes save automatically.", exitMode:"✓ Manager mode · Log out", addShift:"＋ Add shift", daySettings:"Day settings",
       statusPending:"Pending…", statusSaving:"Saving…", statusSaved:"Saved ✓", statusReloaded:"Reloaded", statusLoggedOut:"Logged out", statusNotSaved:"Not saved", statusError:"Error", statusReady:"Ready",
       editShift:"Edit shift", newShift:"New shift", hours:"hours", who:"Who", namePh:"Name", otherName:"Other name…", station:"Station", stationOpt:"(optional: BAR, S1, R…)", start:"Start", end:"End",
@@ -531,7 +531,7 @@
     it:{
       adminMode:"Modalità manager", staffBtn:"👥 Staff", historyBtn:"🕓 Cronologia", exportBtn:"⬇ Archivio (CSV)", logoutBtn:"Esci", notifyBtn:"📣 Avvisa i ragazzi",
       newWeekCopyBtn:"＋ Prossima settimana (copia della precedente)", newWeekBtn:"＋ Settimana vuota", copyWeekBtn:"↺ Copia qui la settimana precedente", deleteWeekBtn:"Elimina settimana",
-      copyConfirm:"Sicura? Sostituisce i turni attuali", deleteWeekConfirm:"Sicura? Elimina settimana", pastLocked:"Le settimane passate sono in archivio e non si eliminano", onlyEmpty:"Si può eliminare solo una settimana vuota",
+      copyConfirm:"Sicura? Sostituisce i turni attuali", deleteWeekConfirm:"Sicura? Elimina settimana", deleteWeekConfirmN:"Sicura? Elimina settimana e {k} turni", deleteWeekLocked:"🔒 Settimana passata · archivio", pastLocked:"Le settimane passate sono in archivio e non si eliminano", onlyEmpty:"Si può eliminare solo una settimana vuota",
       footAdmin:"Tocca un turno per modificarlo. Le modifiche si salvano da sole.", exitMode:"✓ Modalità manager · Esci", addShift:"＋ Aggiungi turno", daySettings:"Impostazioni giorno",
       statusPending:"In attesa…", statusSaving:"Salvataggio…", statusSaved:"Salvato ✓", statusReloaded:"Ricaricato", statusLoggedOut:"Disconnessa", statusNotSaved:"Non salvato", statusError:"Errore", statusReady:"Pronto",
       editShift:"Modifica turno", newShift:"Nuovo turno", hours:"orario", who:"Chi", namePh:"Nome", otherName:"Altro nome…", station:"Postazione", stationOpt:"(facoltativa: BAR, S1, R…)", start:"Inizio", end:"Fine",
@@ -831,12 +831,13 @@
       var wk=state.activeWeek, cur=currentMondayISO();
       var prev=wk?toISO(addDays(fromISO(wk),-7)):null;
       $("copyWeekBtn").disabled=!(wk&&state.data.weeks[prev]);
-      var hasShifts=wk&&DAY_KEYS.some(function(d){return (state.data.weeks[wk][d]||[]).length;});
+      var nShifts=wk?DAY_KEYS.reduce(function(a,d){return a+((state.data.weeks[wk][d]||[]).length);},0):0;
       var isPast=wk&&wk<cur;
-      $("deleteWeekBtn").disabled=!wk||hasShifts||isPast;
-      $("deleteWeekBtn").title=isPast?t("pastLocked"):hasShifts?t("onlyEmpty"):"";
+      $("deleteWeekBtn").disabled=!wk||isPast;
+      $("deleteWeekBtn").title=isPast?t("pastLocked"):"";
+      $("deleteWeekBtn").dataset.n=nShifts;
       $("copyWeekBtn").textContent=t("copyWeekBtn"); $("copyWeekBtn").dataset.arm="";
-      $("deleteWeekBtn").textContent=t("deleteWeekBtn"); $("deleteWeekBtn").dataset.arm="";
+      $("deleteWeekBtn").textContent=isPast?t("deleteWeekLocked"):t("deleteWeekBtn"); $("deleteWeekBtn").dataset.arm="";
     }
   }
 
@@ -1037,8 +1038,10 @@
     state.data.weeks[wk]=w; renderDays(); renderHero(); renderAdminUI(); scheduleSave(); toast(t("copied"));
   }
   function deleteWeek(){
-    var wk=state.activeWeek; if(!wk) return; var b=$("deleteWeekBtn");
-    if(!b.dataset.arm){b.dataset.arm="1";b.textContent=t("deleteWeekConfirm");return;}
+    var wk=state.activeWeek; if(!wk) return; var b=$("deleteWeekBtn"); var n=Number(b.dataset.n||0);
+    if(wk<currentMondayISO()){ toast(t("pastLocked")); return; }
+    if(!b.dataset.arm){b.dataset.arm="1";b.textContent=n?t("deleteWeekConfirmN",{k:n}):t("deleteWeekConfirm");setTimeout(function(){if(b.dataset.arm){b.dataset.arm="";b.textContent=t("deleteWeekBtn");}},5000);return;}
+    DAY_KEYS.forEach(function(d){(state.data.weeks[wk][d]||[]).forEach(function(s){delete state.confirmations[shiftKey(wk,d,s.id)];});});
     delete state.data.weeks[wk]; state.activeWeek=null; ensureActiveWeek(); renderAll(); scheduleSave(); toast(t("weekDeleted"));
   }
 
