@@ -47,11 +47,20 @@
   .brand h1{font-size:1.55rem;font-weight:700;margin:0;letter-spacing:-.01em}
   .brand .tag{color:var(--ink-muted);font-size:.88rem}
   .hdr-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+  .hdr-actions{display:flex;gap:8px;align-items:stretch}
   .updated{font-size:.76rem;color:var(--ink-muted);text-align:right;line-height:1.35}
-  .loginbtn{border:2px solid var(--accent);background:var(--accent);color:#fff;border-radius:12px;padding:10px 16px;font-size:.95rem;font-weight:700;cursor:pointer;box-shadow:0 2px 0 rgba(0,0,0,.08)}
+  .loginbtn{border:2px solid var(--accent);background:var(--accent);color:#fff;border-radius:12px;padding:10px 16px;font-size:.95rem;font-weight:700;cursor:pointer;box-shadow:0 2px 0 rgba(0,0,0,.08);white-space:nowrap}
   .loginbtn:hover{filter:brightness(1.05)}
   body.admin .loginbtn{background:var(--ink);border-color:var(--ink)}
-  @media (max-width:520px){header.top{align-items:flex-start}.hdr-right{align-items:flex-end}}
+  .bellbtn{border:2px solid var(--border);background:var(--surface);color:var(--ink);border-radius:12px;padding:10px 14px;font-size:.95rem;font-weight:700;cursor:pointer;white-space:nowrap}
+  .bellbtn.on{background:var(--good-soft);border-color:var(--good);color:var(--good)}
+  @media (max-width:640px){
+    header.top{flex-direction:column;align-items:stretch;gap:12px}
+    .hdr-right{align-items:stretch}
+    .hdr-actions{width:100%}
+    .hdr-actions .bellbtn,.hdr-actions .loginbtn{flex:1;text-align:center;padding:12px 10px}
+    .updated{text-align:left}
+  }
 
   .adminbar{position:sticky;top:8px;z-index:20;display:none;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 14px;margin-bottom:14px;border-radius:14px;background:var(--ink);color:var(--bg);box-shadow:var(--shadow)}
   .adminbar.show{display:flex}
@@ -180,8 +189,6 @@
   .preset .tx{flex:1}
   .preset .sub{display:block;font-weight:500;font-size:.76rem;color:var(--ink-muted)}
   .badge.half{background:var(--teal-soft);color:var(--teal)}
-  .bellbtn{border:1px solid var(--border);background:var(--surface);color:var(--ink);border-radius:10px;padding:8px 12px;font-size:.84rem;font-weight:700;cursor:pointer}
-  .bellbtn.on{background:var(--good-soft);border-color:var(--good);color:var(--good)}
 
   .bday-sheet{text-align:center;position:relative;overflow:hidden}
   .bday-sheet .cake{font-size:3.4rem;line-height:1;margin:6px 0 10px;animation:bounce 1.2s ease-in-out infinite}
@@ -216,7 +223,10 @@
       </div>
     </div>
     <div class="hdr-right">
-      <button class="loginbtn" id="managerLink" type="button">🔑 Manager login</button>
+      <div class="hdr-actions">
+        <button class="bellbtn" id="bellBtn" type="button" style="display:none">🔔 Notify me</button>
+        <button class="loginbtn" id="managerLink" type="button">🔑 Manager login</button>
+      </div>
       <div class="updated" id="updatedNote">Loading…</div>
     </div>
   </header>
@@ -252,7 +262,6 @@
   <footer class="note">
     <span id="footHint">Tap your shift to confirm you've seen it.</span>
     <div class="links">
-      <button class="bellbtn" id="bellBtn" type="button" style="display:none">🔔 Notify me of changes</button>
       <button class="btn sm" id="copyBtn" type="button">Copy as text</button>
     </div>
   </footer>
@@ -977,13 +986,13 @@
   async function renderBell(){
     var b=$("bellBtn");
     if(!state.features.push){ b.style.display="none"; return; }
-    if(isIOS()&&!isStandalone()){ b.style.display=""; b.className="bellbtn"; b.textContent="🔔 Notifications: add to Home Screen first"; b.dataset.mode="iosinfo"; return; }
+    if(isIOS()&&!isStandalone()){ b.style.display=""; b.className="bellbtn"; b.textContent="🔔 Notifications"; b.dataset.mode="iosinfo"; return; }
     if(!pushSupported()){ b.style.display="none"; return; }
     b.style.display="";
     var sub=await currentPushSub();
     if(sub&&Notification.permission==="granted"){ b.className="bellbtn on"; b.textContent="🔔 Notifications on"; b.dataset.mode="on"; }
-    else if(Notification.permission==="denied"){ b.className="bellbtn"; b.textContent="🔕 Notifications blocked in browser settings"; b.dataset.mode="denied"; }
-    else { b.className="bellbtn"; b.textContent="🔔 Notify me of changes"; b.dataset.mode="off"; }
+    else if(Notification.permission==="denied"){ b.className="bellbtn"; b.textContent="🔕 Notifications blocked"; b.dataset.mode="denied"; }
+    else { b.className="bellbtn"; b.textContent="🔔 Notify me"; b.dataset.mode="off"; }
   }
   async function togglePush(){
     var b=$("bellBtn"), mode=b.dataset.mode;
