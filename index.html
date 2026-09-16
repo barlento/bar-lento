@@ -455,6 +455,18 @@
   }
   function possessive(n){return n+(/s$/i.test(n)?"'":"'s");}
 
+  // Shifts of a person from today onward (past ones are never touched — archive).
+  function upcomingShiftsOf(name){
+    var out=[]; var todayISO=toISO(new Date());
+    Object.keys(state.data.weeks).forEach(function(wk){
+      DAY_KEYS.forEach(function(d,i){
+        var dateISO=toISO(addDays(fromISO(wk),i)); if(dateISO<todayISO) return;
+        (state.data.weeks[wk][d]||[]).forEach(function(s){ if(s.name===name) out.push({week:wk,day:d,id:s.id}); });
+      });
+    });
+    return out;
+  }
+
   // ---------- confetti (self-contained) ----------
   function confetti(ms){
     var c=$("confetti"), ctx=c.getContext("2d"); c.width=innerWidth; c.height=innerHeight; c.classList.add("show");
@@ -806,7 +818,15 @@
       var b=state.data.birthdays[n]||"";
       return '<div class="person"><span class="nm">'+h(n)+'</span><label class="bday">🎂 <input type="date" data-name="'+h(n)+'" value="'+h(b)+'" aria-label="Birthday of '+h(n)+'"></label><button type="button" class="x" data-i="'+i+'" aria-label="Remove '+h(n)+'">✕</button></div>';
     }).join(""):'<div class="empty-note">No names yet.</div>';
-    el.querySelectorAll(".x").forEach(function(b){b.addEventListener("click",function(){var n=state.data.staff[Number(b.getAttribute("data-i"))];state.data.staff.splice(Number(b.getAttribute("data-i")),1);delete state.data.birthdays[n];renderRoster();scheduleSave();});});
+    el.querySelectorAll(".x").forEach(function(b){b.addEventListener("click",function(){
+      var i=Number(b.getAttribute("data-i")); var n=state.data.staff[i]; if(!n) return;
+      var up=upcomingShiftsOf(n);
+      if(!b.dataset.arm){ b.dataset.arm="1"; b.textContent="Remove?"; b.style.fontWeight="700"; b.title="Removes "+n+(up.length?" and "+up.length+" upcoming shift"+(up.length===1?"":"s"):"")+". Past shifts stay in the archive."; toast("Tap again to remove "+n+(up.length?" and "+up.length+" upcoming shift"+(up.length===1?"":"s"):"")+". Past weeks are kept.",4000); setTimeout(function(){if(b.isConnected){b.dataset.arm="";b.textContent="✕";b.style.fontWeight="";}},4000); return; }
+      state.data.staff.splice(i,1); delete state.data.birthdays[n];
+      up.forEach(function(u){ state.data.weeks[u.week][u.day]=state.data.weeks[u.week][u.day].filter(function(s){return s.id!==u.id;}); delete state.confirmations[shiftKey(u.week,u.day,u.id)]; });
+      renderRoster(); renderAll(); scheduleSave();
+      toast(n+" removed"+(up.length?" · "+up.length+" upcoming shift"+(up.length===1?"":"s")+" deleted":"")+". Past shifts kept in the archive.",4200);
+    });});
     el.querySelectorAll('input[type="date"]').forEach(function(inp){inp.addEventListener("change",function(){var n=inp.getAttribute("data-name");if(inp.value)state.data.birthdays[n]=inp.value;else delete state.data.birthdays[n];renderDays();scheduleSave();toast(inp.value?"Birthday saved for "+n:"Birthday removed");});});
   }
   function addStaff(){
