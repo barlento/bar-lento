@@ -19,12 +19,12 @@ module.exports = async (req, res) => {
     const action = url.searchParams.get("action") || "status";
 
     if (action === "status") {
-      try { const r = await toast.restaurant(); const emps = await toast.employees(); return send(res, 200, { ok: true, restaurant: r, employees: emps.length, names: emps.map((e) => e.name) }); }
+      try { const r = await toast.restaurant(); const all = await toast.employees(true); const active = all.filter((e) => !e.archived); return send(res, 200, { ok: true, restaurant: r, employees: active.length, archived: all.length - active.length, names: active.map((e) => e.name) }); }
       catch (e) { return send(res, 200, { ok: false, error: String(e.message || e) }); }
     }
     if (action === "employees") {
       if (!auth.checkPassword(auth.passwordFrom(req))) return send(res, 401, { error: "unauthorized" });
-      const emps = await toast.employees();
+      const emps = await toast.employees(false);
       return send(res, 200, { employees: emps.sort((a, b) => a.name.localeCompare(b.name)) });
     }
     if (action === "today") {
@@ -32,6 +32,13 @@ module.exports = async (req, res) => {
       const doc = await store.getSchedule();
       const status = await toast.dayStatus(date, doc.data.toastMap || {});
       return send(res, 200, status);
+    }
+    if (action === "who") {
+      if (!auth.checkPassword(auth.passwordFrom(req))) return send(res, 401, { error: "unauthorized" });
+      const date = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" }).format(new Date());
+      const b = toast.dayBounds(date); const entries = await toast.timeEntries(b.start, b.end); const emps = await toast.employees(true);
+      const byGuid = Object.fromEntries(emps.map((e) => [e.guid, e]));
+      return send(res, 200, { date, entries: entries.map((t) => ({ name: (byGuid[t.employeeGuid] || {}).name || "(unknown " + t.employeeGuid + ")", in: t.in, out: t.out })) });
     }
     return send(res, 400, { error: "bad_action" });
   } catch (err) {
