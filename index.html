@@ -647,6 +647,7 @@
     return out;
   }
   function possessive(n){return n+(/s$/i.test(n)?"'":"'s");}
+  function levenshtein(a,b){var m=a.length,n=b.length,d=[];for(var i=0;i<=m;i++){d[i]=[i];}for(var j=1;j<=n;j++){d[0][j]=j;}for(i=1;i<=m;i++){for(j=1;j<=n;j++){d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));}}return d[m][n];}
 
   // Shifts of a person from today onward (past ones are never touched — archive).
   function upcomingShiftsOf(name){
@@ -1099,9 +1100,14 @@
       var b=state.data.birthdays[n]||""; var g=state.data.toastMap[n]||"";
       var sel="";
       if(withToast){
-        var guess=!g?emps.filter(function(e){return !e.archived&&(e.first.toLowerCase()===n.toLowerCase()||e.name.toLowerCase()===n.toLowerCase());}):[];
-        if(!g&&!guess.length){ guess=emps.filter(function(e){return e.first.toLowerCase()===n.toLowerCase()||e.name.toLowerCase()===n.toLowerCase();}); }
-        sel='<select class="toastsel" data-name="'+h(n)+'" title="Toast employee"><option value="">'+(emps.length?t("toastPick"):t("toastLoading"))+'</option>'+emps.map(function(e){return '<option value="'+h(e.guid)+'"'+(e.guid===g||(!g&&guess.length===1&&guess[0].guid===e.guid)?" selected":"")+'>'+h(e.name)+(e.archived?" (archived)":"")+'</option>';}).join("")+'</select>';
+        var nl=n.toLowerCase(), guess=[];
+        if(!g){
+          var norm=function(x){return x.toLowerCase().replace(/[^a-z]/g,"");};
+          guess=emps.filter(function(e){return e.first.toLowerCase()===nl||e.name.toLowerCase()===nl;});
+          if(!guess.length) guess=emps.filter(function(e){var f=norm(e.first),q=norm(n);return f&&q&&(f.indexOf(q)===0||q.indexOf(f)===0);});        // Joe ↔ Joseph
+          if(!guess.length) guess=emps.filter(function(e){var f=norm(e.first),q=norm(n);return f.length>3&&q.length>3&&(f.replace(/(.)\1/g,"$1")===q.replace(/(.)\1/g,"$1")||levenshtein(f,q)<=1);}); // Catherine ↔ Cateherine
+        }
+        sel='<select class="toastsel" data-name="'+h(n)+'" title="Toast employee"><option value="">'+(emps.length?t("toastPick"):t("toastLoading"))+'</option>'+emps.map(function(e){return '<option value="'+h(e.guid)+'"'+(e.guid===g||(!g&&guess.length===1&&guess[0].guid===e.guid)?" selected":"")+'>'+h(e.name)+'</option>';}).join("")+'</select>';
         if(!g&&guess.length===1){ state.data.toastMap[n]=guess[0].guid; scheduleSave(); }
       }
       return '<div class="person'+(withToast?" withtoast":"")+'"><span class="nm">'+h(n)+'</span>'+sel+'<label class="bday">🎂 <input type="date" data-name="'+h(n)+'" value="'+h(b)+'" aria-label="Birthday of '+h(n)+'"></label><button type="button" class="x" data-i="'+i+'" aria-label="Remove '+h(n)+'">✕</button></div>';

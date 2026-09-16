@@ -25,7 +25,7 @@ module.exports = async (req, res) => {
     if (action === "employees") {
       if (!auth.checkPassword(auth.passwordFrom(req))) return send(res, 401, { error: "unauthorized" });
       const emps = await toast.employees(true);
-      return send(res, 200, { employees: emps.sort((a, b) => Number(a.archived) - Number(b.archived) || a.name.localeCompare(b.name)) });
+      return send(res, 200, { employees: emps.filter((e) => !/^test\b/i.test(e.name)).sort((a, b) => a.name.localeCompare(b.name)) });
     }
     if (action === "today") {
       const date = /^\d{4}-\d{2}-\d{2}$/.test(url.searchParams.get("date") || "") ? url.searchParams.get("date") : new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" }).format(new Date());
