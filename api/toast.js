@@ -19,7 +19,7 @@ module.exports = async (req, res) => {
     const action = url.searchParams.get("action") || "status";
 
     if (action === "status") {
-      try { const emps = await toast.employees(); return send(res, 200, { ok: true, employees: emps.length }); }
+      try { const r = await toast.restaurant(); const emps = await toast.employees(); return send(res, 200, { ok: true, restaurant: r, employees: emps.length, names: emps.map((e) => e.name) }); }
       catch (e) { return send(res, 200, { ok: false, error: String(e.message || e) }); }
     }
     if (action === "employees") {
