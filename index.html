@@ -151,6 +151,8 @@
   footer .links{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
   .linkbtn{background:none;border:none;padding:6px 2px;color:var(--ink-muted);text-decoration:underline;cursor:pointer;font-size:.78rem}
   .linkbtn:hover{color:var(--ink)}
+  .linkbtn.danger{color:var(--danger)}
+  .linkbtn:disabled{opacity:.5;cursor:not-allowed;text-decoration:none}
 
   .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:.86rem;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:60;max-width:92vw;text-align:center}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(-6px)}
@@ -329,10 +331,8 @@
   <div class="archiverow">
     <button class="linkbtn" id="archiveToggle" type="button"></button>
     <div class="weektools" id="weekTools">
-      <button class="btn sm primary" id="newWeekCopyBtn" type="button" data-t="newWeekCopyBtn">＋ Next week (copy of previous)</button>
-      <button class="btn sm" id="newWeekBtn" type="button" data-t="newWeekBtn">＋ Empty week</button>
-      <button class="btn sm" id="copyWeekBtn" type="button" data-t="copyWeekBtn">↺ Copy previous week here</button>
-      <button class="btn sm danger" id="deleteWeekBtn" type="button" data-t="deleteWeekBtn">Delete week</button>
+      <button class="btn primary" id="newWeekBtn" type="button" data-t="newWeekBtn">＋ New week</button>
+      <button class="linkbtn danger" id="deleteWeekBtn" type="button" data-t="deleteWeekBtn">Delete this week</button>
     </div>
   </div>
 
@@ -436,6 +436,16 @@
   </div>
 </div>
 
+<!-- New week (admin) -->
+<div class="overlay" id="newWeekOverlay">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="nwTitle">
+    <h2 id="nwTitle" data-t="nwTitle">New week</h2>
+    <p class="lead" id="nwLead"></p>
+    <div class="presets" id="nwPresets"></div>
+    <div class="actions"><button class="btn" id="nwCancel" type="button" data-t="cancel">Cancel</button></div>
+  </div>
+</div>
+
 <!-- Day settings (admin) -->
 <div class="overlay" id="dayOverlay">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="dayTitle">
@@ -516,7 +526,7 @@
   var I18N={
     en:{
       adminMode:"Manager mode", staffBtn:"👥 Staff", historyBtn:"🕓 History", exportBtn:"⬇ Archive (CSV)", logoutBtn:"Log out", notifyBtn:"📣 Notify team",
-      newWeekCopyBtn:"＋ Next week (copy of previous)", newWeekBtn:"＋ Empty week", copyWeekBtn:"↺ Copy previous week here", deleteWeekBtn:"Delete week",
+      newWeekBtn:"＋ New week", deleteWeekBtn:"Delete this week", nwTitle:"New week", nwLead:"Create the week of {r}", nwCopy:"Copy last week's shifts ({k} shifts)", nwCopySub:"Same people and times as {r} — then adjust what changes", nwEmpty:"Start empty", nwEmptySub:"Add every shift by hand",
       copyConfirm:"Sure? This replaces the current shifts", deleteWeekConfirm:"Sure? Delete week", deleteWeekConfirmN:"Sure? Delete week and {k} shifts", deleteWeekLocked:"🔒 Past week · archived", pastLocked:"Past weeks are archived and can't be deleted", onlyEmpty:"Only an empty week can be deleted",
       footAdmin:"Tap a shift to edit it. Changes save automatically.", exitMode:"✓ Manager mode · Log out", addShift:"＋ Add shift", daySettings:"Day settings",
       statusPending:"Pending…", statusSaving:"Saving…", statusSaved:"Saved ✓", statusReloaded:"Reloaded", statusLoggedOut:"Logged out", statusNotSaved:"Not saved", statusError:"Error", statusReady:"Ready",
@@ -540,7 +550,7 @@
     },
     it:{
       adminMode:"Modalità manager", staffBtn:"👥 Staff", historyBtn:"🕓 Cronologia", exportBtn:"⬇ Archivio (CSV)", logoutBtn:"Esci", notifyBtn:"📣 Avvisa i ragazzi",
-      newWeekCopyBtn:"＋ Prossima settimana (copia della precedente)", newWeekBtn:"＋ Settimana vuota", copyWeekBtn:"↺ Copia qui la settimana precedente", deleteWeekBtn:"Elimina settimana",
+      newWeekBtn:"＋ Nuova settimana", deleteWeekBtn:"Elimina questa settimana", nwTitle:"Nuova settimana", nwLead:"Crea la settimana {r}", nwCopy:"Copia i turni della settimana scorsa ({k} turni)", nwCopySub:"Stesse persone e orari di {r} — poi sistemi quello che cambia", nwEmpty:"Parti da zero", nwEmptySub:"Aggiungi ogni turno a mano",
       copyConfirm:"Sicura? Sostituisce i turni attuali", deleteWeekConfirm:"Sicura? Elimina settimana", deleteWeekConfirmN:"Sicura? Elimina settimana e {k} turni", deleteWeekLocked:"🔒 Settimana passata · archivio", pastLocked:"Le settimane passate sono in archivio e non si eliminano", onlyEmpty:"Si può eliminare solo una settimana vuota",
       footAdmin:"Tocca un turno per modificarlo. Le modifiche si salvano da sole.", exitMode:"✓ Modalità manager · Esci", addShift:"＋ Aggiungi turno", daySettings:"Impostazioni giorno",
       statusPending:"In attesa…", statusSaving:"Salvataggio…", statusSaved:"Salvato ✓", statusReloaded:"Ricaricato", statusLoggedOut:"Disconnessa", statusNotSaved:"Non salvato", statusError:"Errore", statusReady:"Pronto",
@@ -859,14 +869,11 @@
     $("footHint").textContent=state.admin?t("footAdmin"):"Tap your shift to confirm you've seen it.";
     if(state.admin){
       var wk=state.activeWeek, cur=currentMondayISO();
-      var prev=wk?toISO(addDays(fromISO(wk),-7)):null;
-      $("copyWeekBtn").disabled=!(wk&&state.data.weeks[prev]);
       var nShifts=wk?DAY_KEYS.reduce(function(a,d){return a+((state.data.weeks[wk][d]||[]).length);},0):0;
       var isPast=wk&&wk<cur;
       $("deleteWeekBtn").disabled=!wk||isPast;
       $("deleteWeekBtn").title=isPast?t("pastLocked"):"";
       $("deleteWeekBtn").dataset.n=nShifts;
-      $("copyWeekBtn").textContent=t("copyWeekBtn"); $("copyWeekBtn").dataset.arm="";
       $("deleteWeekBtn").textContent=isPast?t("deleteWeekLocked"):t("deleteWeekBtn"); $("deleteWeekBtn").dataset.arm="";
     }
   }
@@ -1048,10 +1055,22 @@
   }
 
   // ---------- weeks (admin) ----------
+  function nextWeekKey(){ var keys=weekKeys(); var cand=fromISO(currentMondayISO()); while(keys.indexOf(toISO(cand))!==-1) cand=addDays(cand,7); return toISO(cand); }
+  function openNewWeek(){
+    var k=nextWeekKey(); var keys=weekKeys(); var prevKeys=keys.filter(function(x){return x<k;}); var prevK=prevKeys.length?prevKeys[prevKeys.length-1]:null;
+    var n=prevK?DAY_KEYS.reduce(function(a,d){return a+((state.data.weeks[prevK][d]||[]).length);},0):0;
+    $("nwLead").textContent=t("nwLead",{r:weekLabel(k).range});
+    var opts=[
+      prevK&&n?{ic:"↺",label:t("nwCopy",{k:n}),sub:t("nwCopySub",{r:weekLabel(prevK).range}),copy:true}:null,
+      {ic:"▢",label:t("nwEmpty"),sub:t("nwEmptySub"),copy:false}
+    ].filter(Boolean);
+    var pe=$("nwPresets");
+    pe.innerHTML=opts.map(function(o,i){return '<button type="button" class="preset'+(i===0?" active":"")+'" data-i="'+i+'"><span class="ic">'+o.ic+'</span><span class="tx">'+h(o.label)+'<span class="sub">'+h(o.sub)+'</span></span></button>';}).join("");
+    pe.querySelectorAll(".preset").forEach(function(b){b.addEventListener("click",function(){ $("newWeekOverlay").classList.remove("show"); newWeek(opts[Number(b.getAttribute("data-i"))].copy); });});
+    $("newWeekOverlay").classList.add("show");
+  }
   function newWeek(copyFromPrevious){
-    var keys=weekKeys(); var cand=fromISO(currentMondayISO());
-    while(keys.indexOf(toISO(cand))!==-1) cand=addDays(cand,7);
-    var k=toISO(cand); var w=emptyWeek(); var copied=0;
+    var keys=weekKeys(); var k=nextWeekKey(); var cand=fromISO(k); var w=emptyWeek(); var copied=0;
     if(copyFromPrevious){
       var prevKeys=keys.filter(function(x){return x<k;}); var src=prevKeys.length?state.data.weeks[prevKeys[prevKeys.length-1]]:null;
       if(src){ DAY_KEYS.forEach(function(d){ w[d]=(src[d]||[]).map(function(s){copied++;return {id:uid(),name:s.name,station:s.station||"",start:s.start,end:s.end};}); }); }
@@ -1059,13 +1078,6 @@
     state.data.weeks[k]=w; state.activeWeek=k;
     renderTabs(); renderDays(); renderAdminUI(); scheduleSave();
     toast(copyFromPrevious ? (copied?t("weekCopied",{r:weekLabel(k).range,k:copied}):t("weekNoPrev")) : t("weekCreated",{r:weekLabel(k).range}));
-  }
-  function copyPrevWeek(){
-    var wk=state.activeWeek; if(!wk) return; var prev=toISO(addDays(fromISO(wk),-7)); var src=state.data.weeks[prev]; if(!src){toast(t("noPrev"));return;}
-    var b=$("copyWeekBtn"); var hasShifts=DAY_KEYS.some(function(d){return (state.data.weeks[wk][d]||[]).length;});
-    if(hasShifts&&!b.dataset.arm){b.dataset.arm="1";b.textContent=t("copyConfirm");return;}
-    var w=emptyWeek(); DAY_KEYS.forEach(function(d){w[d]=(src[d]||[]).map(function(s){return {id:uid(),name:s.name,station:s.station||"",start:s.start,end:s.end};});});
-    state.data.weeks[wk]=w; renderDays(); renderHero(); renderAdminUI(); scheduleSave(); toast(t("copied"));
   }
   function deleteWeek(){
     var wk=state.activeWeek; if(!wk) return; var b=$("deleteWeekBtn"); var n=Number(b.dataset.n||0);
@@ -1183,10 +1195,9 @@
   $("historyBtn").addEventListener("click",openHistory);
   $("historyClose").addEventListener("click",function(){$("historyOverlay").classList.remove("show");});
   $("exportBtn").addEventListener("click",exportCSV);
-  $("newWeekBtn").addEventListener("click",function(){newWeek(false);});
-  $("newWeekCopyBtn").addEventListener("click",function(){newWeek(true);});
+  $("newWeekBtn").addEventListener("click",openNewWeek);
+  $("nwCancel").addEventListener("click",function(){$("newWeekOverlay").classList.remove("show");});
   $("bdayClose").addEventListener("click",function(){$("bdayOverlay").classList.remove("show");});
-  $("copyWeekBtn").addEventListener("click",copyPrevWeek);
   $("deleteWeekBtn").addEventListener("click",deleteWeek);
   $("copyBtn").addEventListener("click",copyText);
   $("archiveToggle").addEventListener("click",function(){state.showArchive=!state.showArchive;storageSet(ARCHIVE_KEY,state.showArchive?"1":null);ensureActiveWeek();renderTabs();renderDays();renderAdminUI();});
