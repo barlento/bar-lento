@@ -1,5 +1,6 @@
 const store = require("../lib/store");
 const auth = require("../lib/auth");
+const { diffData } = require("../lib/diff");
 
 function send(res, status, body) {
   res.setHeader("Cache-Control", "no-store");
@@ -31,11 +32,17 @@ module.exports = async (req, res) => {
       if (typeof body.version === "number" && body.version !== current.version) {
         return send(res, 409, { error: "version_conflict", version: current.version, data: current.data, updatedAt: current.updatedAt });
       }
+
+      const { changes, resetKeys } = diffData(current.data, data);
       const doc = { version: (current.version || 0) + 1, data, updatedAt: new Date().toISOString() };
       await store.saveSchedule(doc);
+      await store.removeConfirmations(resetKeys).catch(() => {});
       await store.pruneConfirmations(data).catch(() => {});
+      if (changes.length) {
+        await store.appendLog({ at: doc.updatedAt, version: doc.version, changes: changes.slice(0, 200) }).catch(() => {});
+      }
       const confirmations = await store.getConfirmations();
-      return send(res, 200, { version: doc.version, updatedAt: doc.updatedAt, data: doc.data, confirmations });
+      return send(res, 200, { version: doc.version, updatedAt: doc.updatedAt, data: doc.data, confirmations, changes: changes.length });
     }
 
     res.setHeader("Allow", "GET, POST");

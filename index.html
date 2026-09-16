@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="it">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#F3EDE1" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#16110D" media="(prefers-color-scheme: dark)">
-<title>Bar Lento — Turni</title>
+<title>Bar Lento — Schedule</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8D%B8%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -57,12 +57,13 @@
   .adminbar .who{display:flex;align-items:center;gap:8px;font-weight:700;font-size:.9rem}
   .adminbar .dot{width:9px;height:9px;border-radius:50%;background:var(--accent)}
   .adminbar .actions{display:flex;gap:8px;flex-wrap:wrap}
-  .adminbar .status{font-size:.78rem;opacity:.8;min-width:80px}
+  .adminbar .status{font-size:.78rem;opacity:.8;min-width:70px}
   .abtn{border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:inherit;border-radius:9px;padding:7px 11px;font-size:.82rem;font-weight:600;cursor:pointer}
   .abtn:hover{background:rgba(255,255,255,.16)}
 
   .hero{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:16px 20px;margin-bottom:16px;border-radius:16px;box-shadow:var(--shadow);background:var(--accent-soft);color:var(--accent-ink);border:1px solid var(--border)}
   .hero.open{background:var(--good-soft);color:var(--ink)}
+  .hero.closedday{background:var(--surface-2);color:var(--ink)}
   .hero .status{display:flex;align-items:center;gap:10px}
   .hero .led{width:11px;height:11px;border-radius:50%;background:var(--ink-muted);flex:none}
   .hero.open .led{background:var(--good);box-shadow:0 0 0 4px color-mix(in srgb,var(--good) 25%,transparent)}
@@ -71,25 +72,34 @@
   .hero .whoworks{font-size:.85rem;text-align:right}
   .hero .whoworks .names{font-weight:600}
 
-  .weekrow{display:flex;gap:8px;align-items:stretch;margin-bottom:12px;flex-wrap:wrap}
+  .weekrow{display:flex;gap:8px;align-items:stretch;margin-bottom:8px;flex-wrap:wrap}
   .tabs{display:flex;gap:8px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
   .tabs::-webkit-scrollbar{display:none}
-  .tab{flex:1 0 auto;min-width:150px;text-align:center;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--ink-muted);font-weight:700;font-size:.85rem;cursor:pointer;transition:background .12s,color .12s,border-color .12s;white-space:nowrap}
+  .tab{flex:1 0 auto;min-width:140px;text-align:center;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--ink-muted);font-weight:700;font-size:.85rem;cursor:pointer;transition:background .12s,color .12s,border-color .12s;white-space:nowrap}
   .tab.active{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+  .tab.past{border-style:dashed}
   .tab .sm{display:block;font-weight:500;font-size:.72rem;opacity:.85;margin-top:2px}
-  .weektools{display:none;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .archiverow{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+  .weektools{display:none;gap:8px;flex-wrap:wrap}
   .weektools.show{display:flex}
 
   .days{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin-bottom:22px}
   .day-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow)}
   .day-card.today{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,transparent),var(--shadow)}
   .day-card.past{opacity:.72}
+  .day-card.closed{background:color-mix(in srgb,var(--surface) 70%,var(--surface-2))}
   .day-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
   .day-head .name{font-weight:700;font-size:1.02rem}
   .day-head .date{color:var(--ink-muted);font-size:.78rem}
-  .day-meta{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .day-meta{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
   .day-hours{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:.74rem;font-weight:600;background:var(--accent-soft);color:var(--accent-ink)}
   .day-card.late .day-hours{background:var(--teal-soft);color:var(--teal)}
+  .day-card.closed .day-hours{background:var(--surface-2);color:var(--ink-muted);text-decoration:line-through}
+  .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:.72rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase}
+  .badge.closed{background:var(--danger-soft);color:var(--danger)}
+  .badge.holiday{background:var(--accent-soft);color:var(--accent-ink)}
+  .badge.event{background:var(--teal-soft);color:var(--teal)}
+  .daynote{font-size:.82rem;color:var(--ink);background:var(--surface-2);border-radius:8px;padding:7px 10px;font-style:italic}
   .confcount{font-size:.72rem;color:var(--ink-muted)}
   .shifts{display:flex;flex-direction:column;gap:7px}
   .shift{display:flex;align-items:center;gap:10px;background:var(--surface-2);border:1px solid transparent;border-radius:10px;padding:9px 11px;font-size:.88rem;cursor:pointer;text-align:left;width:100%;transition:background .15s,border-color .15s,transform .08s}
@@ -101,17 +111,21 @@
   .shift .check{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--border);display:grid;place-items:center;flex:none;font-size:.85rem;color:transparent;transition:all .15s}
   .shift.confirmed{background:var(--good-soft);border-color:color-mix(in srgb,var(--good) 55%,transparent)}
   .shift.confirmed .check{background:var(--good);border-color:var(--good);color:#fff}
-  .shift.confirmed .when::after{content:"· confermato";margin-left:4px;color:var(--good);font-weight:600}
+  .shift.confirmed .when::after{content:"· confirmed";margin-left:4px;color:var(--good);font-weight:600}
   .shift .edit{display:none;color:var(--ink-muted);font-size:.9rem;flex:none}
   body.admin .shift .edit{display:inline}
   .empty-note{color:var(--ink-muted);font-size:.78rem;font-style:italic;padding:4px 2px}
-  .addshift{display:none;border:1px dashed var(--border);background:transparent;border-radius:10px;padding:8px;font-size:.82rem;font-weight:600;color:var(--accent);cursor:pointer}
+  .addrow2{display:none;gap:6px}
+  body.admin .addrow2{display:flex}
+  .addshift{flex:1;border:1px dashed var(--border);background:transparent;border-radius:10px;padding:8px;font-size:.82rem;font-weight:600;color:var(--accent);cursor:pointer}
   .addshift:hover{background:var(--accent-soft);color:var(--accent-ink)}
-  body.admin .addshift{display:block}
+  .daybtn{border:1px dashed var(--border);background:transparent;border-radius:10px;padding:8px 10px;font-size:.85rem;cursor:pointer;color:var(--ink-muted)}
+  .daybtn:hover{border-color:var(--accent);color:var(--accent)}
 
   .btn{border:1px solid var(--border);background:var(--surface);color:var(--ink);border-radius:10px;padding:9px 14px;font-size:.84rem;font-weight:600;cursor:pointer}
   .btn:hover{border-color:var(--accent)}
   .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+  .btn.good{background:var(--good);border-color:var(--good);color:#fff}
   .btn.danger{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 40%,var(--border))}
   .btn.danger:hover{background:var(--danger-soft)}
   .btn:disabled{opacity:.5;cursor:not-allowed}
@@ -129,26 +143,37 @@
   .overlay.show{display:flex}
   @media (min-width:640px){.overlay{align-items:center}}
   .sheet{width:100%;max-width:460px;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:18px;box-shadow:var(--shadow);max-height:92vh;overflow:auto}
+  .sheet.wide{max-width:640px}
   .sheet h2{margin:0 0 4px;font-size:1.2rem}
   .sheet .lead{margin:0 0 14px;color:var(--ink-muted);font-size:.86rem}
   .field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
   .field label{font-size:.78rem;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.04em}
+  .field label .opt{font-weight:500;text-transform:none;letter-spacing:0}
   .field select,.field input{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--ink);font:inherit;font-size:1rem}
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   .sheet .actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:6px}
   .sheet .actions .spacer{flex:1}
   .err{color:var(--danger);font-size:.82rem;min-height:1.2em;margin:-4px 0 8px}
+  .bigword{font-family:'IBM Plex Mono',monospace;font-weight:600;background:var(--surface-2);padding:2px 8px;border-radius:6px}
+  .shiftcard{display:flex;flex-direction:column;gap:3px;background:var(--surface-2);border-radius:12px;padding:12px 14px;margin-bottom:14px}
+  .shiftcard .n{font-weight:700;font-size:1.05rem}
+  .shiftcard .d{color:var(--ink-muted);font-size:.86rem}
 
   .roster{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
   .roster .person{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;border-radius:10px;background:var(--surface-2);font-weight:600;font-size:.9rem}
   .roster .x{border:none;background:none;color:var(--danger);font-size:1rem;cursor:pointer;padding:4px 8px}
   .addrow{display:flex;gap:8px}
   .addrow input{flex:1}
-
   .hint{background:var(--surface-2);border-radius:10px;padding:10px 12px;font-size:.82rem;color:var(--ink-muted);margin-top:10px}
 
+  .log{display:flex;flex-direction:column;gap:10px;max-height:60vh;overflow:auto}
+  .log .entry{border-left:3px solid var(--accent);padding:4px 0 4px 10px}
+  .log .when{font-size:.74rem;color:var(--ink-muted)}
+  .log ul{margin:4px 0 0;padding-left:16px;font-size:.84rem}
+  .log li{margin:2px 0}
+
   @media (prefers-reduced-motion: reduce){*{transition:none !important}}
-  @media print{.adminbar,.weektools,.addshift,footer,.toast{display:none !important}}
+  @media print{.adminbar,.weektools,.addrow2,footer,.toast,.archiverow{display:none !important}}
 </style>
 </head>
 <body>
@@ -158,18 +183,20 @@
       <span class="mark" aria-hidden="true">🍸</span>
       <div>
         <h1>Bar Lento</h1>
-        <div class="tag">Turni della settimana — New York</div>
+        <div class="tag">Weekly schedule — New York</div>
       </div>
     </div>
-    <div class="updated" id="updatedNote">Caricamento…</div>
+    <div class="updated" id="updatedNote">Loading…</div>
   </header>
 
-  <div class="adminbar" id="adminBar" role="region" aria-label="Modalità modifica">
-    <div class="who"><span class="dot"></span> Modalità modifica</div>
+  <div class="adminbar" id="adminBar" role="region" aria-label="Manager mode">
+    <div class="who"><span class="dot"></span> Manager mode</div>
     <div class="status" id="saveStatus"></div>
     <div class="actions">
       <button class="abtn" id="staffBtn" type="button">👥 Staff</button>
-      <button class="abtn" id="logoutBtn" type="button">Esci</button>
+      <button class="abtn" id="historyBtn" type="button">🕓 History</button>
+      <button class="abtn" id="exportBtn" type="button">⬇ Archive (CSV)</button>
+      <button class="abtn" id="logoutBtn" type="button">Log out</button>
     </div>
   </div>
 
@@ -178,38 +205,59 @@
   <div class="weekrow">
     <div class="tabs" id="weekTabs" role="tablist"></div>
   </div>
-  <div class="weektools" id="weekTools">
-    <button class="btn sm" id="newWeekBtn" type="button">＋ Nuova settimana</button>
-    <button class="btn sm" id="copyWeekBtn" type="button">↺ Copia dalla settimana precedente</button>
-    <button class="btn sm danger" id="deleteWeekBtn" type="button">Elimina settimana</button>
+  <div class="archiverow">
+    <button class="linkbtn" id="archiveToggle" type="button"></button>
+    <div class="weektools" id="weekTools">
+      <button class="btn sm" id="newWeekBtn" type="button">＋ New week</button>
+      <button class="btn sm" id="copyWeekBtn" type="button">↺ Copy previous week</button>
+      <button class="btn sm danger" id="deleteWeekBtn" type="button">Delete week</button>
+    </div>
   </div>
 
   <div class="days" id="daysGrid"></div>
 
   <footer class="note">
-    <span id="footHint">Tocca il tuo turno per confermare che l'hai visto.</span>
+    <span id="footHint">Tap your shift to confirm you've seen it.</span>
     <div class="links">
-      <button class="btn sm" id="copyBtn" type="button">Copia come testo</button>
-      <button class="linkbtn" id="managerLink" type="button">Area manager</button>
+      <button class="btn sm" id="copyBtn" type="button">Copy as text</button>
+      <button class="linkbtn" id="managerLink" type="button">Manager login</button>
     </div>
   </footer>
+</div>
+
+<!-- Confirm shift (staff) -->
+<div class="overlay" id="confirmOverlay">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+    <h2 id="confirmTitle">Confirm your shift</h2>
+    <div class="shiftcard"><div class="n" id="confirmName"></div><div class="d" id="confirmWhen"></div></div>
+    <p class="lead" id="confirmLead"></p>
+    <div class="field">
+      <label for="confirmInput">Type the word</label>
+      <input id="confirmInput" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="confirm">
+    </div>
+    <div class="err" id="confirmErr"></div>
+    <div class="actions">
+      <button class="btn" id="confirmCancel" type="button">Cancel</button>
+      <button class="btn good" id="confirmGo" type="button" disabled>Confirm</button>
+    </div>
+  </div>
 </div>
 
 <!-- Login -->
 <div class="overlay" id="loginOverlay">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
-    <h2 id="loginTitle">Area manager</h2>
-    <p class="lead">Inserisci la password per modificare i turni.</p>
+    <h2 id="loginTitle">Manager login</h2>
+    <p class="lead">Enter the manager password to edit the schedule.</p>
     <div id="loginBody">
       <div class="field">
         <label for="pwInput">Password</label>
-        <input id="pwInput" type="password" autocomplete="current-password" inputmode="text">
+        <input id="pwInput" type="password" autocomplete="current-password">
       </div>
       <div class="err" id="loginErr"></div>
     </div>
     <div class="actions">
-      <button class="btn" id="loginCancel" type="button">Annulla</button>
-      <button class="btn primary" id="loginGo" type="button">Entra</button>
+      <button class="btn" id="loginCancel" type="button">Cancel</button>
+      <button class="btn primary" id="loginGo" type="button">Log in</button>
     </div>
   </div>
 </div>
@@ -217,28 +265,53 @@
 <!-- Shift editor -->
 <div class="overlay" id="shiftOverlay">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="shiftTitle">
-    <h2 id="shiftTitle">Turno</h2>
+    <h2 id="shiftTitle">Shift</h2>
     <p class="lead" id="shiftLead"></p>
     <div class="field">
-      <label for="nameSel">Chi</label>
+      <label for="nameSel">Who</label>
       <select id="nameSel"></select>
-      <input id="nameOther" type="text" placeholder="Nome" style="display:none" autocapitalize="words">
+      <input id="nameOther" type="text" placeholder="Name" style="display:none" autocapitalize="words">
     </div>
     <div class="field">
-      <label for="stationInput">Postazione <span style="font-weight:500;text-transform:none;letter-spacing:0">(facoltativa: BAR, S1, R…)</span></label>
-      <input id="stationInput" type="text" list="stationList" autocapitalize="characters" placeholder="es. BAR">
+      <label for="stationInput">Station <span class="opt">(optional: BAR, S1, R…)</span></label>
+      <input id="stationInput" type="text" list="stationList" autocapitalize="characters" placeholder="e.g. BAR">
       <datalist id="stationList"></datalist>
     </div>
     <div class="row2">
-      <div class="field"><label for="startSel">Inizio</label><select id="startSel" class="mono"></select></div>
-      <div class="field"><label for="endSel">Fine</label><select id="endSel" class="mono"></select></div>
+      <div class="field"><label for="startSel">Start</label><select id="startSel" class="mono"></select></div>
+      <div class="field"><label for="endSel">End</label><select id="endSel" class="mono"></select></div>
     </div>
     <div class="err" id="shiftErr"></div>
     <div class="actions">
-      <button class="btn danger" id="shiftDelete" type="button">Elimina</button>
+      <button class="btn danger" id="shiftDelete" type="button">Delete</button>
       <span class="spacer"></span>
-      <button class="btn" id="shiftCancel" type="button">Annulla</button>
-      <button class="btn primary" id="shiftSave" type="button">Salva</button>
+      <button class="btn" id="shiftCancel" type="button">Cancel</button>
+      <button class="btn primary" id="shiftSave" type="button">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Day settings (admin) -->
+<div class="overlay" id="dayOverlay">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="dayTitle">
+    <h2 id="dayTitle">Day settings</h2>
+    <p class="lead" id="dayLead"></p>
+    <div class="field">
+      <label for="dayStatus">Status</label>
+      <select id="dayStatus">
+        <option value="">Open (regular hours)</option>
+        <option value="closed">Closed</option>
+        <option value="holiday">Holiday — closed</option>
+        <option value="event">Private event</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="dayNote">Note <span class="opt">(shown to everyone, e.g. "Training day", "Marta on vacation")</span></label>
+      <input id="dayNote" type="text" maxlength="140" placeholder="Optional note">
+    </div>
+    <div class="actions">
+      <button class="btn" id="dayCancel" type="button">Cancel</button>
+      <button class="btn primary" id="daySave" type="button">Save</button>
     </div>
   </div>
 </div>
@@ -247,13 +320,23 @@
 <div class="overlay" id="staffOverlay">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="staffTitle">
     <h2 id="staffTitle">Staff</h2>
-    <p class="lead">I nomi che compaiono nella lista quando crei un turno.</p>
+    <p class="lead">Names offered when you create a shift. Removing a name never deletes past shifts — the archive stays complete.</p>
     <div class="roster" id="rosterList"></div>
     <div class="addrow">
-      <input id="newStaffInput" type="text" placeholder="Nuovo nome" autocapitalize="words">
-      <button class="btn primary" id="addStaffBtn" type="button">Aggiungi</button>
+      <input id="newStaffInput" type="text" placeholder="New name" autocapitalize="words">
+      <button class="btn primary" id="addStaffBtn" type="button">Add</button>
     </div>
-    <div class="actions"><button class="btn" id="staffClose" type="button">Chiudi</button></div>
+    <div class="actions"><button class="btn" id="staffClose" type="button">Close</button></div>
+  </div>
+</div>
+
+<!-- History -->
+<div class="overlay" id="historyOverlay">
+  <div class="sheet wide" role="dialog" aria-modal="true" aria-labelledby="historyTitle">
+    <h2 id="historyTitle">Change history</h2>
+    <p class="lead">Every edit made from manager mode, newest first. Confirmation times are included in the CSV archive.</p>
+    <div class="log" id="logList"></div>
+    <div class="actions"><button class="btn" id="historyClose" type="button">Close</button></div>
   </div>
 </div>
 
@@ -264,17 +347,19 @@
   "use strict";
 
   var DAY_KEYS=["mon","tue","wed","thu","fri","sat","sun"];
-  var DAY_NAMES={mon:"Lunedì",tue:"Martedì",wed:"Mercoledì",thu:"Giovedì",fri:"Venerdì",sat:"Sabato",sun:"Domenica"};
+  var DAY_NAMES={mon:"Monday",tue:"Tuesday",wed:"Wednesday",thu:"Thursday",fri:"Friday",sat:"Saturday",sun:"Sunday"};
+  var DAY_SHORT={mon:"Mon",tue:"Tue",wed:"Wed",thu:"Thu",fri:"Fri",sat:"Sat",sun:"Sun"};
   var OPENING={mon:{open:"16:00",close:"22:00"},tue:{open:"16:00",close:"22:00"},wed:{open:"16:00",close:"22:00"},thu:{open:"16:00",close:"22:00"},fri:{open:"16:00",close:"23:00"},sat:{open:"16:00",close:"23:00"},sun:{open:"16:00",close:"22:00"}};
-  var MONTHS_IT=["gennaio","febbraio","marzo","aprile","maggio","giugno","luglio","agosto","settembre","ottobre","novembre","dicembre"];
+  var MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   var DAY_KEY_BY_JSDAY=["sun","mon","tue","wed","thu","fri","sat"];
-  var PW_KEY="bl_admin_pw";
+  var STATUS_LABEL={closed:"Closed",holiday:"Holiday · closed",event:"Private event"};
+  var PW_KEY="bl_admin_pw", ARCHIVE_KEY="bl_show_archive";
 
   var state={
     version:0, updatedAt:null, data:{staff:[],weeks:{}}, confirmations:{},
     features:{storage:false,admin:false},
-    admin:false, password:"", activeWeek:null, saving:false, dirtyTimer:null,
-    editing:null, // {week, day, id|null}
+    admin:false, password:"", activeWeek:null, showArchive:false,
+    saving:false, dirtyTimer:null, editing:null, dayEditing:null, confirming:null,
     pendingConfirm:{}, pollTimer:null
   };
 
@@ -289,33 +374,39 @@
   function h(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
   function mins(t){if(t==="00:00")return 24*60;var p=t.split(":").map(Number);return p[0]*60+(p[1]||0);}
   function uid(){return "s"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
-  function emptyWeek(){var w={};DAY_KEYS.forEach(function(k){w[k]=[];});return w;}
+  function emptyWeek(){var w={notes:{}};DAY_KEYS.forEach(function(k){w[k]=[];});return w;}
   function sortShifts(list){return list.slice().sort(function(a,b){return mins(a.start)-mins(b.start)||a.name.localeCompare(b.name);});}
   function weekKeys(){return Object.keys(state.data.weeks).sort();}
   function currentMondayISO(){return toISO(mondayOf(new Date()));}
   function shiftKey(wk,day,id){return wk+":"+day+":"+id;}
   function storageGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
   function storageSet(k,v){try{if(v==null)localStorage.removeItem(k);else localStorage.setItem(k,v);}catch(e){}}
+  function dayNote(wk,day){var w=state.data.weeks[wk];return (w&&w.notes&&w.notes[day])||null;}
+  function isClosedStatus(st){return st==="closed"||st==="holiday";}
+
+  function fmt12(t){ if(!t)return""; if(t==="00:00")return "12:00 AM"; var p=t.split(":").map(Number); var ap=p[0]>=12?"PM":"AM"; var hh=p[0]%12||12; return hh+":"+pad(p[1])+" "+ap; }
+  function range12(a,b){ var A=fmt12(a),B=fmt12(b); var apA=A.slice(-2),apB=B.slice(-2); if(apA===apB) return A.slice(0,-3)+"–"+B; return A+"–"+B; }
+  function dateLabel(d){return DAY_SHORT[DAY_KEY_BY_JSDAY[d.getDay()]]+" "+MONTHS[d.getMonth()]+" "+d.getDate();}
+  function dateShort(d){return MONTHS[d.getMonth()]+" "+d.getDate();}
 
   function toast(msg,ms){var t=$("toast");t.textContent=msg;t.classList.add("show");clearTimeout(t._h);t._h=setTimeout(function(){t.classList.remove("show");},ms||2400);}
 
   function weekLabel(startISO){
     var start=fromISO(startISO), end=addDays(start,6);
-    var range=(start.getMonth()===end.getMonth())
-      ? start.getDate()+"–"+end.getDate()+" "+MONTHS_IT[end.getMonth()]
-      : start.getDate()+" "+MONTHS_IT[start.getMonth()]+" – "+end.getDate()+" "+MONTHS_IT[end.getMonth()];
+    var range=(start.getMonth()===end.getMonth()) ? MONTHS[start.getMonth()]+" "+start.getDate()+"–"+end.getDate() : dateShort(start)+" – "+dateShort(end);
     var cur=currentMondayISO();
-    var tag = startISO===cur ? "Questa settimana" : startISO===toISO(addDays(fromISO(cur),7)) ? "Prossima settimana" : startISO<cur ? "Settimana passata" : "Settimana";
-    return {tag:tag, range:range};
+    var tag = startISO===cur ? "This week" : startISO===toISO(addDays(fromISO(cur),7)) ? "Next week" : startISO<cur ? "Past week" : "Week";
+    return {tag:tag, range:range, past:startISO<cur};
   }
 
   function visibleWeeks(){
-    var keys=weekKeys(); if(state.admin) return keys;
-    var cur=currentMondayISO();
+    var keys=weekKeys(); var cur=currentMondayISO();
+    if(state.showArchive) return keys;
     var vis=keys.filter(function(k){return k>=cur;});
     if(!vis.length && keys.length) vis=[keys[keys.length-1]];
     return vis;
   }
+  function pastWeekCount(){var cur=currentMondayISO();return weekKeys().filter(function(k){return k<cur;}).length;}
 
   // ---------- API ----------
   async function api(path,opts){
@@ -328,9 +419,8 @@
 
   async function load(silent){
     var r=await api("/api/data");
-    if(!r.ok){ if(!silent) toast("Non riesco a caricare i turni. Riprova."); return false; }
+    if(!r.ok){ if(!silent) toast("Couldn't load the schedule. Please try again."); return false; }
     var j=r.json;
-    // Don't clobber local edits that are still being saved.
     if(state.saving || state.dirtyTimer){ state.confirmations=j.confirmations||{}; renderDays(); return true; }
     state.version=j.version; state.updatedAt=j.updatedAt; state.data=j.data||{staff:[],weeks:{}};
     state.confirmations=j.confirmations||{}; state.features=j.features||state.features;
@@ -340,35 +430,35 @@
   function ensureActiveWeek(){
     var vis=visibleWeeks(); var cur=currentMondayISO();
     if(state.activeWeek && vis.indexOf(state.activeWeek)!==-1) return;
-    state.activeWeek = vis.indexOf(cur)!==-1 ? cur : (vis[0]||null);
+    state.activeWeek = vis.indexOf(cur)!==-1 ? cur : (vis.filter(function(k){return k>=cur;})[0] || vis[vis.length-1] || null);
   }
 
   function scheduleSave(){
     if(!state.admin) return;
     clearTimeout(state.dirtyTimer);
-    $("saveStatus").textContent="Modifiche in attesa…";
+    $("saveStatus").textContent="Pending…";
     state.dirtyTimer=setTimeout(function(){state.dirtyTimer=null;save();},500);
   }
 
   async function save(){
     if(state.saving){ scheduleSave(); return; }
-    state.saving=true; $("saveStatus").textContent="Salvataggio…";
+    state.saving=true; $("saveStatus").textContent="Saving…";
     var r=await api("/api/data",{method:"POST",auth:true,body:{version:state.version,data:state.data}});
     state.saving=false;
     if(r.ok){
       state.version=r.json.version; state.updatedAt=r.json.updatedAt; state.data=r.json.data; state.confirmations=r.json.confirmations||state.confirmations;
-      $("saveStatus").textContent="Salvato ✓"; renderUpdated(); renderDays();
+      $("saveStatus").textContent="Saved ✓"; renderUpdated(); renderDays();
     } else if(r.status===409){
       state.version=r.json.version; state.data=r.json.data; state.updatedAt=r.json.updatedAt;
       ensureActiveWeek(); renderAll();
-      $("saveStatus").textContent="Aggiornato altrove"; toast("Qualcuno ha modificato i turni da un altro dispositivo: ho ricaricato l'ultima versione, ripeti la modifica.",4200);
+      $("saveStatus").textContent="Reloaded"; toast("Someone else changed the schedule from another device. I reloaded the latest version — please redo your change.",4500);
     } else if(r.status===401){
-      $("saveStatus").textContent="Sessione scaduta"; toast("Password non più valida: accedi di nuovo."); logout(true);
+      $("saveStatus").textContent="Logged out"; toast("Password no longer valid. Please log in again."); logout(true);
     } else if(r.status===503){
-      $("saveStatus").textContent="Non salvato";
-      toast(r.json.error==="storage_missing" ? "Il database del sito non è ancora collegato: le modifiche non vengono salvate." : "Area manager non attiva sul server.",4800);
+      $("saveStatus").textContent="Not saved";
+      toast(r.json.error==="storage_missing" ? "The database isn't connected yet — changes can't be saved." : "Manager mode is not enabled on the server.",4800);
     } else {
-      $("saveStatus").textContent="Errore"; toast("Errore nel salvataggio. Riprova.");
+      $("saveStatus").textContent="Error"; toast("Couldn't save. Please try again.");
     }
   }
 
@@ -379,92 +469,125 @@
     var el=$("updatedNote");
     if(!state.updatedAt){el.textContent="";return;}
     var d=new Date(state.updatedAt);
-    el.innerHTML="Aggiornato "+pad(d.getDate())+"/"+pad(d.getMonth()+1)+" alle "+pad(d.getHours())+":"+pad(d.getMinutes())+(state.features.storage?"":"<br><span style='opacity:.7'>versione di prova</span>");
+    el.innerHTML="Updated "+MONTHS[d.getMonth()]+" "+d.getDate()+", "+fmt12(pad(d.getHours())+":"+pad(d.getMinutes()))+(state.features.storage?"":"<br><span style='opacity:.7'>preview mode</span>");
   }
 
   function renderHero(){
     var now=new Date(), todayKey=DAY_KEY_BY_JSDAY[now.getDay()], hours=OPENING[todayKey];
+    var wk=currentMondayISO(); var note=dayNote(wk,todayKey);
+    var closedToday=note&&isClosedStatus(note.status);
     var m=now.getHours()*60+now.getMinutes();
-    var isOpen=m>=mins(hours.open)&&m<mins(hours.close);
-    var wk=currentMondayISO(); var list=(state.data.weeks[wk]&&state.data.weeks[wk][todayKey])||[];
+    var isOpen=!closedToday&&m>=mins(hours.open)&&m<mins(hours.close);
+    var list=(state.data.weeks[wk]&&state.data.weeks[wk][todayKey])||[];
     var names=sortShifts(list).map(function(s){return h(s.name)+(s.station?" <span style='opacity:.7'>("+h(s.station)+")</span>":"");});
-    var el=$("heroStatus"); el.className="hero"+(isOpen?" open":"");
-    el.innerHTML='<div class="status"><span class="led"></span><div><div class="text">'+(isOpen?"Aperto ora":"Chiuso ora")+'</div><div class="sub mono">'+DAY_NAMES[todayKey]+' · '+hours.open+'–'+hours.close+'</div></div></div>'
-      +'<div class="whoworks">'+(names.length?'Oggi al lavoro: <span class="names">'+names.join(", ")+'</span>':'Nessun turno assegnato per oggi')+'</div>';
+    var el=$("heroStatus"); el.className="hero"+(isOpen?" open":"")+(closedToday?" closedday":"");
+    var statusText = closedToday ? (note.status==="holiday"?"Closed today · Holiday":"Closed today") : (isOpen?"Open now":"Closed now");
+    var sub = closedToday ? DAY_NAMES[todayKey]+(note.text?" · "+h(note.text):"") : DAY_NAMES[todayKey]+" · "+range12(hours.open,hours.close)+(note&&note.text?" · "+h(note.text):"");
+    el.innerHTML='<div class="status"><span class="led"></span><div><div class="text">'+statusText+'</div><div class="sub">'+sub+'</div></div></div>'
+      +'<div class="whoworks">'+(names.length?'Working today: <span class="names">'+names.join(", ")+'</span>':(closedToday?'':'No shifts assigned for today'))+'</div>';
   }
 
   function renderTabs(){
     var el=$("weekTabs"); var vis=visibleWeeks();
-    if(!vis.length){el.innerHTML='<div class="empty-note">Nessuna settimana pubblicata.</div>';return;}
-    el.innerHTML=vis.map(function(k){var l=weekLabel(k);return '<button type="button" role="tab" class="tab'+(k===state.activeWeek?" active":"")+'" data-week="'+k+'" aria-selected="'+(k===state.activeWeek)+'">'+l.tag+'<span class="sm">'+l.range+'</span></button>';}).join("");
-    el.querySelectorAll(".tab").forEach(function(b){b.addEventListener("click",function(){state.activeWeek=b.getAttribute("data-week");renderTabs();renderDays();renderAdminUI();});});
-    var act=el.querySelector(".tab.active"); if(act&&act.scrollIntoView) try{act.scrollIntoView({block:"nearest",inline:"center"});}catch(e){}
+    if(!vis.length){el.innerHTML='<div class="empty-note">No weeks published yet.</div>';}
+    else {
+      el.innerHTML=vis.map(function(k){var l=weekLabel(k);return '<button type="button" role="tab" class="tab'+(k===state.activeWeek?" active":"")+(l.past?" past":"")+'" data-week="'+k+'" aria-selected="'+(k===state.activeWeek)+'">'+l.tag+'<span class="sm">'+l.range+'</span></button>';}).join("");
+      el.querySelectorAll(".tab").forEach(function(b){b.addEventListener("click",function(){state.activeWeek=b.getAttribute("data-week");renderTabs();renderDays();renderAdminUI();});});
+      var act=el.querySelector(".tab.active"); if(act&&act.scrollIntoView) try{act.scrollIntoView({block:"nearest",inline:"center"});}catch(e){}
+    }
+    var n=pastWeekCount(); var tg=$("archiveToggle");
+    tg.style.display=n?"":"none";
+    tg.textContent=state.showArchive?"Hide past weeks":"Past weeks · archive ("+n+")";
   }
 
   function renderDays(){
     var grid=$("daysGrid"); var wk=state.activeWeek;
     if(!wk){grid.innerHTML="";return;}
-    var start=fromISO(wk), today=new Date(), days=state.data.weeks[wk]||emptyWeek();
+    var start=fromISO(wk), today=new Date(), week=state.data.weeks[wk]||emptyWeek();
     grid.innerHTML=DAY_KEYS.map(function(key,i){
       var date=addDays(start,i), hours=OPENING[key], isLate=(key==="fri"||key==="sat"), isToday=isSameDay(date,today);
       var isPast=date<today&&!isToday;
-      var shifts=sortShifts(days[key]||[]);
+      var note=(week.notes&&week.notes[key])||null; var closed=note&&isClosedStatus(note.status);
+      var shifts=sortShifts(week[key]||[]);
       var confirmed=shifts.filter(function(s){return !!state.confirmations[shiftKey(wk,key,s.id)];}).length;
       var rows=shifts.length?shifts.map(function(s){
         var ok=!!state.confirmations[shiftKey(wk,key,s.id)];
         return '<button type="button" class="shift'+(ok?" confirmed":"")+'" data-day="'+key+'" data-id="'+h(s.id)+'" aria-pressed="'+ok+'">'
           +'<span class="check" aria-hidden="true">✓</span>'
-          +'<span class="main"><span class="who">'+h(s.name)+(s.station?'<span class="st">'+h(s.station)+'</span>':"")+'</span><span class="when mono">'+h(s.start)+'–'+h(s.end)+'</span></span>'
+          +'<span class="main"><span class="who">'+h(s.name)+(s.station?'<span class="st">'+h(s.station)+'</span>':"")+'</span><span class="when mono">'+range12(s.start,s.end)+'</span></span>'
           +'<span class="edit" aria-hidden="true">✎</span></button>';
-      }).join(""):'<div class="empty-note">Nessun turno assegnato</div>';
-      return '<div class="day-card'+(isLate?" late":"")+(isToday?" today":"")+(isPast&&!state.admin?" past":"")+'">'
-        +'<div class="day-head"><span class="name">'+DAY_NAMES[key]+(isToday?' <span style="color:var(--accent);font-size:.75rem">· oggi</span>':"")+'</span><span class="date mono">'+pad(date.getDate())+'/'+pad(date.getMonth()+1)+'</span></div>'
-        +'<div class="day-meta"><span class="day-hours mono">'+hours.open+' – '+hours.close+'</span>'+(shifts.length&&state.features.storage?'<span class="confcount">'+confirmed+'/'+shifts.length+' confermati</span>':"")+'</div>'
+      }).join(""):'<div class="empty-note">'+(closed?"No shifts — closed":"No shifts assigned")+'</div>';
+      var badge=note&&note.status?'<span class="badge '+note.status+'">'+STATUS_LABEL[note.status]+'</span>':"";
+      var noteHtml=note&&note.text?'<div class="daynote">'+h(note.text)+'</div>':"";
+      return '<div class="day-card'+(isLate?" late":"")+(isToday?" today":"")+(closed?" closed":"")+(isPast&&!state.admin?" past":"")+'">'
+        +'<div class="day-head"><span class="name">'+DAY_NAMES[key]+(isToday?' <span style="color:var(--accent);font-size:.75rem">· today</span>':"")+'</span><span class="date mono">'+MONTHS[date.getMonth()]+' '+date.getDate()+'</span></div>'
+        +'<div class="day-meta">'+(badge||'<span class="day-hours mono">'+range12(hours.open,hours.close)+'</span>')+(shifts.length&&state.features.storage?'<span class="confcount">'+confirmed+'/'+shifts.length+' confirmed</span>':"")+'</div>'
+        +noteHtml
         +'<div class="shifts">'+rows+'</div>'
-        +'<button type="button" class="addshift" data-day="'+key+'">＋ Aggiungi turno</button>'
+        +'<div class="addrow2"><button type="button" class="addshift" data-day="'+key+'">＋ Add shift</button><button type="button" class="daybtn" data-day="'+key+'" title="Day settings" aria-label="Day settings">⚙</button></div>'
         +'</div>';
     }).join("");
     grid.querySelectorAll(".shift").forEach(function(b){b.addEventListener("click",function(){onShiftTap(wk,b.getAttribute("data-day"),b.getAttribute("data-id"));});});
     grid.querySelectorAll(".addshift").forEach(function(b){b.addEventListener("click",function(){openShiftEditor(wk,b.getAttribute("data-day"),null);});});
+    grid.querySelectorAll(".daybtn").forEach(function(b){b.addEventListener("click",function(){openDayEditor(wk,b.getAttribute("data-day"));});});
   }
 
   function renderAdminUI(){
     document.body.classList.toggle("admin",state.admin);
     $("adminBar").classList.toggle("show",state.admin);
     $("weekTools").classList.toggle("show",state.admin);
-    $("managerLink").textContent=state.admin?"Esci dall'area manager":"Area manager";
-    $("footHint").textContent=state.admin?"Tocca un turno per modificarlo. Le modifiche si salvano da sole.":"Tocca il tuo turno per confermare che l'hai visto.";
+    $("managerLink").textContent=state.admin?"Exit manager mode":"Manager login";
+    $("footHint").textContent=state.admin?"Tap a shift to edit it. Changes save automatically.":"Tap your shift to confirm you've seen it.";
     if(state.admin){
-      var wk=state.activeWeek, keys=weekKeys();
+      var wk=state.activeWeek, cur=currentMondayISO();
       var prev=wk?toISO(addDays(fromISO(wk),-7)):null;
       $("copyWeekBtn").disabled=!(wk&&state.data.weeks[prev]);
       var hasShifts=wk&&DAY_KEYS.some(function(d){return (state.data.weeks[wk][d]||[]).length;});
-      $("deleteWeekBtn").disabled=!wk||hasShifts;
-      $("deleteWeekBtn").title=hasShifts?"Si può eliminare solo una settimana senza turni":"";
-      $("copyWeekBtn").textContent="↺ Copia dalla settimana precedente"; $("copyWeekBtn").dataset.arm="";
-      $("deleteWeekBtn").textContent="Elimina settimana"; $("deleteWeekBtn").dataset.arm="";
+      var isPast=wk&&wk<cur;
+      $("deleteWeekBtn").disabled=!wk||hasShifts||isPast;
+      $("deleteWeekBtn").title=isPast?"Past weeks are archived and can't be deleted":hasShifts?"Only an empty week can be deleted":"";
+      $("copyWeekBtn").textContent="↺ Copy previous week"; $("copyWeekBtn").dataset.arm="";
+      $("deleteWeekBtn").textContent="Delete week"; $("deleteWeekBtn").dataset.arm="";
     }
   }
 
-  // ---------- staff tap / confirmations ----------
-  async function onShiftTap(wk,day,id){
+  // ---------- staff tap → typed confirmation ----------
+  function onShiftTap(wk,day,id){
     if(state.admin){openShiftEditor(wk,day,id);return;}
-    if(!state.features.storage){toast("Le conferme non sono ancora attive.");return;}
-    var key=shiftKey(wk,day,id); if(state.pendingConfirm[key]) return;
-    var on=!state.confirmations[key];
-    if(on) state.confirmations[key]=new Date().toISOString(); else delete state.confirmations[key];
+    if(!state.features.storage){toast("Confirmations aren't active yet.");return;}
+    var list=(state.data.weeks[wk]||{})[day]||[]; var s=list.filter(function(x){return x.id===id;})[0]; if(!s) return;
+    var key=shiftKey(wk,day,id); var on=!state.confirmations[key];
+    state.confirming={week:wk,day:day,id:id,on:on,word:on?"confirm":"remove"};
+    var date=addDays(fromISO(wk),DAY_KEYS.indexOf(day));
+    $("confirmTitle").textContent=on?"Confirm your shift":"Remove confirmation";
+    $("confirmName").textContent=s.name+(s.station?" · "+s.station:"");
+    $("confirmWhen").textContent=DAY_NAMES[day]+", "+dateShort(date)+" · "+range12(s.start,s.end);
+    $("confirmLead").innerHTML=on
+      ? 'Only confirm if this is <b>your</b> shift and you\'ve read the time. Type <span class="bigword">confirm</span> to continue.'
+      : 'This shift is already confirmed. Type <span class="bigword">remove</span> to undo the confirmation.';
+    $("confirmInput").value=""; $("confirmInput").placeholder=state.confirming.word; $("confirmErr").textContent="";
+    $("confirmGo").textContent=on?"Confirm shift":"Remove confirmation"; $("confirmGo").className="btn "+(on?"good":"danger"); $("confirmGo").disabled=true;
+    $("confirmOverlay").classList.add("show"); setTimeout(function(){$("confirmInput").focus();},60);
+  }
+  function confirmWordOk(){ var c=state.confirming; return !!c && $("confirmInput").value.trim().toLowerCase()===c.word; }
+  async function doConfirm(){
+    var c=state.confirming; if(!c) return;
+    if(!confirmWordOk()){$("confirmErr").textContent='Please type "'+c.word+'" exactly.';return;}
+    var key=shiftKey(c.week,c.day,c.id); if(state.pendingConfirm[key]) return;
+    $("confirmOverlay").classList.remove("show"); state.confirming=null;
+    if(c.on) state.confirmations[key]=new Date().toISOString(); else delete state.confirmations[key];
     renderDays(); state.pendingConfirm[key]=true;
-    var r=await api("/api/confirm",{method:"POST",body:{week:wk,day:day,id:id,on:on}});
+    var r=await api("/api/confirm",{method:"POST",body:{week:c.week,day:c.day,id:c.id,on:c.on}});
     delete state.pendingConfirm[key];
-    if(r.ok){state.confirmations=r.json.confirmations||state.confirmations;renderDays();toast(on?"Turno confermato ✓":"Conferma rimossa");}
-    else{ if(on) delete state.confirmations[key]; else state.confirmations[key]="1"; renderDays(); toast("Non sono riuscito a salvare la conferma. Riprova."); }
+    if(r.ok){state.confirmations=r.json.confirmations||state.confirmations;renderDays();toast(c.on?"Shift confirmed ✓ Thank you!":"Confirmation removed");}
+    else{ if(c.on) delete state.confirmations[key]; else state.confirmations[key]="1"; renderDays(); toast(r.status===404?"This shift was just changed — please reload.":"Couldn't save your confirmation. Please try again."); }
   }
 
   // ---------- login ----------
   function openLogin(){
     if(state.admin){logout(false);return;}
     if(!state.features.admin){
-      $("loginBody").innerHTML='<div class="hint">L\'area manager non è ancora attiva: manca la password sul server (impostazione "ADMIN_PASSWORD" su Vercel).</div>';
+      $("loginBody").innerHTML='<div class="hint">Manager mode isn\'t enabled yet: the server has no password set (ADMIN_PASSWORD on Vercel).</div>';
       $("loginGo").style.display="none";
     } else {
       $("loginGo").style.display="";
@@ -475,22 +598,22 @@
     $("loginOverlay").classList.add("show");
   }
   async function doLogin(){
-    var pw=($("pwInput")||{}).value||""; if(!pw){$("loginErr").textContent="Inserisci la password.";return;}
+    var pw=($("pwInput")||{}).value||""; if(!pw){$("loginErr").textContent="Please enter the password.";return;}
     $("loginGo").disabled=true; $("loginErr").textContent="";
     var r=await api("/api/login",{method:"POST",body:{password:pw}});
     $("loginGo").disabled=false;
-    if(r.ok){ state.password=pw; state.admin=true; storageSet(PW_KEY,pw); $("loginOverlay").classList.remove("show"); ensureActiveWeek(); renderAll(); $("saveStatus").textContent="Pronto"; toast("Ciao! Sei in modalità modifica.");
-      if(!state.features.storage) toast("Attenzione: database non collegato, le modifiche non verranno salvate.",5000); }
-    else if(r.status===401){$("loginErr").textContent="Password sbagliata.";}
-    else {$("loginErr").textContent="Non riesco a verificare la password. Riprova.";}
+    if(r.ok){ state.password=pw; state.admin=true; storageSet(PW_KEY,pw); $("loginOverlay").classList.remove("show"); ensureActiveWeek(); renderAll(); $("saveStatus").textContent="Ready"; toast("Welcome! You're in manager mode.");
+      if(!state.features.storage) toast("Heads up: the database isn't connected, so changes won't be saved.",5000); }
+    else if(r.status===401){$("loginErr").textContent="Wrong password.";}
+    else {$("loginErr").textContent="Couldn't verify the password. Please try again.";}
   }
-  function logout(silent){ state.admin=false; state.password=""; storageSet(PW_KEY,null); ensureActiveWeek(); renderAll(); if(!silent) toast("Uscita dall'area manager."); }
+  function logout(silent){ state.admin=false; state.password=""; storageSet(PW_KEY,null); ensureActiveWeek(); renderAll(); if(!silent) toast("Logged out of manager mode."); }
 
   // ---------- shift editor ----------
   function timeOptions(sel,value){
-    var opts=[]; for(var m=12*60;m<=24*60;m+=30){var hh=Math.floor(m/60)%24,mm=m%60;opts.push(pad(hh)+":"+pad(mm));}
+    var opts=[]; for(var m=10*60;m<=24*60;m+=30){var hh=Math.floor(m/60)%24,mm=m%60;opts.push(pad(hh)+":"+pad(mm));}
     if(value&&opts.indexOf(value)===-1) opts.push(value);
-    sel.innerHTML=opts.map(function(t){return '<option value="'+t+'"'+(t===value?" selected":"")+'>'+t+'</option>';}).join("");
+    sel.innerHTML=opts.map(function(t){return '<option value="'+t+'"'+(t===value?" selected":"")+'>'+fmt12(t)+'</option>';}).join("");
   }
   function stationsInUse(){
     var set={}; Object.keys(state.data.weeks).forEach(function(wk){DAY_KEYS.forEach(function(d){(state.data.weeks[wk][d]||[]).forEach(function(s){if(s.station)set[s.station]=1;});});});
@@ -500,18 +623,18 @@
     var list=(state.data.weeks[wk]||emptyWeek())[day]||[]; var rec=id?list.filter(function(s){return s.id===id;})[0]:null;
     state.editing={week:wk,day:day,id:rec?rec.id:null};
     var date=addDays(fromISO(wk),DAY_KEYS.indexOf(day));
-    $("shiftTitle").textContent=rec?"Modifica turno":"Nuovo turno";
-    $("shiftLead").textContent=DAY_NAMES[day]+" "+pad(date.getDate())+"/"+pad(date.getMonth()+1)+" · apertura "+OPENING[day].open+"–"+OPENING[day].close;
+    $("shiftTitle").textContent=rec?"Edit shift":"New shift";
+    $("shiftLead").textContent=DAY_NAMES[day]+", "+dateShort(date)+" · hours "+range12(OPENING[day].open,OPENING[day].close);
     var names=state.data.staff.slice(); if(rec&&rec.name&&names.indexOf(rec.name)===-1) names.unshift(rec.name);
     var sel=$("nameSel");
-    sel.innerHTML=names.map(function(n){return '<option value="'+h(n)+'">'+h(n)+'</option>';}).join("")+'<option value="__other">Altro nome…</option>';
+    sel.innerHTML=names.map(function(n){return '<option value="'+h(n)+'">'+h(n)+'</option>';}).join("")+'<option value="__other">Other name…</option>';
     sel.value=rec?rec.name:(names[0]||"__other");
     $("nameOther").style.display=sel.value==="__other"?"":"none"; $("nameOther").value="";
     $("stationInput").value=rec?rec.station||"":"";
     $("stationList").innerHTML=stationsInUse().map(function(s){return '<option value="'+h(s)+'">';}).join("");
     timeOptions($("startSel"),rec?rec.start:OPENING[day].open);
     timeOptions($("endSel"),rec?rec.end:OPENING[day].close);
-    $("shiftDelete").style.display=rec?"":"none"; $("shiftDelete").textContent="Elimina"; $("shiftDelete").dataset.arm="";
+    $("shiftDelete").style.display=rec?"":"none"; $("shiftDelete").textContent="Delete"; $("shiftDelete").dataset.arm="";
     $("shiftErr").textContent="";
     $("shiftOverlay").classList.add("show");
   }
@@ -521,8 +644,8 @@
     var name=$("nameSel").value==="__other"?$("nameOther").value.trim():$("nameSel").value;
     var station=$("stationInput").value.trim().toUpperCase().slice(0,12);
     var start=$("startSel").value, end=$("endSel").value;
-    if(!name){$("shiftErr").textContent="Scegli o scrivi un nome.";return;}
-    if(mins(end)<=mins(start)){$("shiftErr").textContent="L'orario di fine deve essere dopo l'inizio.";return;}
+    if(!name){$("shiftErr").textContent="Pick or type a name.";return;}
+    if(mins(end)<=mins(start)){$("shiftErr").textContent="End time must be after start time.";return;}
     if(!state.data.weeks[e.week]) state.data.weeks[e.week]=emptyWeek();
     var list=state.data.weeks[e.week][e.day];
     if(e.id){ var rec=list.filter(function(s){return s.id===e.id;})[0]; if(rec){rec.name=name;rec.station=station;rec.start=start;rec.end=end;} }
@@ -532,10 +655,27 @@
   }
   function deleteShiftFromEditor(){
     var e=state.editing; if(!e||!e.id) return;
-    var b=$("shiftDelete"); if(!b.dataset.arm){b.dataset.arm="1";b.textContent="Confermi? Elimina";return;}
+    var b=$("shiftDelete"); if(!b.dataset.arm){b.dataset.arm="1";b.textContent="Sure? Delete";return;}
     var list=state.data.weeks[e.week][e.day]; state.data.weeks[e.week][e.day]=list.filter(function(s){return s.id!==e.id;});
     delete state.confirmations[shiftKey(e.week,e.day,e.id)];
-    closeShiftEditor(); renderDays(); renderHero(); scheduleSave(); toast("Turno eliminato");
+    closeShiftEditor(); renderDays(); renderHero(); scheduleSave(); toast("Shift deleted");
+  }
+
+  // ---------- day settings (admin) ----------
+  function openDayEditor(wk,day){
+    state.dayEditing={week:wk,day:day};
+    var date=addDays(fromISO(wk),DAY_KEYS.indexOf(day)); var note=dayNote(wk,day)||{status:"",text:""};
+    $("dayLead").textContent=DAY_NAMES[day]+", "+dateShort(date);
+    $("dayStatus").value=note.status||""; $("dayNote").value=note.text||"";
+    $("dayOverlay").classList.add("show");
+  }
+  function saveDayFromEditor(){
+    var e=state.dayEditing; if(!e) return;
+    var w=state.data.weeks[e.week]; if(!w) return; if(!w.notes) w.notes={};
+    var status=$("dayStatus").value, text=$("dayNote").value.trim().slice(0,140);
+    if(!status&&!text) delete w.notes[e.day]; else w.notes[e.day]={status:status,text:text};
+    state.dayEditing=null; $("dayOverlay").classList.remove("show");
+    renderDays(); renderHero(); scheduleSave();
   }
 
   // ---------- weeks (admin) ----------
@@ -543,53 +683,73 @@
     var keys=weekKeys(); var cand=fromISO(currentMondayISO());
     while(keys.indexOf(toISO(cand))!==-1) cand=addDays(cand,7);
     var k=toISO(cand); state.data.weeks[k]=emptyWeek(); state.activeWeek=k;
-    renderTabs(); renderDays(); renderAdminUI(); scheduleSave(); toast("Settimana del "+weekLabel(k).range+" creata");
+    renderTabs(); renderDays(); renderAdminUI(); scheduleSave(); toast("Week of "+weekLabel(k).range+" created");
   }
   function copyPrevWeek(){
-    var wk=state.activeWeek; if(!wk) return; var prev=toISO(addDays(fromISO(wk),-7)); var src=state.data.weeks[prev]; if(!src){toast("Non c'è una settimana precedente da copiare.");return;}
+    var wk=state.activeWeek; if(!wk) return; var prev=toISO(addDays(fromISO(wk),-7)); var src=state.data.weeks[prev]; if(!src){toast("There's no previous week to copy.");return;}
     var b=$("copyWeekBtn"); var hasShifts=DAY_KEYS.some(function(d){return (state.data.weeks[wk][d]||[]).length;});
-    if(hasShifts&&!b.dataset.arm){b.dataset.arm="1";b.textContent="Confermi? Sostituisce i turni attuali";return;}
+    if(hasShifts&&!b.dataset.arm){b.dataset.arm="1";b.textContent="Sure? This replaces the current shifts";return;}
     var w=emptyWeek(); DAY_KEYS.forEach(function(d){w[d]=(src[d]||[]).map(function(s){return {id:uid(),name:s.name,station:s.station||"",start:s.start,end:s.end};});});
-    state.data.weeks[wk]=w; renderDays(); renderHero(); renderAdminUI(); scheduleSave(); toast("Turni copiati dalla settimana precedente");
+    state.data.weeks[wk]=w; renderDays(); renderHero(); renderAdminUI(); scheduleSave(); toast("Shifts copied from the previous week");
   }
   function deleteWeek(){
     var wk=state.activeWeek; if(!wk) return; var b=$("deleteWeekBtn");
-    if(!b.dataset.arm){b.dataset.arm="1";b.textContent="Confermi? Elimina settimana";return;}
-    delete state.data.weeks[wk]; state.activeWeek=null; ensureActiveWeek(); renderAll(); scheduleSave(); toast("Settimana eliminata");
+    if(!b.dataset.arm){b.dataset.arm="1";b.textContent="Sure? Delete week";return;}
+    delete state.data.weeks[wk]; state.activeWeek=null; ensureActiveWeek(); renderAll(); scheduleSave(); toast("Week deleted");
   }
 
   // ---------- staff roster ----------
   function renderRoster(){
     var el=$("rosterList");
-    el.innerHTML=state.data.staff.length?state.data.staff.map(function(n,i){return '<div class="person"><span>'+h(n)+'</span><button type="button" class="x" data-i="'+i+'" aria-label="Rimuovi '+h(n)+'">✕</button></div>';}).join(""):'<div class="empty-note">Nessun nome ancora.</div>';
+    el.innerHTML=state.data.staff.length?state.data.staff.map(function(n,i){return '<div class="person"><span>'+h(n)+'</span><button type="button" class="x" data-i="'+i+'" aria-label="Remove '+h(n)+'">✕</button></div>';}).join(""):'<div class="empty-note">No names yet.</div>';
     el.querySelectorAll(".x").forEach(function(b){b.addEventListener("click",function(){state.data.staff.splice(Number(b.getAttribute("data-i")),1);renderRoster();scheduleSave();});});
   }
   function addStaff(){
     var v=$("newStaffInput").value.trim(); if(!v) return;
-    if(state.data.staff.some(function(n){return n.toLowerCase()===v.toLowerCase();})){toast("Nome già presente");return;}
+    if(state.data.staff.some(function(n){return n.toLowerCase()===v.toLowerCase();})){toast("That name is already on the list");return;}
     state.data.staff.push(v); $("newStaffInput").value=""; renderRoster(); scheduleSave();
+  }
+
+  // ---------- history + export (admin) ----------
+  async function openHistory(){
+    $("logList").innerHTML='<div class="empty-note">Loading…</div>'; $("historyOverlay").classList.add("show");
+    var r=await api("/api/log?limit=300",{auth:true});
+    if(!r.ok){$("logList").innerHTML='<div class="empty-note">Couldn\'t load the history.</div>';return;}
+    var entries=r.json.entries||[];
+    if(!entries.length){$("logList").innerHTML='<div class="empty-note">'+(r.json.storage?"No changes recorded yet.":"History is available once the database is connected.")+'</div>';return;}
+    $("logList").innerHTML=entries.map(function(e){var d=new Date(e.at);return '<div class="entry"><div class="when">'+MONTHS[d.getMonth()]+' '+d.getDate()+', '+d.getFullYear()+' · '+fmt12(pad(d.getHours())+":"+pad(d.getMinutes()))+' · v'+e.version+'</div><ul>'+(e.changes||[]).map(function(c){return '<li>'+h(c)+'</li>';}).join("")+'</ul></div>';}).join("");
+  }
+  async function exportCSV(){
+    toast("Preparing the archive…");
+    try{
+      var res=await fetch("/api/export",{headers:{"x-admin-password":state.password},cache:"no-store"});
+      if(!res.ok){toast(res.status===503?"Export is available once the database is connected.":"Couldn't export.");return;}
+      var blob=await res.blob(); var a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+      a.download="bar-lento-schedule-archive-"+toISO(new Date())+".csv"; document.body.appendChild(a); a.click(); document.body.removeChild(a); setTimeout(function(){URL.revokeObjectURL(a.href);},2000);
+    }catch(e){toast("Couldn't export.");}
   }
 
   // ---------- copy as text ----------
   function buildSummary(){
-    var lines=[]; visibleWeeks().forEach(function(wk){
-      var start=fromISO(wk), l=weekLabel(wk);
-      lines.push("🍸 Bar Lento — Turni "+l.range); lines.push("");
-      DAY_KEYS.forEach(function(key,i){
-        var date=addDays(start,i), hours=OPENING[key];
-        lines.push(DAY_NAMES[key]+" "+pad(date.getDate())+"/"+pad(date.getMonth()+1)+" (apertura "+hours.open+"–"+hours.close+")");
-        var shifts=sortShifts((state.data.weeks[wk]||{})[key]||[]);
-        if(shifts.length) shifts.forEach(function(s){lines.push("  • "+s.name+(s.station?" ("+s.station+")":"")+" "+s.start+"–"+s.end);});
-        else lines.push("  — nessun turno assegnato —");
-      });
-      lines.push("");
+    var lines=[]; var wk=state.activeWeek; if(!wk) return "";
+    var start=fromISO(wk), l=weekLabel(wk);
+    lines.push("🍸 Bar Lento — Schedule "+l.range); lines.push("");
+    DAY_KEYS.forEach(function(key,i){
+      var date=addDays(start,i), hours=OPENING[key], note=dayNote(wk,key);
+      var head=DAY_NAMES[key]+" "+dateShort(date);
+      if(note&&isClosedStatus(note.status)) head+=" — "+STATUS_LABEL[note.status].toUpperCase();
+      else head+=" ("+range12(hours.open,hours.close)+")"+(note&&note.status==="event"?" — PRIVATE EVENT":"");
+      lines.push(head); if(note&&note.text) lines.push("  ℹ︎ "+note.text);
+      var shifts=sortShifts((state.data.weeks[wk]||{})[key]||[]);
+      if(shifts.length) shifts.forEach(function(s){lines.push("  • "+s.name+(s.station?" ("+s.station+")":"")+" "+range12(s.start,s.end));});
+      else if(!(note&&isClosedStatus(note.status))) lines.push("  — no shifts —");
     });
-    lines.push(location.origin+location.pathname);
+    lines.push(""); lines.push(location.origin+location.pathname);
     return lines.join("\n").trim();
   }
   function copyText(){
-    var text=buildSummary(); var done=function(){toast("Copiato! Incollalo su WhatsApp.");};
-    var fail=function(){var ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand("copy");done();}catch(e){toast("Copia non riuscita");}document.body.removeChild(ta);};
+    var text=buildSummary(); if(!text){toast("Nothing to copy");return;} var done=function(){toast("Copied! Paste it in WhatsApp.");};
+    var fail=function(){var ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand("copy");done();}catch(e){toast("Copy failed");}document.body.removeChild(ta);};
     if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done).catch(fail); else fail();
   }
 
@@ -599,33 +759,46 @@
   $("loginCancel").addEventListener("click",function(){$("loginOverlay").classList.remove("show");});
   $("loginGo").addEventListener("click",doLogin);
   $("loginOverlay").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();doLogin();}});
+  $("confirmCancel").addEventListener("click",function(){$("confirmOverlay").classList.remove("show");state.confirming=null;});
+  $("confirmGo").addEventListener("click",doConfirm);
+  $("confirmInput").addEventListener("input",function(){$("confirmGo").disabled=!confirmWordOk();$("confirmErr").textContent="";});
+  $("confirmOverlay").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();doConfirm();}});
   $("shiftCancel").addEventListener("click",closeShiftEditor);
   $("shiftSave").addEventListener("click",saveShiftFromEditor);
   $("shiftDelete").addEventListener("click",deleteShiftFromEditor);
   $("nameSel").addEventListener("change",function(){var o=this.value==="__other";$("nameOther").style.display=o?"":"none";if(o)$("nameOther").focus();});
+  $("dayCancel").addEventListener("click",function(){state.dayEditing=null;$("dayOverlay").classList.remove("show");});
+  $("daySave").addEventListener("click",saveDayFromEditor);
   $("staffBtn").addEventListener("click",function(){renderRoster();$("staffOverlay").classList.add("show");});
   $("staffClose").addEventListener("click",function(){$("staffOverlay").classList.remove("show");});
   $("addStaffBtn").addEventListener("click",addStaff);
   $("newStaffInput").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();addStaff();}});
+  $("historyBtn").addEventListener("click",openHistory);
+  $("historyClose").addEventListener("click",function(){$("historyOverlay").classList.remove("show");});
+  $("exportBtn").addEventListener("click",exportCSV);
   $("newWeekBtn").addEventListener("click",newWeek);
   $("copyWeekBtn").addEventListener("click",copyPrevWeek);
   $("deleteWeekBtn").addEventListener("click",deleteWeek);
   $("copyBtn").addEventListener("click",copyText);
-  document.querySelectorAll(".overlay").forEach(function(o){o.addEventListener("click",function(e){if(e.target===o){o.classList.remove("show");if(o.id==="shiftOverlay")state.editing=null;}});});
-  document.addEventListener("keydown",function(e){if(e.key==="Escape"){document.querySelectorAll(".overlay.show").forEach(function(o){o.classList.remove("show");});state.editing=null;}});
+  $("archiveToggle").addEventListener("click",function(){state.showArchive=!state.showArchive;storageSet(ARCHIVE_KEY,state.showArchive?"1":null);ensureActiveWeek();renderTabs();renderDays();renderAdminUI();});
+  document.querySelectorAll(".overlay").forEach(function(o){o.addEventListener("click",function(e){if(e.target===o){o.classList.remove("show");state.editing=null;state.dayEditing=null;state.confirming=null;}});});
+  function closeAllModals(){document.querySelectorAll(".overlay.show").forEach(function(o){o.classList.remove("show");});state.editing=null;state.dayEditing=null;state.confirming=null;}
+  document.addEventListener("keydown",function(e){if(e.key==="Escape") closeAllModals();});
 
+  function anyModalOpen(){return !!document.querySelector(".overlay.show");}
   function startPolling(){
     clearInterval(state.pollTimer);
-    state.pollTimer=setInterval(function(){ if(document.visibilityState==="visible"&&!state.editing) load(true); },45000);
-    document.addEventListener("visibilitychange",function(){ if(document.visibilityState==="visible"&&!state.editing) load(true); });
+    state.pollTimer=setInterval(function(){ if(document.visibilityState==="visible"&&!anyModalOpen()) load(true); },45000);
+    document.addEventListener("visibilitychange",function(){ if(document.visibilityState==="visible"&&!anyModalOpen()) load(true); });
   }
 
   (async function init(){
+    state.showArchive=storageGet(ARCHIVE_KEY)==="1";
     await load(false);
     var saved=storageGet(PW_KEY);
     if(saved&&state.features.admin){
       var r=await api("/api/login",{method:"POST",body:{password:saved}});
-      if(r.ok){state.password=saved;state.admin=true;ensureActiveWeek();renderAll();$("saveStatus").textContent="Pronto";}
+      if(r.ok){state.password=saved;state.admin=true;ensureActiveWeek();renderAll();$("saveStatus").textContent="Ready";}
       else storageSet(PW_KEY,null);
     }
     startPolling();
