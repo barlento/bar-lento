@@ -71,6 +71,7 @@
   .adminbar .status{font-size:.78rem;opacity:.8;min-width:70px}
   .abtn{border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:inherit;border-radius:9px;padding:7px 11px;font-size:.82rem;font-weight:600;cursor:pointer}
   .abtn:hover{background:rgba(255,255,255,.16)}
+  .abtn.notify{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);animation:ledpulse 2s ease-out infinite}
 
   .hero{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:16px 20px;margin-bottom:16px;border-radius:16px;box-shadow:var(--shadow);background:var(--accent-soft);color:var(--accent-ink);border:1px solid var(--border)}
   .hero.open{background:var(--good-soft);color:var(--ink)}
@@ -301,6 +302,7 @@
     <div class="who"><span class="dot"></span> Manager mode</div>
     <div class="status" id="saveStatus"></div>
     <div class="actions">
+      <button class="abtn notify" id="notifyBtn" type="button" style="display:none">📣 Notify team</button>
       <button class="abtn" id="staffBtn" type="button">👥 Staff</button>
       <button class="abtn" id="historyBtn" type="button">🕓 History</button>
       <button class="abtn" id="exportBtn" type="button">⬇ Archive (CSV)</button>
@@ -493,7 +495,7 @@
     features:{storage:false,admin:false},
     admin:false, password:"", activeWeek:null, showArchive:false,
     saving:false, dirtyTimer:null, editing:null, dayEditing:null, confirming:null,
-    pendingConfirm:{}, pollTimer:null
+    pendingConfirm:{}, pollTimer:null, pendingNotify:0, idleTimer:null
   };
 
   // ---------- helpers ----------
@@ -620,7 +622,7 @@
     var changedRemotely = silent && state.version && j.version!==state.version;
     state.version=j.version; state.updatedAt=j.updatedAt; state.data=j.data||{staff:[],weeks:{}};
     if(changedRemotely){ setTimeout(function(){ var u=$("updatedNote"); u.classList.remove("flashnew"); void u.offsetWidth; u.classList.add("flashnew"); toast("Schedule updated ✨"); },50); }
-    state.confirmations=j.confirmations||{}; state.features=j.features||state.features;
+    state.confirmations=j.confirmations||{}; state.features=j.features||state.features; state.pendingNotify=j.pendingNotify||0;
     ensureActiveWeek(); renderAll(); return true;
   }
 
@@ -644,6 +646,7 @@
     state.saving=false;
     if(r.ok){
       state.version=r.json.version; state.updatedAt=r.json.updatedAt; state.data=r.json.data; state.confirmations=r.json.confirmations||state.confirmations;
+      state.pendingNotify=r.json.pendingNotify||0; renderNotifyBtn(); armIdleNotify();
       $("saveStatus").textContent="Saved ✓"; renderUpdated(); renderDays();
     } else if(r.status===409){
       state.version=r.json.version; state.data=r.json.data; state.updatedAt=r.json.updatedAt;
@@ -740,6 +743,7 @@
     $("adminBar").classList.toggle("show",state.admin);
     $("weekTools").classList.toggle("show",state.admin);
     $("managerLink").textContent=state.admin?"✓ Manager mode · Log out":"🔑 Manager login";
+    renderNotifyBtn();
     $("footHint").textContent=state.admin?"Tap a shift to edit it. Changes save automatically.":"Tap your shift to confirm you've seen it.";
     if(state.admin){
       var wk=state.activeWeek, cur=currentMondayISO();
@@ -810,7 +814,27 @@
     else if(r.status===401){$("loginErr").textContent="Wrong password.";}
     else {$("loginErr").textContent="Couldn't verify the password. Please try again.";}
   }
-  function logout(silent){ state.admin=false; state.password=""; storageSet(PW_KEY,null); ensureActiveWeek(); renderAll(); if(!silent) toast("Logged out of manager mode."); }
+  async function logout(silent){
+    if(!silent && state.pendingNotify>0 && state.password){ await sendNotifyNow(true); }
+    clearTimeout(state.idleTimer); state.admin=false; state.password=""; storageSet(PW_KEY,null); ensureActiveWeek(); renderAll(); if(!silent) toast("Logged out of manager mode.");
+  }
+
+  // ---------- team notification (one summary push for all pending changes) ----------
+  function renderNotifyBtn(){
+    var b=$("notifyBtn"); if(!state.admin||!state.features.push||!state.pendingNotify){ b.style.display="none"; return; }
+    b.style.display=""; b.textContent="📣 Notify team ("+state.pendingNotify+")";
+  }
+  function armIdleNotify(){
+    clearTimeout(state.idleTimer);
+    if(!state.admin||!state.pendingNotify) return;
+    state.idleTimer=setTimeout(function(){ if(state.admin&&state.pendingNotify&&!state.saving&&!state.dirtyTimer) sendNotifyNow(false); }, 2*60*1000);
+  }
+  async function sendNotifyNow(quiet){
+    if(!state.password||!state.pendingNotify) return;
+    var r=await api("/api/notify",{method:"POST",auth:true});
+    if(r.ok){ state.pendingNotify=0; renderNotifyBtn(); if(!quiet) toast(r.json.sent?"Team notified ✓ ("+r.json.sent+" phone"+(r.json.sent===1?"":"s")+")":"Changes noted — nobody has notifications turned on yet."); }
+    else if(!quiet) toast("Couldn't send the notification. It will go out automatically later.");
+  }
 
   // ---------- shift editor ----------
   function timeOptions(sel,value){
@@ -827,7 +851,7 @@
     state.editing={week:wk,day:day,id:rec?rec.id:null};
     var date=addDays(fromISO(wk),DAY_KEYS.indexOf(day));
     $("shiftTitle").textContent=rec?"Edit shift":"New shift";
-    $("shiftLead").textContent=DAY_NAMES[day]+", "+dateShort(date)+" · hours "+range12(OPENING[day].open,OPENING[day].close);
+    $("shiftLead").textContent=DAY_NAMES[day]+", "+dateShort(date)+" · hours "+range12(hoursFor(wk,day).open,hoursFor(wk,day).close);
     var names=state.data.staff.slice(); if(rec&&rec.name&&names.indexOf(rec.name)===-1) names.unshift(rec.name);
     var sel=$("nameSel");
     sel.innerHTML=names.map(function(n){return '<option value="'+h(n)+'">'+h(n)+'</option>';}).join("")+'<option value="__other">Other name…</option>';
@@ -835,8 +859,9 @@
     $("nameOther").style.display=sel.value==="__other"?"":"none"; $("nameOther").value="";
     $("stationInput").value=rec?rec.station||"":"";
     $("stationList").innerHTML=stationsInUse().map(function(s){return '<option value="'+h(s)+'">';}).join("");
-    timeOptions($("startSel"),rec?rec.start:OPENING[day].open);
-    timeOptions($("endSel"),rec?rec.end:OPENING[day].close);
+    var dh=hoursFor(wk,day);
+    timeOptions($("startSel"),rec?rec.start:dh.open);
+    timeOptions($("endSel"),rec?rec.end:dh.close);
     $("shiftDelete").style.display=rec?"":"none"; $("shiftDelete").textContent="Delete"; $("shiftDelete").dataset.arm="";
     $("shiftErr").textContent="";
     $("shiftOverlay").classList.add("show");
@@ -1020,6 +1045,8 @@
   $("daySave").addEventListener("click",saveDayFromEditor);
   $("dayStatus").addEventListener("change",syncHalfHours);
   $("bellBtn").addEventListener("click",togglePush);
+  $("notifyBtn").addEventListener("click",function(){sendNotifyNow(false);});
+  document.addEventListener("visibilitychange",function(){ if(document.visibilityState==="hidden"&&state.admin&&state.pendingNotify&&state.password&&!state.dirtyTimer&&!state.saving){ try{ fetch("/api/notify",{method:"POST",headers:{"x-admin-password":state.password,"Content-Type":"application/json"},keepalive:true}); state.pendingNotify=0; }catch(e){} } });
   $("staffBtn").addEventListener("click",function(){renderRoster();$("staffOverlay").classList.add("show");});
   $("staffClose").addEventListener("click",function(){$("staffOverlay").classList.remove("show");});
   $("addStaffBtn").addEventListener("click",addStaff);
