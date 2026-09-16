@@ -171,6 +171,18 @@
   .roster .bday input{padding:6px 8px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--ink);font:inherit;font-size:.85rem;max-width:150px}
   .roster .x{border:none;background:none;color:var(--danger);font-size:1rem;cursor:pointer;padding:4px 8px}
 
+  .holinote{display:flex;align-items:center;gap:8px;background:var(--party-soft);color:var(--party);border-radius:10px;padding:10px 12px;font-size:.9rem;font-weight:600;margin:0 0 12px}
+  .presets{display:flex;flex-direction:column;gap:6px}
+  .preset{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;text-align:left;border:1px solid var(--border);background:var(--surface);border-radius:10px;padding:10px 12px;font-size:.9rem;font-weight:600;cursor:pointer}
+  .preset:hover{border-color:var(--accent);background:var(--accent-soft)}
+  .preset.active{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-ink)}
+  .preset .ic{font-size:1.1rem;flex:none}
+  .preset .tx{flex:1}
+  .preset .sub{display:block;font-weight:500;font-size:.76rem;color:var(--ink-muted)}
+  .badge.half{background:var(--teal-soft);color:var(--teal)}
+  .bellbtn{border:1px solid var(--border);background:var(--surface);color:var(--ink);border-radius:10px;padding:8px 12px;font-size:.84rem;font-weight:700;cursor:pointer}
+  .bellbtn.on{background:var(--good-soft);border-color:var(--good);color:var(--good)}
+
   .bday-sheet{text-align:center;position:relative;overflow:hidden}
   .bday-sheet .cake{font-size:3.4rem;line-height:1;margin:6px 0 10px;animation:bounce 1.2s ease-in-out infinite}
   .bday-sheet h2{font-size:1.6rem;margin-bottom:8px}
@@ -240,6 +252,7 @@
   <footer class="note">
     <span id="footHint">Tap your shift to confirm you've seen it.</span>
     <div class="links">
+      <button class="bellbtn" id="bellBtn" type="button" style="display:none">🔔 Notify me of changes</button>
       <button class="btn sm" id="copyBtn" type="button">Copy as text</button>
     </div>
   </footer>
@@ -329,20 +342,30 @@
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="dayTitle">
     <h2 id="dayTitle">Day settings</h2>
     <p class="lead" id="dayLead"></p>
-    <div id="dayHoliday" class="hint" style="display:none;margin:0 0 12px"></div>
+    <div id="dayHoliday" class="holinote" style="display:none"></div>
+    <div class="field">
+      <label>Quick choice</label>
+      <div class="presets" id="dayPresets"></div>
+    </div>
     <div class="field">
       <label for="dayStatus">Status</label>
       <select id="dayStatus">
         <option value="">Open (regular hours)</option>
+        <option value="half">Half day (custom hours)</option>
         <option value="closed">Closed</option>
-        <option value="holiday">Holiday — closed</option>
+        <option value="holiday">Closed for holiday</option>
         <option value="event">Private event</option>
       </select>
     </div>
-    <div class="field">
-      <label for="dayNote">Note <span class="opt">(shown to everyone, e.g. "Training day", "Marta on vacation")</span></label>
-      <input id="dayNote" type="text" maxlength="140" placeholder="Optional note">
+    <div class="row2" id="halfHours" style="display:none">
+      <div class="field"><label for="halfOpen">Opens</label><select id="halfOpen" class="mono"></select></div>
+      <div class="field"><label for="halfClose">Closes</label><select id="halfClose" class="mono"></select></div>
     </div>
+    <div class="field">
+      <label for="dayNote">Reason / note <span class="opt">(shown to everyone)</span></label>
+      <input id="dayNote" type="text" maxlength="140" placeholder="e.g. Closed for Christmas Day · Private party · Staff training">
+    </div>
+    <div class="err" id="dayErr"></div>
     <div class="actions">
       <button class="btn" id="dayCancel" type="button">Cancel</button>
       <button class="btn primary" id="daySave" type="button">Save</button>
@@ -386,7 +409,8 @@
   var OPENING={mon:{open:"16:00",close:"22:00"},tue:{open:"16:00",close:"22:00"},wed:{open:"16:00",close:"22:00"},thu:{open:"16:00",close:"22:00"},fri:{open:"16:00",close:"23:00"},sat:{open:"16:00",close:"23:00"},sun:{open:"16:00",close:"22:00"}};
   var MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   var DAY_KEY_BY_JSDAY=["sun","mon","tue","wed","thu","fri","sat"];
-  var STATUS_LABEL={closed:"Closed",holiday:"Holiday · closed",event:"Private event"};
+  var STATUS_LABEL={closed:"Closed",holiday:"Holiday · closed",half:"Half day",event:"Private event"};
+  function hoursFor(wk,day){ var n=dayNote(wk,day); if(n&&n.status==="half"&&n.open&&n.close) return {open:n.open,close:n.close}; return OPENING[day]; }
   var PW_KEY="bl_admin_pw", ARCHIVE_KEY="bl_show_archive";
 
   var state={
@@ -569,8 +593,8 @@
   }
 
   function renderHero(){
-    var now=new Date(), todayKey=DAY_KEY_BY_JSDAY[now.getDay()], hours=OPENING[todayKey];
-    var wk=currentMondayISO(); var note=dayNote(wk,todayKey);
+    var now=new Date(), todayKey=DAY_KEY_BY_JSDAY[now.getDay()];
+    var wk=currentMondayISO(); var note=dayNote(wk,todayKey); var hours=hoursFor(wk,todayKey);
     var closedToday=note&&isClosedStatus(note.status);
     var m=now.getHours()*60+now.getMinutes();
     var isOpen=!closedToday&&m>=mins(hours.open)&&m<mins(hours.close);
@@ -579,7 +603,7 @@
     var el=$("heroStatus"); el.className="hero"+(isOpen?" open":"")+(closedToday?" closedday":"");
     var hol=holidayOn(now);
     var statusText = closedToday ? (note.status==="holiday"?"Closed today · Holiday":"Closed today") : (isOpen?"Open now":"Closed now");
-    var sub = closedToday ? DAY_NAMES[todayKey]+(note.text?" · "+h(note.text):"") : DAY_NAMES[todayKey]+" · "+range12(hours.open,hours.close)+(note&&note.text?" · "+h(note.text):"");
+    var sub = closedToday ? DAY_NAMES[todayKey]+(note.text?" · "+h(note.text):"") : DAY_NAMES[todayKey]+" · "+range12(hours.open,hours.close)+(note&&note.status==="half"?" (half day)":"")+(note&&note.text?" · "+h(note.text):"");
     if(hol) sub+=" · "+hol.icon+" "+h(hol.name);
     el.innerHTML='<div class="status"><span class="led"></span><div><div class="text">'+statusText+'</div><div class="sub">'+sub+'</div></div></div>'
       +'<div class="whoworks">'+(names.length?'Working today: <span class="names">'+names.join(", ")+'</span>':(closedToday?'':'No shifts assigned for today'))+'</div>';
@@ -603,9 +627,10 @@
     if(!wk){grid.innerHTML="";return;}
     var start=fromISO(wk), today=new Date(), week=state.data.weeks[wk]||emptyWeek();
     grid.innerHTML=DAY_KEYS.map(function(key,i){
-      var date=addDays(start,i), hours=OPENING[key], isLate=(key==="fri"||key==="sat"), isToday=isSameDay(date,today);
+      var date=addDays(start,i), isLate=(key==="fri"||key==="sat"), isToday=isSameDay(date,today);
       var isPast=date<today&&!isToday;
       var note=(week.notes&&week.notes[key])||null; var closed=note&&isClosedStatus(note.status);
+      var hours=(note&&note.status==="half"&&note.open&&note.close)?{open:note.open,close:note.close}:OPENING[key];
       var shifts=sortShifts(week[key]||[]);
       var confirmed=shifts.filter(function(s){return !!state.confirmations[shiftKey(wk,key,s.id)];}).length;
       var rows=shifts.length?shifts.map(function(s){
@@ -622,7 +647,7 @@
       if(chips) noteHtml='<div class="chips">'+chips+'</div>'+noteHtml;
       return '<div class="day-card'+(isLate?" late":"")+(isToday?" today":"")+(closed?" closed":"")+(isPast&&!state.admin?" past":"")+'">'
         +'<div class="day-head"><span class="name">'+DAY_NAMES[key]+(isToday?' <span style="color:var(--accent);font-size:.75rem">· today</span>':"")+'</span><span class="date mono">'+MONTHS[date.getMonth()]+' '+date.getDate()+'</span></div>'
-        +'<div class="day-meta">'+(badge||'<span class="day-hours mono">'+range12(hours.open,hours.close)+'</span>')+(shifts.length&&state.features.storage?'<span class="confcount">'+confirmed+'/'+shifts.length+' confirmed</span>':"")+'</div>'
+        +'<div class="day-meta">'+(closed?badge:'<span class="day-hours mono">'+range12(hours.open,hours.close)+'</span>'+(badge?' '+badge:''))+(shifts.length&&state.features.storage?'<span class="confcount">'+confirmed+'/'+shifts.length+' confirmed</span>':"")+'</div>'
         +noteHtml
         +'<div class="shifts">'+rows+'</div>'
         +'<div class="addrow2"><button type="button" class="addshift" data-day="'+key+'">＋ Add shift</button><button type="button" class="daybtn" data-day="'+key+'" title="Day settings" aria-label="Day settings">⚙</button></div>'
@@ -763,24 +788,46 @@
   }
 
   // ---------- day settings (admin) ----------
+  function syncHalfHours(){ $("halfHours").style.display=$("dayStatus").value==="half"?"grid":"none"; }
   function openDayEditor(wk,day){
     state.dayEditing={week:wk,day:day};
     var date=addDays(fromISO(wk),DAY_KEYS.indexOf(day)); var note=dayNote(wk,day)||{status:"",text:""};
-    $("dayLead").textContent=DAY_NAMES[day]+", "+dateShort(date);
-    $("dayStatus").value=note.status||""; $("dayNote").value=note.text||"";
-    var hol=holidayOn(date), hb=$("dayHoliday");
-    if(hol){
-      hb.style.display="";
-      hb.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap"><span>'+hol.icon+' This day is <b>'+h(hol.name)+'</b>. Open or closed is your call.</span><button type="button" class="btn sm" id="holQuick">Mark closed for '+h(hol.name)+'</button></div>';
-      $("holQuick").addEventListener("click",function(){ $("dayStatus").value="holiday"; $("dayNote").value="Closed for "+hol.name; saveDayFromEditor(); toast("Marked closed for "+hol.name); });
-    } else { hb.style.display="none"; hb.innerHTML=""; }
+    var hol=holidayOn(date), base=OPENING[day];
+    $("dayLead").textContent=DAY_NAMES[day]+", "+dateShort(date)+" · regular hours "+range12(base.open,base.close);
+    $("dayStatus").value=note.status||""; $("dayNote").value=note.text||""; $("dayErr").textContent="";
+    timeOptions($("halfOpen"),note.open||base.open); timeOptions($("halfClose"),note.close||"19:00"); syncHalfHours();
+    var hb=$("dayHoliday");
+    if(hol){ hb.style.display=""; hb.innerHTML='<span>'+hol.icon+'</span><span>This day is <b>'+h(hol.name)+'</b> — open or closed is your call.</span>'; }
+    else { hb.style.display="none"; hb.innerHTML=""; }
+
+    var reason=hol?hol.name:"";
+    var presets=[
+      {ic:"✅",label:"Open · regular hours",sub:range12(base.open,base.close),status:"",text:""},
+      hol?{ic:hol.icon,label:"Closed for "+hol.name,sub:"Full day",status:"holiday",text:"Closed for "+hol.name}:null,
+      hol?{ic:"🕒",label:"Half day for "+hol.name,sub:"Choose the hours below",status:"half",text:"Half day · "+hol.name,half:true}:{ic:"🕒",label:"Half day",sub:"Choose the hours below",status:"half",text:"",half:true},
+      {ic:"🎟️",label:"Private event",sub:"Bar reserved · shifts still shown",status:"event",text:"Private event"},
+      {ic:"🚫",label:"Closed — other reason",sub:"Type the reason below so the team knows",status:"closed",text:"",focus:true}
+    ].filter(Boolean);
+    var pe=$("dayPresets");
+    pe.innerHTML=presets.map(function(p,i){var act=(p.status===(note.status||""))&&(p.status!=="closed"||true);return '<button type="button" class="preset'+(p.status===(note.status||"")?" active":"")+'" data-i="'+i+'"><span class="ic">'+p.ic+'</span><span class="tx">'+h(p.label)+'<span class="sub">'+h(p.sub)+'</span></span></button>';}).join("");
+    pe.querySelectorAll(".preset").forEach(function(b){b.addEventListener("click",function(){
+      var p=presets[Number(b.getAttribute("data-i"))];
+      $("dayStatus").value=p.status; syncHalfHours();
+      if(p.text||p.status===""||p.status==="holiday"||p.status==="event") $("dayNote").value=p.text;
+      pe.querySelectorAll(".preset").forEach(function(x){x.classList.remove("active");}); b.classList.add("active");
+      if(p.focus){ $("dayNote").focus(); $("dayNote").placeholder="Reason, e.g. Renovation · Staff training · Bad weather"; }
+      else if(!p.half){ saveDayFromEditor(); toast(p.status?p.label+" ✓":"Day set to open"); }
+    });});
     $("dayOverlay").classList.add("show");
   }
   function saveDayFromEditor(){
     var e=state.dayEditing; if(!e) return;
     var w=state.data.weeks[e.week]; if(!w) return; if(!w.notes) w.notes={};
     var status=$("dayStatus").value, text=$("dayNote").value.trim().slice(0,140);
-    if(!status&&!text) delete w.notes[e.day]; else w.notes[e.day]={status:status,text:text};
+    if(status==="closed"&&!text){ $("dayErr").textContent="Please type the reason — the team will see it."; $("dayNote").focus(); return; }
+    var n={status:status,text:text};
+    if(status==="half"){ n.open=$("halfOpen").value; n.close=$("halfClose").value; if(mins(n.close)<=mins(n.open)){$("dayErr").textContent="Closing time must be after opening time.";return;} }
+    if(!status&&!text) delete w.notes[e.day]; else w.notes[e.day]=n;
     state.dayEditing=null; $("dayOverlay").classList.remove("show");
     renderDays(); renderHero(); scheduleSave();
   }
@@ -860,10 +907,10 @@
     var start=fromISO(wk), l=weekLabel(wk);
     lines.push("🍸 Bar Lento — Schedule "+l.range); lines.push("");
     DAY_KEYS.forEach(function(key,i){
-      var date=addDays(start,i), hours=OPENING[key], note=dayNote(wk,key);
+      var date=addDays(start,i), hours=hoursFor(wk,key), note=dayNote(wk,key);
       var head=DAY_NAMES[key]+" "+dateShort(date);
       if(note&&isClosedStatus(note.status)) head+=" — "+STATUS_LABEL[note.status].toUpperCase();
-      else head+=" ("+range12(hours.open,hours.close)+")"+(note&&note.status==="event"?" — PRIVATE EVENT":"");
+      else head+=" ("+range12(hours.open,hours.close)+")"+(note&&note.status==="event"?" — PRIVATE EVENT":"")+(note&&note.status==="half"?" — HALF DAY":"");
       lines.push(head); if(note&&note.text) lines.push("  ℹ︎ "+note.text);
       var shifts=sortShifts((state.data.weeks[wk]||{})[key]||[]);
       if(shifts.length) shifts.forEach(function(s){lines.push("  • "+s.name+(s.station?" ("+s.station+")":"")+" "+range12(s.start,s.end));});
@@ -894,6 +941,8 @@
   $("nameSel").addEventListener("change",function(){var o=this.value==="__other";$("nameOther").style.display=o?"":"none";if(o)$("nameOther").focus();});
   $("dayCancel").addEventListener("click",function(){state.dayEditing=null;$("dayOverlay").classList.remove("show");});
   $("daySave").addEventListener("click",saveDayFromEditor);
+  $("dayStatus").addEventListener("change",syncHalfHours);
+  $("bellBtn").addEventListener("click",togglePush);
   $("staffBtn").addEventListener("click",function(){renderRoster();$("staffOverlay").classList.add("show");});
   $("staffClose").addEventListener("click",function(){$("staffOverlay").classList.remove("show");});
   $("addStaffBtn").addEventListener("click",addStaff);
@@ -919,14 +968,52 @@
     document.addEventListener("visibilitychange",function(){ if(document.visibilityState==="visible"&&!anyModalOpen()) load(true); });
   }
 
+  // ---------- push notifications ----------
+  function pushSupported(){ return "serviceWorker" in navigator && "PushManager" in window && "Notification" in window; }
+  function isStandalone(){ return (window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches) || window.navigator.standalone===true; }
+  function isIOS(){ return /iPhone|iPad|iPod/.test(navigator.userAgent) && !window.MSStream; }
+  function b64ToU8(b){ var p="=".repeat((4-b.length%4)%4); var s=(b+p).replace(/-/g,"+").replace(/_/g,"/"); var raw=atob(s); var a=new Uint8Array(raw.length); for(var i=0;i<raw.length;i++)a[i]=raw.charCodeAt(i); return a; }
+  async function currentPushSub(){ try{ var reg=await navigator.serviceWorker.ready; return await reg.pushManager.getSubscription(); }catch(e){ return null; } }
+  async function renderBell(){
+    var b=$("bellBtn");
+    if(!state.features.push){ b.style.display="none"; return; }
+    if(isIOS()&&!isStandalone()){ b.style.display=""; b.className="bellbtn"; b.textContent="🔔 Notifications: add to Home Screen first"; b.dataset.mode="iosinfo"; return; }
+    if(!pushSupported()){ b.style.display="none"; return; }
+    b.style.display="";
+    var sub=await currentPushSub();
+    if(sub&&Notification.permission==="granted"){ b.className="bellbtn on"; b.textContent="🔔 Notifications on"; b.dataset.mode="on"; }
+    else if(Notification.permission==="denied"){ b.className="bellbtn"; b.textContent="🔕 Notifications blocked in browser settings"; b.dataset.mode="denied"; }
+    else { b.className="bellbtn"; b.textContent="🔔 Notify me of changes"; b.dataset.mode="off"; }
+  }
+  async function togglePush(){
+    var b=$("bellBtn"), mode=b.dataset.mode;
+    if(mode==="iosinfo"){ toast("On iPhone: tap Share → Add to Home Screen, open Bar Lento from there, then tap this button.",6000); return; }
+    if(mode==="denied"){ toast("Notifications are blocked for this site — allow them in your browser/phone settings.",5000); return; }
+    try{
+      var reg=await navigator.serviceWorker.ready;
+      if(mode==="on"){
+        var sub=await reg.pushManager.getSubscription();
+        if(sub){ await api("/api/push",{method:"DELETE",body:{endpoint:sub.endpoint}}); await sub.unsubscribe(); }
+        toast("Notifications turned off"); renderBell(); return;
+      }
+      var perm=await Notification.requestPermission();
+      if(perm!=="granted"){ toast("No problem — you can turn them on later."); renderBell(); return; }
+      var info=await api("/api/push"); if(!info.ok||!info.json.publicKey){ toast("Notifications aren't available right now."); return; }
+      var s=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64ToU8(info.json.publicKey)});
+      var r=await api("/api/push",{method:"POST",body:{subscription:s.toJSON()}});
+      if(r.ok){ toast("You'll get a notification when the schedule changes ✓"); } else { toast("Couldn't save your notification settings. Try again."); }
+      renderBell();
+    }catch(e){ toast("Couldn't enable notifications on this device."); renderBell(); }
+  }
+
   // Installable as an app (home screen) — the worker never caches data, so it stays live.
-  if("serviceWorker" in navigator){ window.addEventListener("load",function(){ navigator.serviceWorker.register("/sw.js").catch(function(){}); }); }
+  if("serviceWorker" in navigator){ window.addEventListener("load",function(){ navigator.serviceWorker.register("/sw.js").then(function(){renderBell();}).catch(function(){}); }); }
   if(window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches) document.body.classList.add("standalone");
 
   (async function init(){
     state.showArchive=storageGet(ARCHIVE_KEY)==="1";
     await load(false);
-    maybeBirthdayPopup();
+    maybeBirthdayPopup(); renderBell();
     var saved=storageGet(PW_KEY);
     if(saved&&state.features.admin){
       var r=await api("/api/login",{method:"POST",body:{password:saved}});

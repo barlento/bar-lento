@@ -3,7 +3,7 @@ const auth = require("../lib/auth");
 const { fmt12 } = require("../lib/diff");
 
 const DAY_LONG = { mon: "Monday", tue: "Tuesday", wed: "Wednesday", thu: "Thursday", fri: "Friday", sat: "Saturday", sun: "Sunday" };
-const STATUS_LABEL = { "": "Open", closed: "Closed", holiday: "Holiday", event: "Private event" };
+const STATUS_LABEL = { "": "Open", closed: "Closed", holiday: "Holiday", half: "Half day", event: "Private event" };
 
 function csvCell(v) {
   const s = String(v == null ? "" : v);
@@ -30,7 +30,8 @@ module.exports = async (req, res) => {
       const w = doc.data.weeks[wk];
       store.DAY_KEYS.forEach((d) => {
         const note = (w.notes && w.notes[d]) || { status: "", text: "" };
-        const base = [isoDate(wk, d), DAY_LONG[d], wk, STATUS_LABEL[note.status] || "Open", note.text || ""];
+        const statusLabel = (STATUS_LABEL[note.status] || "Open") + (note.status === "half" ? ` ${fmt12(note.open)}–${fmt12(note.close)}` : "");
+        const base = [isoDate(wk, d), DAY_LONG[d], wk, statusLabel, note.text || ""];
         const list = (w[d] || []).slice().sort((a, b) => a.start.localeCompare(b.start) || a.name.localeCompare(b.name));
         if (!list.length) { rows.push([...base, "", "", "", "", ""]); return; }
         list.forEach((s) => rows.push([...base, s.name, s.station || "", fmt12(s.start), fmt12(s.end), confirmations[`${wk}:${d}:${s.id}`] || ""]));

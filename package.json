@@ -2,5 +2,6 @@
   "name": "bar-lento",
   "private": true,
   "version": "2.0.0",
-  "description": "Bar Lento — turni della settimana (sito live per lo staff, con area manager)"
+  "description": "Bar Lento — weekly staff schedule (live site with manager mode)",
+  "dependencies": { "web-push": "^3.6.7" }
 }

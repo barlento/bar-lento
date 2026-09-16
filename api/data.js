@@ -1,6 +1,14 @@
 const store = require("../lib/store");
 const auth = require("../lib/auth");
 const { diffData } = require("../lib/diff");
+const push = require("../lib/push");
+
+function notifyText(changes) {
+  const n = changes.length;
+  const first = changes[0] || "";
+  if (n === 1) return first;
+  return `${first} (+${n - 1} more)`;
+}
 
 function send(res, status, body) {
   res.setHeader("Cache-Control", "no-store");
@@ -17,7 +25,7 @@ module.exports = async (req, res) => {
         updatedAt: doc.updatedAt,
         data: doc.data,
         confirmations,
-        features: { storage: store.hasStorage(), admin: auth.adminEnabled() },
+        features: { storage: store.hasStorage(), admin: auth.adminEnabled(), push: push.pushEnabled() },
       });
     }
 
@@ -38,11 +46,17 @@ module.exports = async (req, res) => {
       await store.saveSchedule(doc);
       await store.removeConfirmations(resetKeys).catch(() => {});
       await store.pruneConfirmations(data).catch(() => {});
+      let notified = null;
       if (changes.length) {
         await store.appendLog({ at: doc.updatedAt, version: doc.version, changes: changes.slice(0, 200) }).catch(() => {});
+        // Only shift/day changes are worth a notification (not staff list / birthday housekeeping).
+        const notable = changes.filter((c) => !/^(Staff|Birthday):/.test(c));
+        if (notable.length && body.notify !== false) {
+          notified = await push.broadcast({ title: "Bar Lento — schedule updated", body: notifyText(notable), url: "/", tag: "schedule" }).catch((e) => ({ error: String(e.message || e) }));
+        }
       }
       const confirmations = await store.getConfirmations();
-      return send(res, 200, { version: doc.version, updatedAt: doc.updatedAt, data: doc.data, confirmations, changes: changes.length });
+      return send(res, 200, { version: doc.version, updatedAt: doc.updatedAt, data: doc.data, confirmations, changes: changes.length, notified });
     }
 
     res.setHeader("Allow", "GET, POST");
