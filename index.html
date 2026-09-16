@@ -54,12 +54,55 @@
   body.admin .loginbtn{background:var(--ink);border-color:var(--ink)}
   .bellbtn{border:2px solid var(--border);background:var(--surface);color:var(--ink);border-radius:12px;padding:10px 14px;font-size:.95rem;font-weight:700;cursor:pointer;white-space:nowrap}
   .bellbtn.on{background:var(--good-soft);border-color:var(--good);color:var(--good)}
+  .clockbtn{border:2px solid var(--border);background:var(--surface);color:var(--ink);border-radius:12px;padding:10px 14px;font-size:.95rem;font-weight:700;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:8px}
+  .clockbtn .cled{width:9px;height:9px;border-radius:50%;background:var(--ink-muted);opacity:.45;flex:none}
+  .clockbtn.live{background:var(--good-soft);border-color:var(--good);color:var(--good)}
+  .clockbtn.live .cled{background:var(--good);opacity:1;animation:ledpulse 1.6s ease-out infinite}
+  .clockbtn .cnt{background:var(--good);color:#fff;border-radius:999px;font-size:.72rem;line-height:1.4;padding:1px 7px;min-width:20px;text-align:center;animation:pop .45s cubic-bezier(.34,1.56,.64,1)}
+
+  /* ---- Time clock panel ---- */
+  .tc-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:4px 0 12px}
+  .tc-head .navbtn{border:1px solid var(--border);background:var(--bg);color:var(--ink);width:40px;height:40px;border-radius:12px;font-size:1.1rem;cursor:pointer;flex:none}
+  .tc-head .navbtn:disabled{opacity:.3;cursor:not-allowed}
+  .tc-head .tc-date{text-align:center;flex:1}
+  .tc-head .tc-date b{display:block;font-size:1.05rem}
+  .tc-head .tc-date span{display:block;font-size:.78rem;color:var(--ink-muted)}
+  .tc-live{display:inline-flex;align-items:center;gap:6px;font-size:.74rem;font-weight:700;color:var(--good);background:var(--good-soft);padding:3px 9px;border-radius:999px}
+  .tc-live::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--good);animation:ledblink 1.4s ease-in-out infinite}
+  .tc-sum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+  .tc-sum .tile{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:10px 8px;text-align:center}
+  .tc-sum .tile b{display:block;font-size:1.35rem;font-family:'IBM Plex Mono',monospace;font-weight:600;line-height:1.1}
+  .tc-sum .tile span{font-size:.7rem;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.04em}
+  .tc-sum .tile.on b{color:var(--good)}
+  .tc-list{display:flex;flex-direction:column;gap:8px;max-height:52vh;overflow:auto;padding:2px}
+  .tc-row{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:10px 12px;border:1px solid var(--border);border-radius:14px;background:var(--surface);animation:rise .35s cubic-bezier(.2,.8,.2,1) both;transition:transform .15s,box-shadow .2s}
+  .tc-row:hover{transform:translateX(3px);box-shadow:0 4px 12px -8px rgba(36,26,18,.3)}
+  .tc-row.on{border-color:color-mix(in srgb,var(--good) 55%,var(--border));background:var(--good-soft)}
+  .tc-row .av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:.95rem;color:#fff;background:var(--accent);position:relative;flex:none}
+  .tc-row.on .av::after{content:"";position:absolute;right:-2px;bottom:-2px;width:12px;height:12px;border-radius:50%;background:var(--good);border:2px solid var(--surface);animation:ledpulse 1.6s ease-out infinite}
+  .tc-row .nm{font-weight:700;display:flex;flex-direction:column;gap:2px;min-width:0}
+  .tc-row .nm small{font-weight:500;color:var(--ink-muted);font-size:.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tc-row .tm{text-align:right;display:flex;flex-direction:column;gap:3px;align-items:flex-end}
+  .tc-row .tm .io{font-family:'IBM Plex Mono',monospace;font-size:.9rem;white-space:nowrap}
+  .tc-row .tm .io .in{color:var(--good);font-weight:600}
+  .tc-row .tm .io .out{color:var(--ink);font-weight:600}
+  .tc-row .tm .dur{font-size:.74rem;font-weight:700;color:var(--ink-muted);background:var(--surface-2);padding:2px 8px;border-radius:999px}
+  .tc-row.on .tm .dur{color:var(--good);background:color-mix(in srgb,var(--good) 14%,var(--surface))}
+  .tc-empty{text-align:center;color:var(--ink-muted);padding:26px 10px;font-size:.92rem}
+  .tc-empty .big{font-size:2.4rem;display:block;margin-bottom:8px;animation:sway 4s ease-in-out infinite;display:inline-block}
+  .tc-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:12px;font-size:.74rem;color:var(--ink-muted);flex-wrap:wrap}
+  .tc-foot .refresh{background:none;border:none;color:var(--ink-muted);text-decoration:underline;cursor:pointer;font:inherit;font-size:.74rem}
+  .tc-foot .refresh.spin{animation:softblink .8s ease-in-out infinite}
   @media (max-width:640px){
     header.top{flex-direction:column;align-items:stretch;gap:12px}
     .hdr-right{align-items:stretch}
     .hdr-actions{width:100%}
-    .hdr-actions .bellbtn,.hdr-actions .loginbtn{flex:1;text-align:center;padding:12px 6px;font-size:.9rem;white-space:normal;line-height:1.2}
-    .hdr-actions .loginbtn{flex:1.25}
+    .hdr-actions{flex-wrap:wrap}
+    .hdr-actions .bellbtn,.hdr-actions .loginbtn,.hdr-actions .clockbtn{flex:1;text-align:center;justify-content:center;padding:12px 6px;font-size:.9rem;white-space:normal;line-height:1.2}
+    .hdr-actions .clockbtn{white-space:nowrap}
+    .hdr-actions .loginbtn{flex:1 1 100%}
+    .tc-row .tm .io{font-size:.82rem}
+    .tc-sum .tile b{font-size:1.15rem}
     .updated{text-align:left}
   }
 
@@ -303,6 +346,7 @@
     </div>
     <div class="hdr-right">
       <div class="hdr-actions">
+        <button class="clockbtn" id="clockBtn" type="button" style="display:none" aria-haspopup="dialog"><span class="cled" aria-hidden="true"></span><span class="lbl">⏱ Time clock</span><span class="cnt" id="clockCnt" style="display:none">0</span></button>
         <button class="bellbtn" id="bellBtn" type="button" style="display:none">🔔 Notify me</button>
         <button class="loginbtn" id="managerLink" type="button">🔑 Manager login</button>
       </div>
@@ -497,6 +541,23 @@
 </div>
 
 <!-- History -->
+<!-- Time clock (everyone) -->
+<div class="overlay" id="clockOverlay">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="clockTitle">
+    <h2 id="clockTitle">⏱ Time clock</h2>
+    <p class="lead" id="clockLead">Clock-ins and clock-outs from Toast, live.</p>
+    <div class="tc-head">
+      <button class="navbtn" id="tcPrev" type="button" aria-label="Previous day">‹</button>
+      <div class="tc-date"><b id="tcDate">Today</b><span id="tcDateSub"></span></div>
+      <button class="navbtn" id="tcNext" type="button" aria-label="Next day">›</button>
+    </div>
+    <div class="tc-sum" id="tcSum"></div>
+    <div class="tc-list" id="tcList"><div class="tc-empty">Loading…</div></div>
+    <div class="tc-foot"><span id="tcUpdated"></span><button class="refresh" id="tcRefresh" type="button">↻ Refresh</button></div>
+    <div class="actions"><button class="btn" id="clockClose" type="button">Close</button></div>
+  </div>
+</div>
+
 <div class="overlay" id="historyOverlay">
   <div class="sheet wide" role="dialog" aria-modal="true" aria-labelledby="historyTitle">
     <h2 id="historyTitle" data-t="historyTitle">Change history</h2>
@@ -817,13 +878,85 @@
     }
     var first=list[0], last=list[list.length-1];
     var inD=new Date(first.in); var inMin=inD.getHours()*60+inD.getMinutes(); var lateBy=inMin-mins(s.start);
-    if(!last.out) return '<span class="clock in'+(lateBy>10?' late':'')+'">clocked in '+fmtClock(first.in)+(lateBy>10?' · '+lateBy+' min late':'')+'</span>';
-    return '<span class="clock out">'+fmtClock(first.in)+' → '+fmtClock(last.out)+(lateBy>10?' · late '+lateBy+' min':'')+'</span>';
+    var lateTxt=lateBy>10?' · '+(lateBy>=60?durText(lateBy*60000):lateBy+' min')+' late':'';
+    if(!last.out) return '<span class="clock in'+(lateBy>10?' late':'')+'">clocked in '+fmtClock(first.in)+lateTxt+'</span>';
+    return '<span class="clock out">'+fmtClock(first.in)+' → '+fmtClock(last.out)+lateTxt+'</span>';
   }
   async function loadToastToday(){
     if(!state.features.toast) return;
     var r=await api("/api/toast?action=today"); if(r.ok){ state.toastToday=r.json; renderDays(); }
+    loadClock(true);
   }
+
+  // ---------- Time clock panel (visible to everyone) ----------
+  var tc={date:null, data:null, timer:null, cache:{}};
+  function nyTodayISO(){ try{ return new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York"}).format(new Date()); }catch(e){ return toISO(new Date()); } }
+  function durText(ms){ var m=Math.max(0,Math.round(ms/60000)); var hh=Math.floor(m/60), mm=m%60; return hh?hh+"h "+pad(mm)+"m":mm+" min"; }
+  function initials(n){ return String(n||"?").split(/\s+/).slice(0,2).map(function(w){return w.charAt(0).toUpperCase();}).join(""); }
+  var AV_COLORS=["#8a5a2b","#2f6f4e","#7a3e9d","#b4532a","#2b6cb0","#a83262","#4c7a1f","#0f766e"];
+  function avColor(n){ var x=0; for(var i=0;i<n.length;i++) x=(x*31+n.charCodeAt(i))>>>0; return AV_COLORS[x%AV_COLORS.length]; }
+  function tcDateLabel(iso){
+    var today=nyTodayISO(), d=fromISO(iso);
+    var name=iso===today?"Today":iso===toISO(addDays(fromISO(today),-1))?"Yesterday":DAY_NAMES[DAY_KEY_BY_JSDAY[d.getDay()]];
+    return {main:name, sub:DAY_SHORT[DAY_KEY_BY_JSDAY[d.getDay()]]+", "+MONTHS[d.getMonth()]+" "+d.getDate()};
+  }
+  function renderClockBtn(){
+    var b=$("clockBtn"); if(!state.features.toast){ b.style.display="none"; return; }
+    b.style.display="";
+    var todayData=tc.cache[nyTodayISO()]; var on=todayData?todayData.entries.filter(function(e){return !e.out;}).length:0;
+    b.classList.toggle("live",on>0);
+    var c=$("clockCnt"); if(on>0){ if(c.textContent!==String(on)){ c.textContent=String(on); c.style.animation="none"; void c.offsetWidth; c.style.animation=""; } c.style.display=""; } else c.style.display="none";
+    b.title=on?on+" on the clock right now":"Who clocked in today";
+  }
+  async function loadClock(quiet){
+    if(!state.features.toast) return;
+    var date=tc.date||nyTodayISO();
+    var btn=$("tcRefresh"); if(!quiet) btn.classList.add("spin");
+    var r=await api("/api/toast?action=clock&date="+date);
+    btn.classList.remove("spin");
+    if(r.ok){ tc.cache[r.json.date]=r.json; if(r.json.date===date) tc.data=r.json; }
+    else if(!quiet){ toast("Toast isn't answering right now — try again in a moment.",3500); }
+    renderClockBtn();
+    if($("clockOverlay").classList.contains("show")) renderClockPanel();
+  }
+  function renderClockPanel(){
+    var date=tc.date||nyTodayISO(), today=nyTodayISO();
+    var lab=tcDateLabel(date); $("tcDate").textContent=lab.main; $("tcDateSub").textContent=lab.sub;
+    $("tcNext").disabled=date>=today;
+    $("tcPrev").disabled=date<=toISO(addDays(fromISO(today),-31));
+    var data=tc.cache[date]; var list=$("tcList"), sum=$("tcSum");
+    if(!data){ list.innerHTML='<div class="tc-empty">Loading…</div>'; sum.innerHTML=""; $("tcUpdated").textContent=""; return; }
+    var now=Date.now(); var entries=data.entries.slice();
+    var onNow=entries.filter(function(e){return !e.out;}).length;
+    var totalMs=entries.reduce(function(a,e){ return a+((e.out?Date.parse(e.out):now)-Date.parse(e.in)); },0);
+    var people=Object.keys(entries.reduce(function(m,e){m[e.name]=1;return m;},{})).length;
+    sum.innerHTML='<div class="tile'+(onNow?" on":"")+'"><b>'+onNow+'</b><span>on the clock</span></div>'
+      +'<div class="tile"><b>'+people+'</b><span>'+(people===1?"person":"people")+'</span></div>'
+      +'<div class="tile"><b>'+(totalMs?durText(totalMs):"0 min")+'</b><span>total hours</span></div>';
+    if(!entries.length){
+      var isPast=date<today;
+      list.innerHTML='<div class="tc-empty"><span class="big">'+(isPast?"🌙":"☕")+'</span>'+(isPast?"Nobody clocked in on this day.":(state.features.toast?"Nobody has clocked in yet today.":"Time clock is not connected."))+'</div>';
+    } else {
+      // people still on the clock first, then by clock-in time
+      entries.sort(function(a,b){ if(!a.out!==!b.out) return a.out?1:-1; return String(a.in).localeCompare(String(b.in)); });
+      list.innerHTML=entries.map(function(e,i){
+        var on=!e.out; var ms=(on?now:Date.parse(e.out))-Date.parse(e.in);
+        var showFull=e.full&&e.full!==e.name;
+        return '<div class="tc-row'+(on?" on":"")+'" style="animation-delay:'+Math.min(i*45,400)+'ms">'
+          +'<div class="av" style="background:'+avColor(e.full||e.name)+'">'+h(initials(e.name))+'</div>'
+          +'<div class="nm">'+h(e.name)+(showFull?'<small>'+h(e.full)+'</small>':(on?'<small>on the clock now</small>':'<small>shift done</small>'))+'</div>'
+          +'<div class="tm"><span class="io"><span class="in">'+fmtClock(e.in)+'</span> → '+(on?'<span class="in">now</span>':'<span class="out">'+fmtClock(e.out)+'</span>')+'</span><span class="dur">'+(on?"⏱ ":"")+durText(ms)+'</span></div>'
+          +'</div>';
+      }).join("");
+    }
+    $("tcUpdated").innerHTML=(date===today?'<span class="tc-live">LIVE</span> ':'')+'Updated '+fmtClock(data.fetchedAt)+' · from Toast';
+  }
+  function openClock(){
+    tc.date=nyTodayISO(); renderClockPanel(); $("clockOverlay").classList.add("show");
+    loadClock(false);
+    clearInterval(tc.timer); tc.timer=setInterval(function(){ if($("clockOverlay").classList.contains("show")){ if((tc.date||nyTodayISO())===nyTodayISO()) loadClock(true); else renderClockPanel(); } else clearInterval(tc.timer); },30000);
+  }
+  function tcShift(n){ var today=nyTodayISO(); var d=toISO(addDays(fromISO(tc.date||today),n)); if(d>today) return; tc.date=d; renderClockPanel(); if(!tc.cache[d]) loadClock(false); }
 
   function renderDays(){
     var grid=$("daysGrid"); var wk=state.activeWeek;
@@ -1191,6 +1324,11 @@
   $("daySave").addEventListener("click",saveDayFromEditor);
   $("dayStatus").addEventListener("change",syncHalfHours);
   $("bellBtn").addEventListener("click",togglePush);
+  $("clockBtn").addEventListener("click",openClock);
+  $("clockClose").addEventListener("click",function(){ $("clockOverlay").classList.remove("show"); });
+  $("tcPrev").addEventListener("click",function(){ tcShift(-1); });
+  $("tcNext").addEventListener("click",function(){ tcShift(1); });
+  $("tcRefresh").addEventListener("click",function(){ loadClock(false); });
   $("notifyBtn").addEventListener("click",function(){sendNotifyNow(false);});
   $("langBtn").addEventListener("click",function(){setLang(lang==="en"?"it":"en");});
   $("weekClose").addEventListener("click",function(){$("weekOverlay").classList.remove("show");});
@@ -1265,7 +1403,7 @@
     state.showArchive=storageGet(ARCHIVE_KEY)==="1";
     lang=storageGet(LANG_KEY)==="it"?"it":"en"; applyLang();
     await load(false);
-    maybeBirthdayPopup(); maybeWeekPopup(); renderBell(); loadToastToday();
+    maybeBirthdayPopup(); maybeWeekPopup(); renderBell(); renderClockBtn(); loadToastToday();
     var saved=storageGet(PW_KEY);
     if(saved&&state.features.admin){
       var r=await api("/api/login",{method:"POST",body:{password:saved}});

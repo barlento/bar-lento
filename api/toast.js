@@ -2,6 +2,8 @@ const store = require("../lib/store");
 const auth = require("../lib/auth");
 const toast = require("../lib/toast");
 
+function todayNY() { return new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" }).format(new Date()); }
+
 function send(res, status, body) {
   res.setHeader("Cache-Control", "no-store");
   res.setHeader("Content-Type", "application/json; charset=utf-8");
@@ -10,6 +12,7 @@ function send(res, status, body) {
 
 // GET ?action=status               → is Toast connected / reachable
 // GET ?action=today[&date=YYYY-MM-DD] → clock in/out for mapped staff (public, cached 60s)
+// GET ?action=clock[&date=YYYY-MM-DD] → public time clock: everyone who punched that day
 // GET ?action=employees (manager)  → Toast employee list, to map names
 module.exports = async (req, res) => {
   try {
@@ -28,14 +31,34 @@ module.exports = async (req, res) => {
       return send(res, 200, { employees: emps.filter((e) => !/^test\b/i.test(e.name)).sort((a, b) => a.name.localeCompare(b.name)) });
     }
     if (action === "today") {
-      const date = /^\d{4}-\d{2}-\d{2}$/.test(url.searchParams.get("date") || "") ? url.searchParams.get("date") : new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" }).format(new Date());
-      const doc = await store.getSchedule();
-      const status = await toast.dayStatus(date, doc.data.toastMap || {});
+      const date = /^\d{4}-\d{2}-\d{2}$/.test(url.searchParams.get("date") || "") ? url.searchParams.get("date") : todayNY();
+      const [doc, emps] = await Promise.all([store.getSchedule(), toast.employees(true)]);
+      const map = toast.autoMap(doc.data.staff, doc.data.toastMap, emps);
+      const status = await toast.dayStatus(date, map);
       return send(res, 200, status);
+    }
+    // Public time clock: everyone who punched in on that day (Toast names), newest day first. Last 31 days only.
+    if (action === "clock") {
+      const today = todayNY();
+      let date = /^\d{4}-\d{2}-\d{2}$/.test(url.searchParams.get("date") || "") ? url.searchParams.get("date") : today;
+      if (date > today) date = today;
+      const ageDays = Math.round((Date.parse(today) - Date.parse(date)) / 86400000);
+      if (ageDays > 31) return send(res, 400, { error: "too_old" });
+      const b = toast.dayBounds(date);
+      const [entries, emps, doc] = await Promise.all([toast.timeEntries(b.start, b.end), toast.employees(true), store.getSchedule()]);
+      const byGuid = Object.fromEntries(emps.map((e) => [e.guid, e]));
+      // Prefer the short name used on the schedule when it is linked (Joe rather than Joseph Ricciardi).
+      const map = toast.autoMap(doc.data.staff, doc.data.toastMap, emps);
+      const guidToShort = {}; Object.keys(map).forEach((n) => { guidToShort[map[n]] = n; });
+      const list = entries
+        .filter((t) => byGuid[t.employeeGuid] && !/^test\b/i.test(byGuid[t.employeeGuid].name))
+        .map((t) => ({ name: guidToShort[t.employeeGuid] || byGuid[t.employeeGuid].name, full: byGuid[t.employeeGuid].name, in: t.in, out: t.out }))
+        .sort((a, b) => String(a.in).localeCompare(String(b.in)));
+      return send(res, 200, { date, today, entries: list, fetchedAt: new Date().toISOString() });
     }
     if (action === "who") {
       if (!auth.checkPassword(auth.passwordFrom(req))) return send(res, 401, { error: "unauthorized" });
-      const date = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" }).format(new Date());
+      const date = todayNY();
       const b = toast.dayBounds(date); const entries = await toast.timeEntries(b.start, b.end); const emps = await toast.employees(true);
       const byGuid = Object.fromEntries(emps.map((e) => [e.guid, e]));
       return send(res, 200, { date, entries: entries.map((t) => ({ name: (byGuid[t.employeeGuid] || {}).name || "(unknown " + t.employeeGuid + ")", in: t.in, out: t.out })) });
