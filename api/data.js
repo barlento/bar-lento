@@ -2,6 +2,7 @@ const store = require("../lib/store");
 const auth = require("../lib/auth");
 const { diffData } = require("../lib/diff");
 const push = require("../lib/push");
+const toast = require("../lib/toast");
 
 
 
@@ -24,7 +25,7 @@ module.exports = async (req, res) => {
         confirmations,
         announcement,
         pendingNotify: flushed && flushed.pending ? flushed.pending : 0,
-        features: { storage: store.hasStorage(), admin: auth.adminEnabled(), push: push.pushEnabled() },
+        features: { storage: store.hasStorage(), admin: auth.adminEnabled(), push: push.pushEnabled(), toast: toast.enabled() },
       });
     }
 

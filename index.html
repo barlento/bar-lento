@@ -192,6 +192,16 @@
   .preset .sub{display:block;font-weight:500;font-size:.76rem;color:var(--ink-muted)}
   .badge.half{background:var(--teal-soft);color:var(--teal)}
 
+  .clock{display:inline-flex;align-items:center;gap:5px;font-size:.74rem;font-weight:700;padding:2px 8px;border-radius:999px;margin-top:3px;width:fit-content}
+  .clock.in{background:var(--good-soft);color:var(--good)}
+  .clock.in::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--good);animation:ledblink 1.6s ease-in-out infinite}
+  .clock.out{background:var(--surface);color:var(--ink-muted);border:1px solid var(--border)}
+  .clock.late{background:var(--danger-soft);color:var(--danger)}
+  .clock.noshow{background:var(--danger-soft);color:var(--danger)}
+  .roster .toastsel{padding:6px 8px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--ink);font:inherit;font-size:.82rem;max-width:170px}
+  .roster .person.withtoast{grid-template-columns:1fr auto auto auto}
+  .toaststatus{font-size:.78rem;opacity:.85}
+
   .bday-sheet{text-align:center;position:relative;overflow:hidden}
   .bday-sheet .cake{font-size:3.4rem;line-height:1;margin:6px 0 10px;animation:bounce 1.2s ease-in-out infinite}
   .bday-sheet h2{font-size:1.6rem;margin-bottom:8px}
@@ -526,7 +536,7 @@
       weekCreated:"Week of {r} created", weekCopied:"Week of {r} created with {k} shifts copied — adjust names and times", weekNoPrev:"Week created (no previous week to copy from)", noPrev:"There's no previous week to copy.", copied:"Shifts copied from the previous week", weekDeleted:"Week deleted",
       welcome:"Welcome! You're in manager mode.", noDb:"Heads up: the database isn't connected, so changes won't be saved.", loggedOut:"Logged out of manager mode.",
       conflict:"Someone else changed the schedule from another device. I reloaded the latest version — please redo your change.", pwInvalid:"Password no longer valid. Please log in again.", dbMissing:"The database isn't connected yet — changes can't be saved.", saveFail:"Couldn't save. Please try again.",
-      notified:"Team notified ✓ ({k} phone{p})", notifiedNone:"Changes noted — nobody has notifications turned on yet.", notifyFail:"Couldn't send the notification. It will go out automatically later.", markedClosed:"{h} ✓"
+      toastPick:"— Toast employee —", toastLoading:"Loading Toast…", toastLinked:"{n} linked to Toast", toastUnlinked:"{n} unlinked from Toast", notified:"Team notified ✓ ({k} phone{p})", notifiedNone:"Changes noted — nobody has notifications turned on yet.", notifyFail:"Couldn't send the notification. It will go out automatically later.", markedClosed:"{h} ✓"
     },
     it:{
       adminMode:"Modalità manager", staffBtn:"👥 Staff", historyBtn:"🕓 Cronologia", exportBtn:"⬇ Archivio (CSV)", logoutBtn:"Esci", notifyBtn:"📣 Avvisa i ragazzi",
@@ -550,7 +560,7 @@
       weekCreated:"Settimana {r} creata", weekCopied:"Settimana {r} creata con {k} turni copiati — sistema nomi e orari", weekNoPrev:"Settimana creata (nessuna precedente da copiare)", noPrev:"Non c'è una settimana precedente da copiare.", copied:"Turni copiati dalla settimana precedente", weekDeleted:"Settimana eliminata",
       welcome:"Ciao! Sei in modalità manager.", noDb:"Attenzione: database non collegato, le modifiche non verranno salvate.", loggedOut:"Uscita dalla modalità manager.",
       conflict:"Qualcun altro ha modificato i turni da un altro dispositivo. Ho ricaricato l'ultima versione — ripeti la modifica.", pwInvalid:"Password non più valida. Accedi di nuovo.", dbMissing:"Il database non è ancora collegato — le modifiche non si salvano.", saveFail:"Salvataggio non riuscito. Riprova.",
-      notified:"Ragazzi avvisati ✓ ({k} telefon{p})", notifiedNone:"Modifiche registrate — nessuno ha ancora attivato le notifiche.", notifyFail:"Invio non riuscito. Partirà automaticamente più tardi.", markedClosed:"{h} ✓"
+      toastPick:"— dipendente Toast —", toastLoading:"Carico Toast…", toastLinked:"{n} collegato/a a Toast", toastUnlinked:"{n} scollegato/a da Toast", notified:"Ragazzi avvisati ✓ ({k} telefon{p})", notifiedNone:"Modifiche registrate — nessuno ha ancora attivato le notifiche.", notifyFail:"Invio non riuscito. Partirà automaticamente più tardi.", markedClosed:"{h} ✓"
     }
   };
   var lang="en";
@@ -567,7 +577,7 @@
     features:{storage:false,admin:false},
     admin:false, password:"", activeWeek:null, showArchive:false,
     saving:false, dirtyTimer:null, editing:null, dayEditing:null, confirming:null,
-    pendingConfirm:{}, pollTimer:null, pendingNotify:0, idleTimer:null
+    pendingConfirm:{}, pollTimer:null, pendingNotify:0, idleTimer:null, toastToday:null, toastEmployees:null
   };
 
   // ---------- helpers ----------
@@ -784,6 +794,26 @@
     tg.textContent=state.showArchive?"Hide past weeks":"Past weeks · archive ("+n+")";
   }
 
+  // ---------- Toast clock badges ----------
+  function fmtClock(iso){ var d=new Date(iso); return fmt12(pad(d.getHours())+":"+pad(d.getMinutes())); }
+  function clockBadge(wk,day,s,isToday,isPast){
+    if(!state.features.toast||!state.toastToday||state.toastToday.date!==toISO(addDays(fromISO(wk),DAY_KEYS.indexOf(day)))) return "";
+    var list=state.toastToday.byName[s.name]||[];
+    if(!list.length){
+      // scheduled start passed by 20+ min and nothing punched → no-show hint (today only)
+      if(isToday){ var now=new Date(); var m=now.getHours()*60+now.getMinutes(); if(m>mins(s.start)+20 && m<mins(s.end)) return '<span class="clock noshow">not clocked in</span>'; }
+      return "";
+    }
+    var first=list[0], last=list[list.length-1];
+    var inD=new Date(first.in); var inMin=inD.getHours()*60+inD.getMinutes(); var lateBy=inMin-mins(s.start);
+    if(!last.out) return '<span class="clock in'+(lateBy>10?' late':'')+'">clocked in '+fmtClock(first.in)+(lateBy>10?' · '+lateBy+' min late':'')+'</span>';
+    return '<span class="clock out">'+fmtClock(first.in)+' → '+fmtClock(last.out)+(lateBy>10?' · late '+lateBy+' min':'')+'</span>';
+  }
+  async function loadToastToday(){
+    if(!state.features.toast) return;
+    var r=await api("/api/toast?action=today"); if(r.ok){ state.toastToday=r.json; renderDays(); }
+  }
+
   function renderDays(){
     var grid=$("daysGrid"); var wk=state.activeWeek;
     if(!wk){grid.innerHTML="";return;}
@@ -799,7 +829,7 @@
         var ok=!!state.confirmations[shiftKey(wk,key,s.id)];
         return '<button type="button" class="shift'+(ok?" confirmed":"")+'" data-day="'+key+'" data-id="'+h(s.id)+'" aria-pressed="'+ok+'">'
           +'<span class="check" aria-hidden="true">✓</span>'
-          +'<span class="main"><span class="who">'+h(s.name)+(s.station?'<span class="st">'+h(s.station)+'</span>':"")+'</span><span class="when mono">'+range12(s.start,s.end)+'</span></span>'
+          +'<span class="main"><span class="who">'+h(s.name)+(s.station?'<span class="st">'+h(s.station)+'</span>':"")+'</span><span class="when mono">'+range12(s.start,s.end)+'</span>'+clockBadge(wk,key,s,isToday,isPast)+'</span>'
           +'<span class="edit" aria-hidden="true">✎</span></button>';
       }).join(""):'<div class="empty-note">'+(closed?"No shifts — closed":"No shifts assigned")+'</div>';
       var badge=note&&note.status?'<span class="badge '+note.status+'">'+STATUS_LABEL[note.status]+'</span>':"";
@@ -1046,12 +1076,24 @@
   }
 
   // ---------- staff roster ----------
+  async function loadToastEmployees(){
+    if(!state.features.toast||state.toastEmployees) return;
+    var r=await api("/api/toast?action=employees",{auth:true}); if(r.ok){ state.toastEmployees=r.json.employees||[]; renderRoster(); }
+  }
   function renderRoster(){
-    var el=$("rosterList"); if(!state.data.birthdays) state.data.birthdays={};
+    var el=$("rosterList"); if(!state.data.birthdays) state.data.birthdays={}; if(!state.data.toastMap) state.data.toastMap={};
+    var withToast=state.features.toast; var emps=state.toastEmployees||[];
     el.innerHTML=state.data.staff.length?state.data.staff.map(function(n,i){
-      var b=state.data.birthdays[n]||"";
-      return '<div class="person"><span class="nm">'+h(n)+'</span><label class="bday">🎂 <input type="date" data-name="'+h(n)+'" value="'+h(b)+'" aria-label="Birthday of '+h(n)+'"></label><button type="button" class="x" data-i="'+i+'" aria-label="Remove '+h(n)+'">✕</button></div>';
+      var b=state.data.birthdays[n]||""; var g=state.data.toastMap[n]||"";
+      var sel="";
+      if(withToast){
+        var guess=!g?emps.filter(function(e){return e.first.toLowerCase()===n.toLowerCase()||e.name.toLowerCase()===n.toLowerCase();}):[];
+        sel='<select class="toastsel" data-name="'+h(n)+'" title="Toast employee"><option value="">'+(emps.length?t("toastPick"):t("toastLoading"))+'</option>'+emps.map(function(e){return '<option value="'+h(e.guid)+'"'+(e.guid===g||(!g&&guess.length===1&&guess[0].guid===e.guid)?" selected":"")+'>'+h(e.name)+'</option>';}).join("")+'</select>';
+        if(!g&&guess.length===1){ state.data.toastMap[n]=guess[0].guid; scheduleSave(); }
+      }
+      return '<div class="person'+(withToast?" withtoast":"")+'"><span class="nm">'+h(n)+'</span>'+sel+'<label class="bday">🎂 <input type="date" data-name="'+h(n)+'" value="'+h(b)+'" aria-label="Birthday of '+h(n)+'"></label><button type="button" class="x" data-i="'+i+'" aria-label="Remove '+h(n)+'">✕</button></div>';
     }).join(""):'<div class="empty-note">'+t("noNames")+'</div>';
+    el.querySelectorAll(".toastsel").forEach(function(sel){sel.addEventListener("change",function(){var n=sel.getAttribute("data-name"); if(sel.value) state.data.toastMap[n]=sel.value; else delete state.data.toastMap[n]; scheduleSave(); toast(sel.value?t("toastLinked",{n:n}):t("toastUnlinked",{n:n}));});});
     el.querySelectorAll(".x").forEach(function(b){b.addEventListener("click",function(){
       var i=Number(b.getAttribute("data-i")); var n=state.data.staff[i]; if(!n) return;
       var up=upcomingShiftsOf(n);
@@ -1134,7 +1176,7 @@
   $("langBtn").addEventListener("click",function(){setLang(lang==="en"?"it":"en");});
   $("weekClose").addEventListener("click",function(){$("weekOverlay").classList.remove("show");});
   document.addEventListener("visibilitychange",function(){ if(document.visibilityState==="hidden"&&state.admin&&state.pendingNotify&&state.password&&!state.dirtyTimer&&!state.saving){ try{ fetch("/api/notify",{method:"POST",headers:{"x-admin-password":state.password,"Content-Type":"application/json"},keepalive:true}); state.pendingNotify=0; }catch(e){} } });
-  $("staffBtn").addEventListener("click",function(){renderRoster();$("staffOverlay").classList.add("show");});
+  $("staffBtn").addEventListener("click",function(){renderRoster();$("staffOverlay").classList.add("show");loadToastEmployees();});
   $("staffClose").addEventListener("click",function(){$("staffOverlay").classList.remove("show");});
   $("addStaffBtn").addEventListener("click",addStaff);
   $("newStaffInput").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();addStaff();}});
@@ -1155,7 +1197,7 @@
   function anyModalOpen(){return !!document.querySelector(".overlay.show");}
   function startPolling(){
     clearInterval(state.pollTimer);
-    state.pollTimer=setInterval(function(){ if(document.visibilityState==="visible"&&!anyModalOpen()) load(true); },45000);
+    state.pollTimer=setInterval(function(){ if(document.visibilityState==="visible"&&!anyModalOpen()){ load(true); loadToastToday(); } },45000);
     document.addEventListener("visibilitychange",function(){ if(document.visibilityState==="visible"&&!anyModalOpen()) load(true); });
   }
 
@@ -1205,7 +1247,7 @@
     state.showArchive=storageGet(ARCHIVE_KEY)==="1";
     lang=storageGet(LANG_KEY)==="it"?"it":"en"; applyLang();
     await load(false);
-    maybeBirthdayPopup(); maybeWeekPopup(); renderBell();
+    maybeBirthdayPopup(); maybeWeekPopup(); renderBell(); loadToastToday();
     var saved=storageGet(PW_KEY);
     if(saved&&state.features.admin){
       var r=await api("/api/login",{method:"POST",body:{password:saved}});
