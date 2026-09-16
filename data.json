@@ -1,8 +1,93 @@
 {
-  "publishedAt": "2026-09-15T00:00:00Z",
-  "staff": ["Astrea Kreil Deruzza", "Cateherine Matthews", "Joseph Ricciardi", "Mariia Khemich", "Pietro Zino", "Sierrah Watson"],
+  "publishedAt": "2026-09-16T23:30:00Z",
+  "staff": ["Kayla", "Joe", "Sierrah", "Marta", "Astrea", "Pietro", "Catherine", "Mariia"],
   "weeks": {
-    "2026-09-14": {"mon": [], "tue": [], "wed": [], "thu": [], "fri": [], "sat": [], "sun": []},
-    "2026-09-21": {"mon": [], "tue": [], "wed": [], "thu": [], "fri": [], "sat": [], "sun": []}
+    "2026-09-07": {
+      "mon": [],
+      "tue": [],
+      "wed": [],
+      "thu": [
+        {"id": "w1-thu-1", "name": "Kayla (BAR)", "start": "15:00", "end": "22:00"},
+        {"id": "w1-thu-2", "name": "Joe (S3)", "start": "16:00", "end": "21:00"},
+        {"id": "w1-thu-3", "name": "Sierrah (S4)", "start": "17:00", "end": "23:00"},
+        {"id": "w1-thu-4", "name": "Marta (S1)", "start": "15:00", "end": "22:00"},
+        {"id": "w1-thu-5", "name": "Astrea (S2)", "start": "17:00", "end": "22:00"},
+        {"id": "w1-thu-6", "name": "Pietro (R)", "start": "19:00", "end": "23:00"}
+      ],
+      "fri": [
+        {"id": "w1-fri-1", "name": "Kayla (BAR)", "start": "16:00", "end": "23:00"},
+        {"id": "w1-fri-2", "name": "Astrea (S2)", "start": "15:00", "end": "21:00"},
+        {"id": "w1-fri-3", "name": "Catherine (S4)", "start": "16:00", "end": "23:00"},
+        {"id": "w1-fri-4", "name": "Sierrah (S3)", "start": "15:00", "end": "22:00"},
+        {"id": "w1-fri-5", "name": "Marta (S1)", "start": "16:00", "end": "21:00"},
+        {"id": "w1-fri-6", "name": "Pietro (R)", "start": "19:00", "end": "23:00"}
+      ],
+      "sat": [
+        {"id": "w1-sat-1", "name": "Mariia (BAR)", "start": "15:00", "end": "22:00"},
+        {"id": "w1-sat-2", "name": "Astrea (S2)", "start": "16:00", "end": "22:00"},
+        {"id": "w1-sat-3", "name": "Joe (S3)", "start": "15:00", "end": "22:00"},
+        {"id": "w1-sat-4", "name": "Catherine (S4)", "start": "16:00", "end": "22:00"},
+        {"id": "w1-sat-5", "name": "Marta (S1)", "start": "15:00", "end": "21:00"},
+        {"id": "w1-sat-6", "name": "Pietro (R)", "start": "19:00", "end": "23:00"}
+      ],
+      "sun": [
+        {"id": "w1-sun-1", "name": "Kayla (BAR)", "start": "15:00", "end": "22:00"},
+        {"id": "w1-sun-2", "name": "Joe (S2)", "start": "16:00", "end": "22:00"},
+        {"id": "w1-sun-3", "name": "Sierrah (S3)", "start": "17:00", "end": "22:00"},
+        {"id": "w1-sun-4", "name": "Catherine (S1)", "start": "15:00", "end": "21:00"}
+      ]
+    },
+    "2026-09-14": {
+      "mon": [
+        {"id": "w2-mon-1", "name": "Kayla (BAR)", "start": "16:00", "end": "22:00"},
+        {"id": "w2-mon-2", "name": "Joe (S1)", "start": "15:00", "end": "21:00"},
+        {"id": "w2-mon-3", "name": "Sierrah (S3)", "start": "15:00", "end": "21:00"},
+        {"id": "w2-mon-4", "name": "Astrea (S2)", "start": "15:00", "end": "21:00"}
+      ],
+      "tue": [
+        {"id": "w2-tue-1", "name": "Kayla (BAR)", "start": "16:00", "end": "22:00"},
+        {"id": "w2-tue-2", "name": "Marta (S1)", "start": "16:00", "end": "20:00"},
+        {"id": "w2-tue-3", "name": "Sierrah (S3)", "start": "15:00", "end": "21:00"},
+        {"id": "w2-tue-4", "name": "Astrea (S2)", "start": "16:00", "end": "21:00"},
+        {"id": "w2-tue-5", "name": "Pietro (R)", "start": "19:00", "end": "22:00"}
+      ],
+      "wed": [
+        {"id": "w2-wed-1", "name": "Joe (BAR)", "start": "15:00", "end": "22:00"},
+        {"id": "w2-wed-2", "name": "Kayla (S3)", "start": "17:00", "end": "21:00"},
+        {"id": "w2-wed-3", "name": "Marta (S1)", "start": "15:00", "end": "22:00"},
+        {"id": "w2-wed-4", "name": "Astrea (S2)", "start": "17:00", "end": "22:00"},
+        {"id": "w2-wed-5", "name": "Pietro (R)", "start": "18:00", "end": "22:00"}
+      ],
+      "thu": [
+        {"id": "w2-thu-1", "name": "Kayla (BAR)", "start": "16:00", "end": "22:00"},
+        {"id": "w2-thu-2", "name": "Catherine (S3)", "start": "16:00", "end": "22:00"},
+        {"id": "w2-thu-3", "name": "Astrea (S1)", "start": "16:00", "end": "22:00"},
+        {"id": "w2-thu-4", "name": "Joe (S2)", "start": "16:00", "end": "21:00"},
+        {"id": "w2-thu-5", "name": "Sierrah (S4)", "start": "16:00", "end": "22:00"},
+        {"id": "w2-thu-6", "name": "Pietro (R)", "start": "18:00", "end": "22:00"}
+      ],
+      "fri": [
+        {"id": "w2-fri-1", "name": "Mariia (BAR)", "start": "17:00", "end": "23:00"},
+        {"id": "w2-fri-2", "name": "Joe (S2)", "start": "16:00", "end": "22:00"},
+        {"id": "w2-fri-3", "name": "Catherine (S3)", "start": "16:00", "end": "22:00"},
+        {"id": "w2-fri-4", "name": "Marta (S1)", "start": "15:00", "end": "23:00"},
+        {"id": "w2-fri-5", "name": "Sierrah (S4)", "start": "17:00", "end": "23:00"},
+        {"id": "w2-fri-6", "name": "Pietro (R)", "start": "18:00", "end": "22:00"}
+      ],
+      "sat": [
+        {"id": "w2-sat-1", "name": "Mariia (BAR)", "start": "16:00", "end": "23:00"},
+        {"id": "w2-sat-2", "name": "Catherine (S3)", "start": "16:00", "end": "22:00"},
+        {"id": "w2-sat-3", "name": "Astrea (S2)", "start": "16:00", "end": "22:00"},
+        {"id": "w2-sat-4", "name": "Sierrah (S4)", "start": "17:00", "end": "23:00"},
+        {"id": "w2-sat-5", "name": "Marta (S1)", "start": "16:00", "end": "22:00"},
+        {"id": "w2-sat-6", "name": "Pietro (R)", "start": "18:00", "end": "22:00"}
+      ],
+      "sun": [
+        {"id": "w2-sun-1", "name": "Kayla (BAR)", "start": "15:00", "end": "22:00"},
+        {"id": "w2-sun-2", "name": "Catherine (S3)", "start": "16:00", "end": "21:00"},
+        {"id": "w2-sun-3", "name": "Joe (S2)", "start": "15:00", "end": "22:00"},
+        {"id": "w2-sun-4", "name": "Marta (S1)", "start": "16:00", "end": "21:00"}
+      ]
+    }
   }
 }
