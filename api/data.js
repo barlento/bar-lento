@@ -15,13 +15,14 @@ module.exports = async (req, res) => {
   try {
     if (req.method === "GET") {
       // Lazy delivery: if the manager closed the app without notifying, the next visitor triggers the summary push.
-      const flushed = push.pushEnabled() ? await push.flushPending(false).catch(() => null) : null;
-      const [doc, confirmations] = await Promise.all([store.getSchedule(), store.getConfirmations()]);
+      const flushed = store.hasStorage() ? await push.flushPending(false).catch(() => null) : null;
+      const [doc, confirmations, announcement] = await Promise.all([store.getSchedule(), store.getConfirmations(), store.getAnnouncement().catch(() => null)]);
       return send(res, 200, {
         version: doc.version,
         updatedAt: doc.updatedAt,
         data: doc.data,
         confirmations,
+        announcement,
         pendingNotify: flushed && flushed.pending ? flushed.pending : 0,
         features: { storage: store.hasStorage(), admin: auth.adminEnabled(), push: push.pushEnabled() },
       });
@@ -39,17 +40,17 @@ module.exports = async (req, res) => {
         return send(res, 409, { error: "version_conflict", version: current.version, data: current.data, updatedAt: current.updatedAt });
       }
 
-      const { changes, resetKeys } = diffData(current.data, data);
+      const { changes, resetKeys, notable, newWeeks } = diffData(current.data, data);
       const doc = { version: (current.version || 0) + 1, data, updatedAt: new Date().toISOString() };
       await store.saveSchedule(doc);
       await store.removeConfirmations(resetKeys).catch(() => {});
       await store.pruneConfirmations(data).catch(() => {});
       if (changes.length) {
         await store.appendLog({ at: doc.updatedAt, version: doc.version, changes: changes.slice(0, 200) }).catch(() => {});
-        // Only shift/day changes are worth notifying (not staff list / birthday housekeeping).
-        // They accumulate; ONE summary push goes out later (manager idle/logout, "Notify team", or auto after 10 min).
-        const notable = changes.filter((c) => !/^(Staff|Birthday):/.test(c));
-        if (notable.length && push.pushEnabled()) await store.appendPending(notable).catch(() => {});
+        // Only what matters to employees accumulates for ONE summary push later
+        // (manager idle/logout, "Notify team", or automatically on the next visit after 10 min, never at night).
+        const items = newWeeks.map((wk) => `NEWWEEK:${wk}`).concat(notable);
+        if (items.length) await store.appendPending(items).catch(() => {});
       }
       const [confirmations, pending] = await Promise.all([store.getConfirmations(), store.getPending().catch(() => ({ changes: [] }))]);
       return send(res, 200, { version: doc.version, updatedAt: doc.updatedAt, data: doc.data, confirmations, changes: changes.length, pendingNotify: pending.changes.length });

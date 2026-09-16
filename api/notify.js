@@ -13,8 +13,8 @@ module.exports = async (req, res) => {
     if (req.method !== "POST") { res.setHeader("Allow", "POST"); return send(res, 405, { error: "method_not_allowed" }); }
     if (!auth.adminEnabled()) return send(res, 503, { error: "admin_disabled" });
     if (!auth.checkPassword(auth.passwordFrom(req))) return send(res, 401, { error: "unauthorized" });
-    if (!push.pushEnabled()) return send(res, 503, { error: "push_disabled" });
     const r = await push.flushPending(true);
+    r.pushEnabled = push.pushEnabled();
     return send(res, 200, r);
   } catch (err) {
     return send(res, 500, { error: "server_error", detail: String(err && err.message || err) });
