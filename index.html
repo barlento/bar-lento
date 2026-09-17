@@ -60,6 +60,46 @@
   .clockbtn.live .cled{background:var(--good);opacity:1;animation:ledpulse 1.6s ease-out infinite}
   .clockbtn .cnt{background:var(--good);color:#fff;border-radius:999px;font-size:.72rem;line-height:1.4;padding:1px 7px;min-width:20px;text-align:center;animation:pop .45s cubic-bezier(.34,1.56,.64,1)}
 
+  /* ---- Leaderboard ---- */
+  :root{--gold:#c9a227;--gold-soft:#fbf3d6;--silver:#9aa3ad;--bronze:#b9722d}
+  .lbbtn{border:2px solid var(--gold);background:linear-gradient(135deg,#fff6d6,#f3dc8f);color:#6b4e00;border-radius:12px;padding:10px 14px;font-size:.95rem;font-weight:700;cursor:pointer;white-space:nowrap;position:relative;overflow:hidden}
+  .lbbtn::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.7) 50%,transparent 70%);transform:translateX(-120%);animation:btnshine 7s ease-in-out 2s infinite}
+  .lb-tabs{display:flex;gap:6px;background:var(--surface-2);padding:4px;border-radius:12px;margin:4px 0 12px}
+  .lb-tabs button{flex:1;border:none;background:none;padding:8px 6px;border-radius:9px;font:inherit;font-size:.84rem;font-weight:700;color:var(--ink-muted);cursor:pointer;transition:background .2s,color .2s}
+  .lb-tabs button.active{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  .podium{display:grid;grid-template-columns:1fr 1.15fr 1fr;gap:8px;align-items:end;margin-bottom:12px;min-height:150px}
+  .pod{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px 8px;border-radius:14px;border:1px solid var(--border);background:var(--surface-2);animation:rise .45s cubic-bezier(.2,.8,.2,1) both;position:relative;overflow:hidden}
+  .pod .pav{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:1.05rem;border:3px solid var(--border);position:relative}
+  .pod .medal{position:absolute;top:6px;right:6px;font-size:1.05rem;filter:drop-shadow(0 1px 1px rgba(0,0,0,.2))}
+  .pod .pn{font-weight:700;font-size:.92rem;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .pod .pp{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:1.05rem}
+  .pod .ps{font-size:.7rem;color:var(--ink-muted)}
+  .pod.p1{background:linear-gradient(180deg,var(--gold-soft),var(--surface-2));border-color:var(--gold);padding-top:16px}
+  .pod.p1 .pav{border-color:var(--gold);width:56px;height:56px;font-size:1.25rem;box-shadow:0 0 0 4px color-mix(in srgb,var(--gold) 25%,transparent);animation:ledpulse 2.2s ease-out infinite}
+  .pod.p1 .pp{color:#8a6a00}
+  .pod.p2 .pav{border-color:var(--silver)} .pod.p3 .pav{border-color:var(--bronze)}
+  .pod.p1::before{content:"";position:absolute;inset:-40% -60%;background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.6) 50%,transparent 60%);transform:translateX(-60%);animation:shine 6s ease-in-out infinite;pointer-events:none}
+  .pod.empty{opacity:.45}
+  .lb-list{display:flex;flex-direction:column;gap:6px;max-height:44vh;overflow:auto;padding:2px}
+  .lb-row{display:grid;grid-template-columns:28px auto 1fr auto;gap:10px;align-items:center;padding:8px 10px;border:1px solid var(--border);border-radius:12px;background:var(--surface);will-change:transform;transition:background .3s,border-color .3s}
+  .lb-row.on{border-color:color-mix(in srgb,var(--good) 55%,var(--border))}
+  .lb-row.up{animation:flash .9s ease}
+  .lb-row .rk{font-family:'IBM Plex Mono',monospace;font-weight:600;color:var(--ink-muted);text-align:center}
+  .lb-row.r1 .rk{color:var(--gold)} .lb-row.r2 .rk{color:var(--silver)} .lb-row.r3 .rk{color:var(--bronze)}
+  .lb-row .av{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:.85rem;position:relative;flex:none}
+  .lb-row.on .av::after{content:"";position:absolute;right:-2px;bottom:-2px;width:11px;height:11px;border-radius:50%;background:var(--good);border:2px solid var(--surface);animation:ledpulse 1.6s ease-out infinite}
+  .lb-row .nm{min-width:0;display:flex;flex-direction:column;gap:2px}
+  .lb-row .nm b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .lb-row .nm small{font-size:.74rem;color:var(--ink-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .lb-row .nm small .ok{color:var(--good);font-weight:700} .lb-row .nm small .late{color:var(--danger);font-weight:700}
+  .lb-row .pts{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+  .lb-row .pts b{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:1rem}
+  .lb-row .pts .mv{font-size:.72rem;font-weight:700;color:var(--ink-muted)}
+  .lb-row .pts .mv.up{color:var(--good)} .lb-row .pts .mv.down{color:var(--danger)}
+  .lb-rules{margin-top:10px;font-size:.76rem;color:var(--ink-muted)}
+  .lb-rules summary{cursor:pointer;font-weight:700}
+  .lb-rules p{margin:6px 0 0;line-height:1.45}
+
   /* ---- Time clock panel ---- */
   .tc-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:4px 0 12px}
   .tc-head .navbtn{border:1px solid var(--border);background:var(--bg);color:var(--ink);width:40px;height:40px;border-radius:12px;font-size:1.1rem;cursor:pointer;flex:none}
@@ -98,8 +138,8 @@
     .hdr-right{align-items:stretch}
     .hdr-actions{width:100%}
     .hdr-actions{flex-wrap:wrap}
-    .hdr-actions .bellbtn,.hdr-actions .loginbtn,.hdr-actions .clockbtn{flex:1;text-align:center;justify-content:center;padding:12px 6px;font-size:.9rem;white-space:normal;line-height:1.2}
-    .hdr-actions .clockbtn{white-space:nowrap}
+    .hdr-actions .bellbtn,.hdr-actions .loginbtn,.hdr-actions .clockbtn,.hdr-actions .lbbtn{flex:1;text-align:center;justify-content:center;padding:12px 6px;font-size:.9rem;white-space:normal;line-height:1.2}
+    .hdr-actions .clockbtn,.hdr-actions .lbbtn{white-space:nowrap}
     .hdr-actions .loginbtn{flex:1 1 100%}
     .tc-row .tm .io{font-size:.82rem}
     .tc-sum .tile b{font-size:1.15rem}
@@ -345,6 +385,7 @@
     <div class="hdr-right">
       <div class="hdr-actions">
         <button class="clockbtn" id="clockBtn" type="button" style="display:none" aria-haspopup="dialog"><span class="cled" aria-hidden="true"></span><span class="lbl">⏱ Time clock</span><span class="cnt" id="clockCnt" style="display:none">0</span></button>
+        <button class="lbbtn" id="lbBtn" type="button" style="display:none" aria-haspopup="dialog">🏆 Leaderboard</button>
         <button class="bellbtn" id="bellBtn" type="button" style="display:none">🔔 Notify me</button>
         <button class="loginbtn" id="managerLink" type="button">🔑 Manager login</button>
       </div>
@@ -539,6 +580,24 @@
 </div>
 
 <!-- History -->
+<!-- Leaderboard (everyone) -->
+<div class="overlay" id="lbOverlay">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="lbTitle">
+    <h2 id="lbTitle">🏆 Leaderboard</h2>
+    <p class="lead">Hours worked + punctuality, straight from Toast. Live.</p>
+    <div class="lb-tabs" role="tablist">
+      <button type="button" class="active" data-period="week">This week</button>
+      <button type="button" data-period="month">This month</button>
+      <button type="button" data-period="all">All time</button>
+    </div>
+    <div class="podium" id="lbPodium"></div>
+    <div class="lb-list" id="lbList"><div class="tc-empty">Loading…</div></div>
+    <details class="lb-rules"><summary>How points work</summary><p>10 points per hour worked · + your on-time % (once you have 3 clocked shifts) · + 5 points for every shift in your current on-time streak. “On time” means clocking in within 5 minutes of your scheduled start. Only clocked shifts count. Closed days never count against anyone.</p></details>
+    <div class="tc-foot"><span id="lbUpdated"></span><button class="refresh" id="lbRefresh" type="button">↻ Refresh</button></div>
+    <div class="actions"><button class="btn" id="lbClose" type="button">Close</button></div>
+  </div>
+</div>
+
 <!-- Time clock (everyone) -->
 <div class="overlay" id="clockOverlay">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="clockTitle">
@@ -884,6 +943,60 @@
     if(!state.features.toast) return;
     var r=await api("/api/toast?action=today"); if(r.ok){ state.toastToday=r.json; renderDays(); }
     loadClock(true);
+  }
+
+  // ---------- Leaderboard (visible to everyone) ----------
+  var lb={period:"week", data:{}, timer:null, tick:null, lastOrder:{}, lastLeader:{}, pos:{}};
+  var MEDALS=["🥇","🥈","🥉"];
+  function lbPoints(r,now){ var live=r.openSince?Math.max(0,now-Date.parse(r.openSince)):0; var hours=(r.msClosed+live)/3600000; return {hours:hours, points:Math.round(hours*10)+(r.matched>=3&&r.onTimePct!=null?r.onTimePct:0)+r.streak*5}; }
+  function lbRanked(){ var d=lb.data[lb.period]; if(!d) return null; var now=Date.now(); var rows=d.rows.map(function(r){ var c=lbPoints(r,now); return Object.assign({},r,{hoursLive:c.hours,pointsLive:c.points,on:!!r.openSince}); }); rows.sort(function(a,b){ return b.pointsLive-a.pointsLive||a.name.localeCompare(b.name); }); return rows; }
+  function fmtHours(h){ var m=Math.round(h*60); return Math.floor(m/60)+"h "+pad(m%60)+"m"; }
+  function renderLbBtn(){ var b=$("lbBtn"); b.style.display=state.features.toast?"":"none"; }
+  async function loadLb(quiet){
+    if(!state.features.toast) return;
+    var period=lb.period; var btn=$("lbRefresh"); if(!quiet) btn.classList.add("spin");
+    var r=await api("/api/toast?action=leaderboard&period="+period); btn.classList.remove("spin");
+    if(r.ok&&r.json&&r.json.rows){ lb.data[r.json.period]=r.json; }
+    else if(!quiet) toast("Toast isn't answering right now — try again in a moment.",3500);
+    if($("lbOverlay").classList.contains("show")) renderLb();
+  }
+  function renderLb(){
+    var rows=lbRanked(); var list=$("lbList"), pod=$("lbPodium");
+    document.querySelectorAll(".lb-tabs button").forEach(function(b){ b.classList.toggle("active",b.getAttribute("data-period")===lb.period); });
+    if(!rows){ list.innerHTML='<div class="tc-empty">Loading…</div>'; pod.innerHTML=""; $("lbUpdated").textContent=""; return; }
+    var d=lb.data[lb.period];
+    if(!rows.length){ pod.innerHTML=""; list.innerHTML='<div class="tc-empty"><span class="big">👥</span>Add people in Staff to start the leaderboard.</div>'; return; }
+    var scored=rows.filter(function(r){return r.pointsLive>0;});
+    // podium: 2nd, 1st, 3rd
+    var order=[1,0,2];
+    pod.innerHTML=order.map(function(i){ var r=scored[i]; var cls="pod p"+(i+1)+(r?"":" empty"); if(!r) return '<div class="'+cls+'"><div class="pav" style="background:var(--border)">?</div><div class="pn">—</div><div class="ps">'+(i===0?"1st":i===1?"2nd":"3rd")+'</div></div>';
+      return '<div class="'+cls+'" style="animation-delay:'+(i*70)+'ms"><span class="medal">'+MEDALS[i]+'</span><div class="pav" style="background:'+avColor(r.name)+'">'+h(initials(r.name))+(r.on?'<span class="cled" style="position:absolute;right:-3px;bottom:-3px;width:12px;height:12px;border-radius:50%;background:var(--good);border:2px solid #fff;animation:ledpulse 1.6s ease-out infinite"></span>':"")+'</div><div class="pn">'+h(r.name)+'</div><div class="pp">'+r.pointsLive+' pts</div><div class="ps">'+fmtHours(r.hoursLive)+(r.onTimePct!=null?' · '+r.onTimePct+'% on time':'')+'</div></div>'; }).join("");
+    // FLIP: remember old positions
+    var old={}; list.querySelectorAll(".lb-row").forEach(function(el){ old[el.getAttribute("data-name")]=el.getBoundingClientRect().top; });
+    var prevOrder=lb.lastOrder[lb.period]||{};
+    list.innerHTML=rows.map(function(r,i){
+      var rank=i+1; var mv="";
+      if(r.prevRank){ if(r.prevRank>rank) mv='<span class="mv up">▲ '+(r.prevRank-rank)+'</span>'; else if(r.prevRank<rank) mv='<span class="mv down">▼ '+(rank-r.prevRank)+'</span>'; else mv='<span class="mv">–</span>'; }
+      else if(r.pointsLive>0) mv='<span class="mv up">new</span>';
+      var sub=r.shifts?fmtHours(r.hoursLive)+' · '+r.shifts+(r.shifts===1?' shift':' shifts')+(r.onTimePct!=null?' · <span class="'+(r.onTimePct>=80?'ok':'late')+'">'+r.onTimePct+'% on time</span>':'')+(r.streak>=2?' · 🔥 '+r.streak:''):(r.on?'on the clock now':'no clocked shifts yet');
+      var moved=prevOrder[r.name]&&prevOrder[r.name]>rank;
+      return '<div class="lb-row r'+rank+(r.on?" on":"")+(moved?" up":"")+'" data-name="'+h(r.name)+'"><span class="rk">'+(rank<=3&&r.pointsLive>0?MEDALS[rank-1]:rank)+'</span><div class="av" style="background:'+avColor(r.name)+'">'+h(initials(r.name))+'</div><div class="nm"><b>'+h(r.name)+'</b><small>'+sub+'</small></div><div class="pts"><b>'+r.pointsLive+'</b>'+mv+'</div></div>';
+    }).join("");
+    // animate rows sliding into their new place
+    list.querySelectorAll(".lb-row").forEach(function(el){ var n=el.getAttribute("data-name"); if(old[n]==null) return; var dy=old[n]-el.getBoundingClientRect().top; if(Math.abs(dy)<1) return; el.style.transition="none"; el.style.transform="translateY("+dy+"px)"; requestAnimationFrame(function(){ el.style.transition="transform .55s cubic-bezier(.2,.8,.2,1)"; el.style.transform=""; }); });
+    var newOrder={}; rows.forEach(function(r,i){ newOrder[r.name]=i+1; }); lb.lastOrder[lb.period]=newOrder;
+    // new leader → confetti (only when the leader actually changes while watching)
+    var leader=scored[0]&&scored[0].name; var prevLeader=lb.lastLeader[lb.period];
+    if(leader&&prevLeader&&prevLeader!==leader){ confetti(2800); toast("🏆 "+leader+" takes the lead!",3000); }
+    if(leader) lb.lastLeader[lb.period]=leader;
+    var anyOn=rows.some(function(r){return r.on;});
+    $("lbUpdated").innerHTML=(anyOn?'<span class="tc-live">LIVE</span> ':'')+(lb.period==="all"?"Last 180 days":lb.period==="month"?"Since "+d.start.slice(5).replace("-","/"):"Week of "+d.start.slice(5).replace("-","/"))+' · updated '+fmtClock(d.fetchedAt);
+  }
+  function openLb(){
+    $("lbOverlay").classList.add("show"); renderLb(); loadLb(false);
+    clearInterval(lb.timer); clearInterval(lb.tick);
+    lb.timer=setInterval(function(){ if($("lbOverlay").classList.contains("show")) loadLb(true); else { clearInterval(lb.timer); clearInterval(lb.tick); } },30000);
+    lb.tick=setInterval(function(){ if(!$("lbOverlay").classList.contains("show")) return; var rows=lbRanked(); if(rows&&rows.some(function(r){return r.on;})) renderLb(); },5000);
   }
 
   // ---------- Time clock panel (visible to everyone) ----------
@@ -1305,6 +1418,10 @@
   $("dayStatus").addEventListener("change",syncHalfHours);
   $("bellBtn").addEventListener("click",togglePush);
   $("clockBtn").addEventListener("click",openClock);
+  $("lbBtn").addEventListener("click",openLb);
+  $("lbClose").addEventListener("click",function(){ $("lbOverlay").classList.remove("show"); });
+  $("lbRefresh").addEventListener("click",function(){ loadLb(false); });
+  document.querySelectorAll(".lb-tabs button").forEach(function(b){ b.addEventListener("click",function(){ lb.period=b.getAttribute("data-period"); renderLb(); loadLb(false); }); });
   $("clockClose").addEventListener("click",function(){ $("clockOverlay").classList.remove("show"); });
   $("tcPrev").addEventListener("click",function(){ tcShift(-1); });
   $("tcNext").addEventListener("click",function(){ tcShift(1); });
@@ -1383,7 +1500,7 @@
     state.showArchive=storageGet(ARCHIVE_KEY)==="1";
     lang=storageGet(LANG_KEY)==="it"?"it":"en"; applyLang();
     await load(false);
-    maybeBirthdayPopup(); maybeWeekPopup(); renderBell(); renderClockBtn(); loadToastToday();
+    maybeBirthdayPopup(); maybeWeekPopup(); renderBell(); renderClockBtn(); renderLbBtn(); loadToastToday();
     var saved=storageGet(PW_KEY);
     if(saved&&state.features.admin){
       var r=await api("/api/login",{method:"POST",body:{password:saved}});

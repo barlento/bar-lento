@@ -56,6 +56,12 @@ module.exports = async (req, res) => {
         .sort((a, b) => String(a.in).localeCompare(String(b.in)));
       return send(res, 200, { date, today, entries: list, fetchedAt: new Date().toISOString() });
     }
+    // Public leaderboard (points from hours + punctuality). ?period=week|month|all
+    if (action === "leaderboard") {
+      const lb = require("../lib/leaderboard");
+      const period = url.searchParams.get("period") || "week";
+      return send(res, 200, await lb.leaderboard(period));
+    }
     if (action === "who") {
       if (!auth.checkPassword(auth.passwordFrom(req))) return send(res, 401, { error: "unauthorized" });
       const date = todayNY();
