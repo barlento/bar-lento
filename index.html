@@ -355,6 +355,8 @@
   .bellbtn:not(.on){animation:nudge 8s ease-in-out infinite}
   @keyframes nudge{0%,90%,100%{transform:rotate(0)}92%{transform:rotate(-10deg)}94%{transform:rotate(9deg)}96%{transform:rotate(-6deg)}98%{transform:rotate(4deg)}}
 
+  body.modal-open{position:fixed;left:0;right:0;overflow:hidden;width:100%}
+  .sheet,.tc-list,.lb-list,.log{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
   .overlay{transition:opacity .2s;opacity:0}
   .overlay.show{animation:fadein .2s forwards}
   .overlay .sheet{animation:sheetup .3s cubic-bezier(.2,.8,.2,1)}
@@ -1443,7 +1445,15 @@
   $("deleteWeekBtn").addEventListener("click",deleteWeek);
   $("copyBtn").addEventListener("click",copyText);
   $("archiveToggle").addEventListener("click",function(){state.showArchive=!state.showArchive;storageSet(ARCHIVE_KEY,state.showArchive?"1":null);ensureActiveWeek();renderTabs();renderDays();renderAdminUI();});
-  document.querySelectorAll(".overlay").forEach(function(o){o.addEventListener("click",function(e){if(e.target===o){o.classList.remove("show");state.editing=null;state.dayEditing=null;state.confirming=null;}});});
+  // Tapping outside a panel no longer closes it (too easy to lose an edit by accident): use its button or Esc.
+  // While any panel is open, the page behind is frozen so scrolling inside the panel never moves the background.
+  (function(){
+    var savedY=0;
+    function lock(){ if(document.body.classList.contains("modal-open")) return; savedY=window.scrollY||0; document.body.style.top=(-savedY)+"px"; document.body.classList.add("modal-open"); }
+    function unlock(){ if(!document.body.classList.contains("modal-open")) return; document.body.classList.remove("modal-open"); document.body.style.top=""; window.scrollTo(0,savedY); }
+    var mo=new MutationObserver(function(){ if(document.querySelector(".overlay.show")) lock(); else unlock(); });
+    document.querySelectorAll(".overlay").forEach(function(o){ mo.observe(o,{attributes:true,attributeFilter:["class"]}); });
+  })();
   function closeAllModals(){document.querySelectorAll(".overlay.show").forEach(function(o){o.classList.remove("show");});state.editing=null;state.dayEditing=null;state.confirming=null;}
   document.addEventListener("keydown",function(e){if(e.key==="Escape") closeAllModals();});
 
