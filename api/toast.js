@@ -13,6 +13,8 @@ function send(res, status, body) {
 // GET ?action=status               → is Toast connected / reachable
 // GET ?action=today[&date=YYYY-MM-DD] → clock in/out for mapped staff (public, cached 60s)
 // GET ?action=clock[&date=YYYY-MM-DD] → public time clock: everyone who punched that day
+// GET ?action=mystats&name=X[&period=] → one person's own stats + team totals (public)
+// GET ?action=leaderboard[&period=] (manager) → full ranking
 // GET ?action=employees (manager)  → Toast employee list, to map names
 module.exports = async (req, res) => {
   try {
@@ -56,11 +58,31 @@ module.exports = async (req, res) => {
         .sort((a, b) => String(a.in).localeCompare(String(b.in)));
       return send(res, 200, { date, today, entries: list, fetchedAt: new Date().toISOString() });
     }
-    // Public leaderboard (points from hours + punctuality). ?period=week|month|all
+    // Ranking of the whole team — MANAGER ONLY (the owner/manager use it privately; staff never see comparisons).
     if (action === "leaderboard") {
+      if (!auth.checkPassword(auth.passwordFrom(req))) return send(res, 401, { error: "unauthorized" });
       const lb = require("../lib/leaderboard");
       const period = url.searchParams.get("period") || "week";
       return send(res, 200, await lb.leaderboard(period));
+    }
+    // Personal stats — public, but returns ONLY that person's numbers plus anonymous team totals.
+    if (action === "mystats") {
+      const lb = require("../lib/leaderboard");
+      const period = url.searchParams.get("period") || "week";
+      const name = String(url.searchParams.get("name") || "").trim().slice(0, 60);
+      const full = await lb.leaderboard(period);
+      const me = full.rows.find((r) => r.name === name);
+      if (!me) return send(res, 404, { error: "unknown_name" });
+      const active = full.rows.filter((r) => r.shifts > 0);
+      const team = {
+        people: active.length,
+        msClosed: active.reduce((a, r) => a + r.msClosed, 0),
+        openNow: active.filter((r) => r.openSince).map((r) => r.openSince),
+        onTimePct: (() => { const m = active.filter((r) => r.onTimePct != null); return m.length ? Math.round(m.reduce((a, r) => a + r.onTimePct, 0) / m.length) : null; })(),
+        shifts: active.reduce((a, r) => a + r.shifts, 0),
+      };
+      const { rank, prevRank, points, ...mine } = me; // never expose rank/points
+      return send(res, 200, { period: full.period, start: full.start, end: full.end, grace: full.grace, me: mine, team, fetchedAt: full.fetchedAt });
     }
     if (action === "who") {
       if (!auth.checkPassword(auth.passwordFrom(req))) return send(res, 401, { error: "unauthorized" });

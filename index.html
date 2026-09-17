@@ -108,6 +108,26 @@
   .lb-rules summary{cursor:pointer;font-weight:700}
   .lb-rules p{margin:6px 0 0;line-height:1.45}
 
+  /* ---- My stats ---- */
+  .pill{display:inline-block;font-size:.66rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:var(--ink);color:var(--bg);padding:2px 8px;border-radius:999px;vertical-align:middle;margin-left:6px}
+  .me-pick{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 10px}
+  .me-pick .chip{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);background:var(--surface-2);border-radius:999px;padding:8px 14px 8px 8px;font-weight:700;cursor:pointer;transition:transform .12s,border-color .2s}
+  .me-pick .chip:hover{border-color:var(--accent);transform:translateY(-1px)}
+  .me-pick .chip .av{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:.75rem}
+  .me-pick .hint{width:100%;font-size:.8rem;color:var(--ink-muted);margin-top:2px}
+  .me-hero{display:flex;align-items:center;gap:14px;padding:14px;border-radius:16px;background:linear-gradient(135deg,var(--gold-soft),var(--surface-2));border:1px solid color-mix(in srgb,var(--gold) 45%,var(--border));margin-bottom:10px;position:relative;overflow:hidden;animation:rise .4s cubic-bezier(.2,.8,.2,1) both}
+  .me-hero::before{content:"";position:absolute;inset:-40% -60%;background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.55) 50%,transparent 60%);transform:translateX(-60%);animation:shine 7s ease-in-out infinite;pointer-events:none}
+  .me-hero .av{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:1.3rem;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.12);position:relative;flex:none}
+  .me-hero.on .av::after{content:"";position:absolute;right:-2px;bottom:-2px;width:14px;height:14px;border-radius:50%;background:var(--good);border:2px solid #fff;animation:ledpulse 1.6s ease-out infinite}
+  .me-hero .t{min-width:0} .me-hero .t b{font-size:1.15rem;display:block} .me-hero .t span{font-size:.82rem;color:var(--ink-muted)}
+  .me-sum .tile b{font-size:1.2rem} .me-sum .tile.good b{color:var(--good)} .me-sum .tile.warn b{color:var(--danger)}
+  .me-msg{padding:10px 12px;border-radius:12px;background:var(--good-soft);color:var(--good);font-weight:700;font-size:.9rem;margin-bottom:10px;animation:rise .45s .1s cubic-bezier(.2,.8,.2,1) both}
+  .me-msg.neutral{background:var(--surface-2);color:var(--ink)}
+  .me-team{border-top:1px dashed var(--border);padding-top:10px;font-size:.84rem;color:var(--ink-muted)}
+  .me-team b{color:var(--ink)} .me-team .row{display:flex;justify-content:space-between;gap:10px;padding:3px 0}
+  .me-badges{display:flex;flex-wrap:wrap;gap:6px;margin:-2px 0 10px}
+  .me-badges span{font-size:.74rem;font-weight:700;background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:3px 9px;animation:pop .45s cubic-bezier(.34,1.56,.64,1) both}
+
   /* ---- Time clock panel ---- */
   .tc-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:4px 0 12px}
   .tc-head .navbtn{border:1px solid var(--border);background:var(--bg);color:var(--ink);width:40px;height:40px;border-radius:12px;font-size:1.1rem;cursor:pointer;flex:none}
@@ -395,7 +415,7 @@
     <div class="hdr-right">
       <div class="hdr-actions">
         <button class="clockbtn" id="clockBtn" type="button" style="display:none" aria-haspopup="dialog"><span class="cled" aria-hidden="true"></span><span class="lbl">⏱ Time clock</span><span class="cnt" id="clockCnt" style="display:none">0</span></button>
-        <button class="lbbtn" id="lbBtn" type="button" style="display:none" aria-haspopup="dialog">🏆 Leaderboard</button>
+        <button class="lbbtn" id="meBtn" type="button" style="display:none" aria-haspopup="dialog">⭐ My stats</button>
         <button class="bellbtn" id="bellBtn" type="button" style="display:none">🔔 Notify me</button>
         <button class="loginbtn" id="managerLink" type="button">🔑 Manager login</button>
       </div>
@@ -408,6 +428,7 @@
     <div class="status" id="saveStatus"></div>
     <div class="actions">
       <button class="abtn notify" id="notifyBtn" type="button" style="display:none">📣 Notify team</button>
+      <button class="abtn" id="lbBtn" type="button" style="display:none" data-t="lbBtn">🏆 Team ranking</button>
       <button class="abtn" id="staffBtn" type="button" data-t="staffBtn">👥 Staff</button>
       <button class="abtn" id="historyBtn" type="button" data-t="historyBtn">🕓 History</button>
       <button class="abtn" id="exportBtn" type="button" data-t="exportBtn">⬇ Archive (CSV)</button>
@@ -590,11 +611,34 @@
 </div>
 
 <!-- History -->
+<!-- My stats (each person sees only their own numbers) -->
+<div class="overlay" id="meOverlay">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="meTitle">
+    <h2 id="meTitle">⭐ My stats</h2>
+    <p class="lead" id="meLead">Your hours and punctuality, from Toast. Only you see this.</p>
+    <div class="me-pick" id="mePick"></div>
+    <div id="meBody" style="display:none">
+      <div class="lb-tabs" role="tablist">
+        <button type="button" class="active" data-period="week">This week</button>
+        <button type="button" data-period="month">This month</button>
+        <button type="button" data-period="all">All time</button>
+      </div>
+      <div class="me-hero" id="meHero"></div>
+      <div class="tc-sum me-sum" id="meSum"></div>
+      <div class="me-msg" id="meMsg"></div>
+      <div class="me-team" id="meTeam"></div>
+      <details class="lb-rules"><summary>How this is calculated</summary><p>Hours are your clocked time from Toast. “On time” is the share of your scheduled shifts where you clocked in within 5 minutes of the start (shown after 3 clocked shifts). Only clocked shifts count, and closed days never count against you. Nobody else can see your numbers.</p></details>
+      <div class="tc-foot"><span id="meUpdated"></span><button class="refresh" id="meRefresh" type="button">↻ Refresh</button></div>
+    </div>
+    <div class="actions"><button class="linkbtn" id="meSwitch" type="button" style="display:none">Not you? Switch name</button><span class="spacer"></span><button class="btn" id="meClose" type="button">Close</button></div>
+  </div>
+</div>
+
 <!-- Leaderboard (everyone) -->
 <div class="overlay" id="lbOverlay">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="lbTitle">
-    <h2 id="lbTitle">🏆 Leaderboard</h2>
-    <p class="lead">Hours worked + punctuality, straight from Toast. Live.</p>
+    <h2 id="lbTitle">🏆 Team ranking <span class="pill">Managers only</span></h2>
+    <p class="lead">Hours worked + punctuality, straight from Toast. Staff don't see this — each person only sees their own stats.</p>
     <div class="lb-tabs" role="tablist">
       <button type="button" class="active" data-period="week">This week</button>
       <button type="button" data-period="month">This month</button>
@@ -654,7 +698,7 @@
   // ---------- manager-mode language (staff always see English) ----------
   var I18N={
     en:{
-      adminMode:"Manager mode", staffBtn:"👥 Staff", historyBtn:"🕓 History", exportBtn:"⬇ Archive (CSV)", logoutBtn:"Log out", notifyBtn:"📣 Notify team",
+      adminMode:"Manager mode", lbBtn:"🏆 Team ranking", staffBtn:"👥 Staff", historyBtn:"🕓 History", exportBtn:"⬇ Archive (CSV)", logoutBtn:"Log out", notifyBtn:"📣 Notify team",
       newWeekBtn:"＋ New week", deleteWeekBtn:"Delete this week", nwTitle:"New week", nwLead:"Create the week of {r}", nwCopy:"Copy last week's shifts ({k} shifts)", nwCopySub:"Same people and times as {r} — then adjust what changes", nwEmpty:"Start empty", nwEmptySub:"Add every shift by hand",
       copyConfirm:"Sure? This replaces the current shifts", deleteWeekConfirm:"Sure? Delete week", deleteWeekConfirmN:"Sure? Delete week and {k} shifts", deleteWeekLocked:"🔒 Past week · archived", pastLocked:"Past weeks are archived and can't be deleted", onlyEmpty:"Only an empty week can be deleted",
       footAdmin:"Tap a shift to edit it. Changes save automatically.", exitMode:"✓ Manager mode · Log out", addShift:"＋ Add shift", daySettings:"Day settings",
@@ -678,7 +722,7 @@
       toastPick:"— Toast employee —", toastLoading:"Loading Toast…", toastLinked:"{n} linked to Toast", toastUnlinked:"{n} unlinked from Toast", notified:"Team notified ✓ ({k} phone{p})", notifiedNone:"Changes noted — nobody has notifications turned on yet.", notifyFail:"Couldn't send the notification. It will go out automatically later.", markedClosed:"{h} ✓"
     },
     it:{
-      adminMode:"Modalità manager", staffBtn:"👥 Staff", historyBtn:"🕓 Cronologia", exportBtn:"⬇ Archivio (CSV)", logoutBtn:"Esci", notifyBtn:"📣 Avvisa i ragazzi",
+      adminMode:"Modalità manager", lbBtn:"🏆 Classifica team", staffBtn:"👥 Staff", historyBtn:"🕓 Cronologia", exportBtn:"⬇ Archivio (CSV)", logoutBtn:"Esci", notifyBtn:"📣 Avvisa i ragazzi",
       newWeekBtn:"＋ Nuova settimana", deleteWeekBtn:"Elimina questa settimana", nwTitle:"Nuova settimana", nwLead:"Crea la settimana {r}", nwCopy:"Copia i turni della settimana scorsa ({k} turni)", nwCopySub:"Stesse persone e orari di {r} — poi sistemi quello che cambia", nwEmpty:"Parti da zero", nwEmptySub:"Aggiungi ogni turno a mano",
       copyConfirm:"Sicura? Sostituisce i turni attuali", deleteWeekConfirm:"Sicura? Elimina settimana", deleteWeekConfirmN:"Sicura? Elimina settimana e {k} turni", deleteWeekLocked:"🔒 Settimana passata · archivio", pastLocked:"Le settimane passate sono in archivio e non si eliminano", onlyEmpty:"Si può eliminare solo una settimana vuota",
       footAdmin:"Tocca un turno per modificarlo. Le modifiche si salvano da sole.", exitMode:"✓ Modalità manager · Esci", addShift:"＋ Aggiungi turno", daySettings:"Impostazioni giorno",
@@ -962,11 +1006,11 @@
   function lbPoints(r,now){ var live=r.openSince?Math.max(0,now-Date.parse(r.openSince)):0; var hours=(r.msClosed+live)/3600000; return {hours:hours, points:Math.round(hours*10)+(r.matched>=3&&r.onTimePct!=null?r.onTimePct:0)+r.streak*5}; }
   function lbRanked(){ var d=lb.data[lb.period]; if(!d) return null; var now=Date.now(); var rows=d.rows.map(function(r){ var c=lbPoints(r,now); return Object.assign({},r,{hoursLive:c.hours,pointsLive:c.points,on:!!r.openSince}); }); rows.sort(function(a,b){ return b.pointsLive-a.pointsLive||a.name.localeCompare(b.name); }); return rows; }
   function fmtHours(h){ var m=Math.round(h*60); return Math.floor(m/60)+"h "+pad(m%60)+"m"; }
-  function renderLbBtn(){ var b=$("lbBtn"); b.style.display=state.features.toast?"":"none"; }
+  function renderLbBtn(){ $("lbBtn").style.display=(state.features.toast&&state.admin)?"":"none"; $("meBtn").style.display=state.features.toast?"":"none"; }
   async function loadLb(quiet){
-    if(!state.features.toast) return;
+    if(!state.features.toast||!state.admin) return;
     var period=lb.period; var btn=$("lbRefresh"); if(!quiet) btn.classList.add("spin");
-    var r=await api("/api/toast?action=leaderboard&period="+period); btn.classList.remove("spin");
+    var r=await api("/api/toast?action=leaderboard&period="+period,{auth:true}); btn.classList.remove("spin");
     if(r.ok&&r.json&&r.json.rows){ lb.data[r.json.period]=r.json; }
     else if(!quiet) toast("Toast isn't answering right now — try again in a moment.",3500);
     if($("lbOverlay").classList.contains("show")) renderLb();
@@ -981,7 +1025,7 @@
     // podium: 2nd, 1st, 3rd
     var order=[1,0,2];
     pod.innerHTML=order.map(function(i){ var r=scored[i]; var cls="pod p"+(i+1)+(r?"":" empty"); if(!r) return '<div class="'+cls+'"><div class="pav" style="background:var(--border)">?</div><div class="pn">—</div><div class="ps">'+(i===0?"1st":i===1?"2nd":"3rd")+'</div></div>';
-      return '<div class="'+cls+'" style="animation-delay:'+(i*70)+'ms"><span class="medal">'+MEDALS[i]+'</span><div class="pav" style="background:'+avColor(r.name)+'">'+h(initials(r.name))+(r.on?'<span class="cled" style="position:absolute;right:-3px;bottom:-3px;width:12px;height:12px;border-radius:50%;background:var(--good);border:2px solid #fff;animation:ledpulse 1.6s ease-out infinite"></span>':"")+'</div><div class="pn">'+h(r.name)+'</div><div class="pp">'+fmtHours(r.hoursLive)+'</div><div class="pt '+(r.onTimePct==null?'':r.onTimePct>=80?'ok':'late')+'">'+(r.onTimePct!=null?r.onTimePct+'% on time':'—')+'</div></div>'; }).join("");
+      return '<div class="'+cls+'" style="animation-delay:'+(i*70)+'ms"><span class="medal">'+MEDALS[i]+'</span><div class="pav" style="background:'+avColor(r.name)+'">'+h(initials(r.name))+(r.on?'<span class="cled" style="position:absolute;right:-3px;bottom:-3px;width:12px;height:12px;border-radius:50%;background:var(--good);border:2px solid #fff;animation:ledpulse 1.6s ease-out infinite"></span>':"")+'</div><div class="pn">'+h(r.name)+'</div><div class="pp">'+fmtHours(r.hoursLive)+'</div><div class="pt '+(r.matched<3?'':r.onTimePct>=80?'ok':'late')+'">'+(r.matched>=3?r.onTimePct+'% on time':'—')+'</div></div>'; }).join("");
     // FLIP: remember old positions
     var old={}; list.querySelectorAll(".lb-row").forEach(function(el){ old[el.getAttribute("data-name")]=el.getBoundingClientRect().top; });
     var prevOrder=lb.lastOrder[lb.period]||{};
@@ -991,9 +1035,10 @@
       else if(r.pointsLive>0) mv='<span class="mv up">new</span>';
       var sub=r.shifts?r.shifts+(r.shifts===1?' shift':' shifts')+(r.streak>=2?' · 🔥 '+r.streak+' in a row':'')+(r.on?' · <span class="ok">on the clock</span>':''):(r.on?'<span class="ok">on the clock now</span>':'no clocked shifts yet');
       var moved=prevOrder[r.name]&&prevOrder[r.name]>rank;
-      var otCls=r.onTimePct==null?'':(r.onTimePct>=80?'ok':'late');
-      var otSub=r.onTimePct==null?(r.matched?r.matched+'/3 shifts':'—'):(r.avgLate>0?'avg +'+r.avgLate+' min':'never late');
-      return '<div class="lb-row r'+rank+(r.on?" on":"")+(moved?" up":"")+'" data-name="'+h(r.name)+'"><span class="rk">'+(rank<=3&&r.pointsLive>0?MEDALS[rank-1]:rank)+'</span><div class="av" style="background:'+avColor(r.name)+'">'+h(initials(r.name))+'</div><div class="nm"><b>'+h(r.name)+'</b><small>'+sub+'</small></div><div class="col"><b>'+fmtHours(r.hoursLive)+'</b>'+mv+'</div><div class="col '+otCls+'"><b>'+(r.onTimePct!=null?r.onTimePct+'%':'—')+'</b><small>'+otSub+'</small></div></div>';
+      var otShow=r.matched>=3?r.onTimePct:null;
+      var otCls=otShow==null?'':(otShow>=80?'ok':'late');
+      var otSub=otShow==null?(r.matched?r.matched+'/3 shifts':'—'):(r.avgLate>0?'avg +'+r.avgLate+' min':'never late');
+      return '<div class="lb-row r'+rank+(r.on?" on":"")+(moved?" up":"")+'" data-name="'+h(r.name)+'"><span class="rk">'+(rank<=3&&r.pointsLive>0?MEDALS[rank-1]:rank)+'</span><div class="av" style="background:'+avColor(r.name)+'">'+h(initials(r.name))+'</div><div class="nm"><b>'+h(r.name)+'</b><small>'+sub+'</small></div><div class="col"><b>'+fmtHours(r.hoursLive)+'</b>'+mv+'</div><div class="col '+otCls+'"><b>'+(otShow!=null?otShow+'%':'—')+'</b><small>'+otSub+'</small></div></div>';
     }).join("");
     // animate rows sliding into their new place
     list.querySelectorAll(".lb-row").forEach(function(el){ var n=el.getAttribute("data-name"); if(old[n]==null) return; var dy=old[n]-el.getBoundingClientRect().top; if(Math.abs(dy)<1) return; el.style.transition="none"; el.style.transform="translateY("+dy+"px)"; requestAnimationFrame(function(){ el.style.transition="transform .55s cubic-bezier(.2,.8,.2,1)"; el.style.transform=""; }); });
@@ -1010,6 +1055,69 @@
     clearInterval(lb.timer); clearInterval(lb.tick);
     lb.timer=setInterval(function(){ if($("lbOverlay").classList.contains("show")) loadLb(true); else { clearInterval(lb.timer); clearInterval(lb.tick); } },30000);
     lb.tick=setInterval(function(){ if(!$("lbOverlay").classList.contains("show")) return; var rows=lbRanked(); if(rows&&rows.some(function(r){return r.on;})) renderLb(); },5000);
+  }
+
+  // ---------- My stats (each person only sees their own numbers) ----------
+  var ME_KEY="bl_me"; var me={name:storageGet(ME_KEY)||"", period:"week", data:{}, timer:null, tick:null};
+  function meCalc(r,now){ var live=r.openSince?Math.max(0,now-Date.parse(r.openSince)):0; return (r.msClosed+live)/3600000; }
+  function renderMePick(){
+    var el=$("mePick"); var names=state.data.staff||[];
+    if(me.name&&names.indexOf(me.name)<0){ me.name=""; storageSet(ME_KEY,null); }
+    if(me.name){ el.innerHTML=""; el.style.display="none"; $("meBody").style.display=""; $("meSwitch").style.display=""; return; }
+    $("meBody").style.display="none"; $("meSwitch").style.display="none"; el.style.display="";
+    el.innerHTML=(names.length?names.map(function(n){ return '<button type="button" class="chip" data-name="'+h(n)+'"><span class="av" style="background:'+avColor(n)+'">'+h(initials(n))+'</span>'+h(n)+'</button>'; }).join(""):'<div class="tc-empty">No names yet.</div>')+'<div class="hint">Tap your name once — this phone will remember it. Nobody else can see your stats.</div>';
+    el.querySelectorAll(".chip").forEach(function(b){ b.addEventListener("click",function(){ me.name=b.getAttribute("data-name"); storageSet(ME_KEY,me.name); renderMePick(); renderMe(); loadMe(false); }); });
+  }
+  async function loadMe(quiet){
+    if(!state.features.toast||!me.name) return;
+    var btn=$("meRefresh"); if(!quiet) btn.classList.add("spin");
+    var r=await api("/api/toast?action=mystats&period="+me.period+"&name="+encodeURIComponent(me.name)); btn.classList.remove("spin");
+    if(r.ok&&r.json&&r.json.me){ me.data[r.json.period]=r.json; }
+    else if(r.status===404){ me.name=""; storageSet(ME_KEY,null); renderMePick(); return; }
+    else if(!quiet) toast("Toast isn't answering right now — try again in a moment.",3500);
+    if($("meOverlay").classList.contains("show")) renderMe();
+  }
+  function renderMe(){
+    if(!me.name) return;
+    document.querySelectorAll("#meOverlay .lb-tabs button").forEach(function(b){ b.classList.toggle("active",b.getAttribute("data-period")===me.period); });
+    var d=me.data[me.period]; var hero=$("meHero"), sum=$("meSum"), msg=$("meMsg"), team=$("meTeam");
+    if(!d){ hero.innerHTML='<div class="av" style="background:'+avColor(me.name)+'">'+h(initials(me.name))+'</div><div class="t"><b>'+h(me.name)+'</b><span>Loading…</span></div>'; sum.innerHTML=""; msg.innerHTML=""; team.innerHTML=""; $("meUpdated").textContent=""; return; }
+    var r=d.me, now=Date.now(), hours=meCalc(r,now), on=!!r.openSince;
+    hero.className="me-hero"+(on?" on":"");
+    hero.innerHTML='<div class="av" style="background:'+avColor(me.name)+'">'+h(initials(me.name))+'</div><div class="t"><b>'+h(me.name)+'</b><span>'+(on?'On the clock now · since '+fmtClock(r.openSince):(r.shifts?r.shifts+(r.shifts===1?' shift':' shifts')+' clocked':'No clocked shifts yet'))+'</span></div>';
+    var ot=r.matched>=3?r.onTimePct:null;
+    sum.innerHTML='<div class="tile'+(on?" good":"")+'"><b>'+fmtHours(hours)+'</b><span>hours</span></div>'
+      +'<div class="tile'+(ot==null?"":ot>=80?" good":" warn")+'"><b>'+(ot==null?"—":ot+"%")+'</b><span>on time</span></div>'
+      +'<div class="tile'+(r.streak>=2?" good":"")+'"><b>'+(r.streak>=2?"🔥 "+r.streak:r.streak)+'</b><span>in a row</span></div>';
+    // badges + message: always encouraging, never comparative
+    var badges=[];
+    if(r.streak>=3) badges.push("🔥 "+r.streak+" on-time shifts in a row");
+    if(ot===100&&r.matched>=3) badges.push("🎯 Perfect punctuality");
+    if(hours>=30) badges.push("💪 30+ hours");
+    else if(hours>=20) badges.push("💪 20+ hours");
+    if(r.shifts>=10) badges.push("🏅 "+r.shifts+" shifts");
+    var bHtml=badges.length?'<div class="me-badges">'+badges.map(function(b,i){return '<span style="animation-delay:'+(i*80)+'ms">'+b+'</span>';}).join("")+'</div>':"";
+    var m, cls="";
+    if(!r.shifts) { m="Your stats will appear after your first clocked shift. Welcome aboard! 🍸"; cls="neutral"; }
+    else if(ot==null) { m="Keep going — after 3 scheduled shifts you'll see your punctuality too."; cls="neutral"; }
+    else if(ot>=90) m="Amazing — you're almost always right on time. Thank you! ⭐";
+    else if(ot>=80) m="Great job — solid punctuality. Keep it up!";
+    else if(ot>=60) { m="Good work. A few minutes earlier and you're in the green zone."; cls="neutral"; }
+    else { m="Thanks for your hours! Aim to clock in within 5 minutes of your start — you've got this."; cls="neutral"; }
+    msg.className="me-msg "+cls; msg.innerHTML=m;
+    var old=document.querySelector("#meOverlay .me-badges"); if(old) old.remove(); msg.insertAdjacentHTML("beforebegin",bHtml);
+    var t=d.team; var teamLive=t.msClosed+t.openNow.reduce(function(a,iso){return a+Math.max(0,now-Date.parse(iso));},0);
+    team.innerHTML='<div class="row"><span>Team hours '+(me.period==="week"?"this week":me.period==="month"?"this month":"(180 days)")+'</span><b>'+fmtHours(teamLive/3600000)+'</b></div>'
+      +'<div class="row"><span>Team on time</span><b>'+(t.onTimePct==null?"—":t.onTimePct+"%")+'</b></div>'
+      +'<div class="row"><span>Shifts worked by the team</span><b>'+t.shifts+'</b></div>'
+      +(t.openNow.length?'<div class="row"><span>On the clock right now</span><b>'+t.openNow.length+'</b></div>':"");
+    $("meUpdated").innerHTML=(on?'<span class="tc-live">LIVE</span> ':'')+'Updated '+fmtClock(d.fetchedAt)+' · from Toast';
+  }
+  function openMe(){
+    $("meOverlay").classList.add("show"); renderMePick(); if(me.name){ renderMe(); loadMe(false); }
+    clearInterval(me.timer); clearInterval(me.tick);
+    me.timer=setInterval(function(){ if($("meOverlay").classList.contains("show")) loadMe(true); else { clearInterval(me.timer); clearInterval(me.tick); } },30000);
+    me.tick=setInterval(function(){ if(!$("meOverlay").classList.contains("show")) return; var d=me.data[me.period]; if(d&&d.me.openSince) renderMe(); },5000);
   }
 
   // ---------- Time clock panel (visible to everyone) ----------
@@ -1122,6 +1230,7 @@
     document.body.classList.toggle("admin",state.admin);
     $("adminBar").classList.toggle("show",state.admin);
     $("weekTools").classList.toggle("show",state.admin);
+    if(typeof renderLbBtn==="function") renderLbBtn();
     $("managerLink").textContent=state.admin?t("exitMode"):"🔑 Manager login";
     renderNotifyBtn();
     $("footHint").textContent=state.admin?t("footAdmin"):"Tap your shift to confirm you've seen it.";
@@ -1432,9 +1541,14 @@
   $("bellBtn").addEventListener("click",togglePush);
   $("clockBtn").addEventListener("click",openClock);
   $("lbBtn").addEventListener("click",openLb);
+  $("meBtn").addEventListener("click",openMe);
+  $("meClose").addEventListener("click",function(){ $("meOverlay").classList.remove("show"); });
+  $("meRefresh").addEventListener("click",function(){ loadMe(false); });
+  $("meSwitch").addEventListener("click",function(){ me.name=""; storageSet(ME_KEY,null); renderMePick(); });
+  document.querySelectorAll("#meOverlay .lb-tabs button").forEach(function(b){ b.addEventListener("click",function(){ me.period=b.getAttribute("data-period"); renderMe(); loadMe(false); }); });
   $("lbClose").addEventListener("click",function(){ $("lbOverlay").classList.remove("show"); });
   $("lbRefresh").addEventListener("click",function(){ loadLb(false); });
-  document.querySelectorAll(".lb-tabs button").forEach(function(b){ b.addEventListener("click",function(){ lb.period=b.getAttribute("data-period"); renderLb(); loadLb(false); }); });
+  document.querySelectorAll("#lbOverlay .lb-tabs button").forEach(function(b){ b.addEventListener("click",function(){ lb.period=b.getAttribute("data-period"); renderLb(); loadLb(false); }); });
   $("clockClose").addEventListener("click",function(){ $("clockOverlay").classList.remove("show"); });
   $("tcPrev").addEventListener("click",function(){ tcShift(-1); });
   $("tcNext").addEventListener("click",function(){ tcShift(1); });
