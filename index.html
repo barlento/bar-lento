@@ -73,6 +73,7 @@
   .pod .medal{position:absolute;top:6px;right:6px;font-size:1.05rem;filter:drop-shadow(0 1px 1px rgba(0,0,0,.2))}
   .pod .pn{font-weight:700;font-size:.92rem;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .pod .pp{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:1.05rem}
+  .pod .pt{font-size:.74rem;font-weight:700} .pod .pt.ok{color:var(--good)} .pod .pt.late{color:var(--danger)}
   .pod .ps{font-size:.7rem;color:var(--ink-muted)}
   .pod.p1{background:linear-gradient(180deg,var(--gold-soft),var(--surface-2));border-color:var(--gold);padding-top:16px}
   .pod.p1 .pav{border-color:var(--gold);width:56px;height:56px;font-size:1.25rem;box-shadow:0 0 0 4px color-mix(in srgb,var(--gold) 25%,transparent);animation:ledpulse 2.2s ease-out infinite}
@@ -81,7 +82,14 @@
   .pod.p1::before{content:"";position:absolute;inset:-40% -60%;background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.6) 50%,transparent 60%);transform:translateX(-60%);animation:shine 6s ease-in-out infinite;pointer-events:none}
   .pod.empty{opacity:.45}
   .lb-list{display:flex;flex-direction:column;gap:6px;max-height:44vh;overflow:auto;padding:2px}
-  .lb-row{display:grid;grid-template-columns:28px auto 1fr auto;gap:10px;align-items:center;padding:8px 10px;border:1px solid var(--border);border-radius:12px;background:var(--surface);will-change:transform;transition:background .3s,border-color .3s}
+  .lb-head{display:grid;grid-template-columns:24px 34px 1fr 62px 66px;gap:8px;padding:0 10px 4px;font-size:.66rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-muted)}
+  .lb-head span:nth-child(4),.lb-head span:nth-child(5){text-align:right}
+  .lb-row .col{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:1px}
+  .lb-row .col b{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:.9rem;white-space:nowrap}
+  .lb-row .col small{font-size:.68rem;color:var(--ink-muted);white-space:nowrap}
+  .lb-row .col.ok b{color:var(--good)} .lb-row .col.late b{color:var(--danger)}
+  .lb-row .col .mv{font-size:.7rem;font-weight:700;color:var(--ink-muted)} .lb-row .col .mv.up{color:var(--good)} .lb-row .col .mv.down{color:var(--danger)}
+  .lb-row{display:grid;grid-template-columns:24px 34px minmax(0,1fr) 62px 66px;gap:8px;align-items:center;padding:8px 10px;border:1px solid var(--border);border-radius:12px;background:var(--surface);will-change:transform;transition:background .3s,border-color .3s}
   .lb-row.on{border-color:color-mix(in srgb,var(--good) 55%,var(--border))}
   .lb-row.up{animation:flash .9s ease}
   .lb-row .rk{font-family:'IBM Plex Mono',monospace;font-weight:600;color:var(--ink-muted);text-align:center}
@@ -593,8 +601,9 @@
       <button type="button" data-period="all">All time</button>
     </div>
     <div class="podium" id="lbPodium"></div>
+    <div class="lb-head"><span>#</span><span></span><span>Name</span><span>Hours</span><span>On time</span></div>
     <div class="lb-list" id="lbList"><div class="tc-empty">Loading…</div></div>
-    <details class="lb-rules"><summary>How points work</summary><p>10 points per hour worked · + your on-time % (once you have 3 clocked shifts) · + 5 points for every shift in your current on-time streak. “On time” means clocking in within 5 minutes of your scheduled start. Only clocked shifts count. Closed days never count against anyone.</p></details>
+    <details class="lb-rules"><summary>How the ranking works</summary><p>Hours are your clocked time from Toast. “On time” is the share of your scheduled shifts where you clocked in within 5 minutes of the start (shown after 3 clocked shifts). The order combines both: hours first, with a boost for punctuality and for your current on-time streak 🔥. Only clocked shifts count, and closed days never count against anyone.</p></details>
     <div class="tc-foot"><span id="lbUpdated"></span><button class="refresh" id="lbRefresh" type="button">↻ Refresh</button></div>
     <div class="actions"><button class="btn" id="lbClose" type="button">Close</button></div>
   </div>
@@ -972,17 +981,19 @@
     // podium: 2nd, 1st, 3rd
     var order=[1,0,2];
     pod.innerHTML=order.map(function(i){ var r=scored[i]; var cls="pod p"+(i+1)+(r?"":" empty"); if(!r) return '<div class="'+cls+'"><div class="pav" style="background:var(--border)">?</div><div class="pn">—</div><div class="ps">'+(i===0?"1st":i===1?"2nd":"3rd")+'</div></div>';
-      return '<div class="'+cls+'" style="animation-delay:'+(i*70)+'ms"><span class="medal">'+MEDALS[i]+'</span><div class="pav" style="background:'+avColor(r.name)+'">'+h(initials(r.name))+(r.on?'<span class="cled" style="position:absolute;right:-3px;bottom:-3px;width:12px;height:12px;border-radius:50%;background:var(--good);border:2px solid #fff;animation:ledpulse 1.6s ease-out infinite"></span>':"")+'</div><div class="pn">'+h(r.name)+'</div><div class="pp">'+r.pointsLive+' pts</div><div class="ps">'+fmtHours(r.hoursLive)+(r.onTimePct!=null?' · '+r.onTimePct+'% on time':'')+'</div></div>'; }).join("");
+      return '<div class="'+cls+'" style="animation-delay:'+(i*70)+'ms"><span class="medal">'+MEDALS[i]+'</span><div class="pav" style="background:'+avColor(r.name)+'">'+h(initials(r.name))+(r.on?'<span class="cled" style="position:absolute;right:-3px;bottom:-3px;width:12px;height:12px;border-radius:50%;background:var(--good);border:2px solid #fff;animation:ledpulse 1.6s ease-out infinite"></span>':"")+'</div><div class="pn">'+h(r.name)+'</div><div class="pp">'+fmtHours(r.hoursLive)+'</div><div class="pt '+(r.onTimePct==null?'':r.onTimePct>=80?'ok':'late')+'">'+(r.onTimePct!=null?r.onTimePct+'% on time':'—')+'</div></div>'; }).join("");
     // FLIP: remember old positions
     var old={}; list.querySelectorAll(".lb-row").forEach(function(el){ old[el.getAttribute("data-name")]=el.getBoundingClientRect().top; });
     var prevOrder=lb.lastOrder[lb.period]||{};
     list.innerHTML=rows.map(function(r,i){
       var rank=i+1; var mv="";
-      if(r.prevRank){ if(r.prevRank>rank) mv='<span class="mv up">▲ '+(r.prevRank-rank)+'</span>'; else if(r.prevRank<rank) mv='<span class="mv down">▼ '+(rank-r.prevRank)+'</span>'; else mv='<span class="mv">–</span>'; }
+      if(r.prevRank){ if(r.prevRank>rank) mv='<span class="mv up">▲ '+(r.prevRank-rank)+'</span>'; else if(r.prevRank<rank) mv='<span class="mv down">▼ '+(rank-r.prevRank)+'</span>'; else mv=''; }
       else if(r.pointsLive>0) mv='<span class="mv up">new</span>';
-      var sub=r.shifts?fmtHours(r.hoursLive)+' · '+r.shifts+(r.shifts===1?' shift':' shifts')+(r.onTimePct!=null?' · <span class="'+(r.onTimePct>=80?'ok':'late')+'">'+r.onTimePct+'% on time</span>':'')+(r.streak>=2?' · 🔥 '+r.streak:''):(r.on?'on the clock now':'no clocked shifts yet');
+      var sub=r.shifts?r.shifts+(r.shifts===1?' shift':' shifts')+(r.streak>=2?' · 🔥 '+r.streak+' in a row':'')+(r.on?' · <span class="ok">on the clock</span>':''):(r.on?'<span class="ok">on the clock now</span>':'no clocked shifts yet');
       var moved=prevOrder[r.name]&&prevOrder[r.name]>rank;
-      return '<div class="lb-row r'+rank+(r.on?" on":"")+(moved?" up":"")+'" data-name="'+h(r.name)+'"><span class="rk">'+(rank<=3&&r.pointsLive>0?MEDALS[rank-1]:rank)+'</span><div class="av" style="background:'+avColor(r.name)+'">'+h(initials(r.name))+'</div><div class="nm"><b>'+h(r.name)+'</b><small>'+sub+'</small></div><div class="pts"><b>'+r.pointsLive+'</b>'+mv+'</div></div>';
+      var otCls=r.onTimePct==null?'':(r.onTimePct>=80?'ok':'late');
+      var otSub=r.onTimePct==null?(r.matched?r.matched+'/3 shifts':'—'):(r.avgLate>0?'avg +'+r.avgLate+' min':'never late');
+      return '<div class="lb-row r'+rank+(r.on?" on":"")+(moved?" up":"")+'" data-name="'+h(r.name)+'"><span class="rk">'+(rank<=3&&r.pointsLive>0?MEDALS[rank-1]:rank)+'</span><div class="av" style="background:'+avColor(r.name)+'">'+h(initials(r.name))+'</div><div class="nm"><b>'+h(r.name)+'</b><small>'+sub+'</small></div><div class="col"><b>'+fmtHours(r.hoursLive)+'</b>'+mv+'</div><div class="col '+otCls+'"><b>'+(r.onTimePct!=null?r.onTimePct+'%':'—')+'</b><small>'+otSub+'</small></div></div>';
     }).join("");
     // animate rows sliding into their new place
     list.querySelectorAll(".lb-row").forEach(function(el){ var n=el.getAttribute("data-name"); if(old[n]==null) return; var dy=old[n]-el.getBoundingClientRect().top; if(Math.abs(dy)<1) return; el.style.transition="none"; el.style.transform="translateY("+dy+"px)"; requestAnimationFrame(function(){ el.style.transition="transform .55s cubic-bezier(.2,.8,.2,1)"; el.style.transform=""; }); });
