@@ -606,7 +606,7 @@ var DOCS = {
       "title": "Policy on the Rights of Employees to Express Breast Milk in the Workplace",
       "short": "Lactation policy",
       "subtitle": "New York State Labor Law §206-c · based on the New York State Department of Labor model policy (2024 revision)",
-      "intro": "Section 206-c of the New York State Labor Law gives all employees in New York the right to express breast milk in the workplace. This law applies to all employers in New York State, regardless of size. This policy tells you how much time you are allowed, the space Bar Lento provides, how to notify us, and how to contact the Department of Labor if these rights are not honored. Bar Lento gives this policy in writing to every employee when hired, again every year, and to employees returning to work after the birth of a child. It is here for whoever may need it, now or in the future: acknowledging it only means you have read it.",
+      "intro": "Section 206-c of the New York State Labor Law gives all employees in New York the right to express breast milk in the workplace. This law applies to all employers in New York State, regardless of size. This policy tells you how much time you are allowed, the space Bar Lento provides, how to notify us, and how to contact the Department of Labor if these rights are not honored. Bar Lento gives this policy in writing to every employee when hired, again every year, and to employees returning to work after the birth of a child, as the law requires of every employer. It is here for whoever may need it, now or in the future: acknowledging it only means you have read it.",
       "sections": [
         {
           "h": "Break time for breast milk expression",
@@ -620,16 +620,13 @@ var DOCS = {
           ]
         },
         {
-          "h": "The lactation space at Bar Lento",
+          "h": "The space at Bar Lento",
           "blocks": [
-            "Bar Lento’s designated lactation space is the office, at the back of the house. It is never a restroom or toilet stall. While you use it:",
+            "Bar Lento is a small venue without a spare room. When an employee needs to express breast milk, Bar Lento makes a private area of the back of house available for the duration of each break: never a restroom or toilet stall, closed to guests and colleagues while in use (a sign on the door or partition says so), shielded from view and free from intrusion, close to the work area, with good light, a chair, a flat surface, an electrical outlet and clean running water nearby. The exact spot, and any adjustment needed to make it private, is agreed in writing with the employee when they ask (see below), and it is kept clean at all times.",
             [
-              "It is close to your work area, with good light, private (shielded from view and free from intrusion), and the door is locked from the inside; a sign on the door says the room is in use and nobody enters.",
-              "It has a chair, a desk or other flat surface, an electrical outlet, and clean running water nearby.",
-              "You may store expressed milk in the staff refrigerator, in a closed and labeled container, and take it home at the end of each day. Bar Lento cannot guarantee the safekeeping of milk stored in a shared refrigerator.",
-              "The space is kept clean at all times."
-            ],
-            "If the office is ever unavailable, Bar Lento provides another private room (never a restroom) close to your work area that meets as many of these requirements as possible. Difficulty finding a location is never a reason to deny you the right to express breast milk at work."
+              "Expressed milk may be stored in the staff refrigerator, in a closed and labeled container, and taken home at the end of each day. Bar Lento cannot guarantee the safekeeping of milk stored in a shared refrigerator.",
+              "The law allows a small business to meet as many of these requirements as it reasonably can when providing a dedicated room would cause undue hardship, but it never allows denying an employee the right to express breast milk at work: a private space is always provided."
+            ]
           ]
         },
         {
@@ -637,7 +634,7 @@ var DOCS = {
           "blocks": [
             [
               "Tell an Owner or the Manager in writing (an email or a text is fine), ideally before you return to work after your leave, so we can adjust schedules. Say roughly how many breaks you expect per shift and your preferred times.",
-              "Bar Lento answers in writing within 5 business days and tells all staff, by email or a note in the staff area, when a room is designated.",
+              "Bar Lento answers in writing within 5 business days, confirming the space and the times, and tells all staff by email or a note in the staff area when a space is designated.",
               "You can update your needs at any time: schedules are adjusted accordingly."
             ]
           ]
