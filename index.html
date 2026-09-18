@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#F3EDE1">
 <title>Bar Lento — Schedule</title>
 <meta name="description" content="Bar Lento weekly staff schedule — New York">
@@ -30,6 +30,7 @@
   *{box-sizing:border-box}
   html{-webkit-text-size-adjust:100%}
   @media (max-width:640px){html{font-size:16px}}
+  html,body{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
   body{margin:0;background:var(--bg);color:var(--ink);font-family:'Karla',ui-sans-serif,system-ui,sans-serif;-webkit-font-smoothing:antialiased;padding-bottom:env(safe-area-inset-bottom)}
   h1,h2,h3,.display{font-family:'Bricolage Grotesque',ui-sans-serif,system-ui,sans-serif;text-wrap:balance}
   .mono{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
@@ -574,6 +575,7 @@
     .sheet{padding:14px}
     .sheet h2{font-size:1.05rem}
     .pin-pad button{height:48px}
+    .field select,.field input,.addrow input,.roster .bday input{font-size:16px}
   }
 
   @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none !important;transition:none !important}}
