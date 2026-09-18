@@ -60,6 +60,89 @@
   .clockbtn.live .cled{background:var(--good);opacity:1;animation:ledpulse 1.6s ease-out infinite}
   .clockbtn .cnt{background:var(--good);color:#fff;border-radius:999px;font-size:.72rem;line-height:1.4;padding:1px 7px;min-width:20px;text-align:center;animation:pop .45s cubic-bezier(.34,1.56,.64,1)}
 
+  .mebtn{border:2px solid var(--border);background:var(--surface);color:var(--ink);border-radius:12px;padding:10px 14px;font-size:.95rem;font-weight:700;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:8px}
+  .mebtn.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-ink)}
+  .mebtn .mav{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:.7rem;font-weight:700;color:#fff;background:var(--accent);flex:none}
+
+  /* ---- personal strip (logged-in staff) ---- */
+  .mestrip{display:none;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 16px;margin-bottom:14px;border-radius:14px;background:var(--surface);border:1px solid var(--border);border-left:5px solid var(--accent);box-shadow:var(--shadow);animation:rise .45s cubic-bezier(.2,.7,.2,1) both}
+  .mestrip.show{display:flex}
+  .mestrip .hi{display:flex;align-items:center;gap:12px;min-width:0}
+  .mestrip .av{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-weight:700;color:#fff;background:var(--accent);flex:none}
+  .mestrip .txt{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .mestrip .txt b{font-size:1rem}
+  .mestrip .txt span{font-size:.82rem;color:var(--ink-muted)}
+  .mestrip .txt span.soon{color:var(--good);font-weight:700}
+  .mestrip .btn{white-space:nowrap}
+  @media (max-width:640px){.mestrip .btn{flex:1 1 100%;text-align:center;padding:11px}}
+
+  /* ---- who are you ---- */
+  .who-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:56vh;overflow:auto;padding:2px;margin-bottom:12px}
+  .who-name{display:flex;align-items:center;gap:10px;border:1px solid var(--border);background:var(--surface);border-radius:12px;padding:10px 12px;font-weight:700;font-size:.98rem;cursor:pointer;text-align:left;animation:rise .35s cubic-bezier(.2,.8,.2,1) both;transition:transform .12s,border-color .2s,background .2s}
+  .who-name:hover{border-color:var(--accent);background:var(--accent-soft);transform:translateY(-1px)}
+  .who-name:active{transform:scale(.97)}
+  .who-name .av{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:.8rem;font-weight:700;color:#fff;background:var(--accent);flex:none}
+  .who-name .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .who-name .pinned{margin-left:auto;font-size:.8rem;opacity:.55}
+
+  /* ---- PIN pad ---- */
+  .pin-sheet{text-align:center}
+  .pin-who{display:inline-flex;align-items:center;gap:8px;background:var(--surface-2);border-radius:999px;padding:6px 12px 6px 6px;font-weight:700;margin-bottom:10px}
+  .pin-who .av{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:.72rem;font-weight:700;color:#fff;background:var(--accent)}
+  .pin-dots{display:flex;justify-content:center;gap:14px;margin:12px 0 6px}
+  .pin-dots span{width:18px;height:18px;border-radius:50%;border:2px solid var(--border);background:var(--surface);transition:background .15s,border-color .15s,transform .15s}
+  .pin-dots span.on{background:var(--accent);border-color:var(--accent);transform:scale(1.15)}
+  .pin-dots.shake{animation:shake .4s ease}
+  .pin-dots.ok span{background:var(--good);border-color:var(--good)}
+  @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-9px)}40%{transform:translateX(8px)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}}
+  .pin-err{color:var(--danger);font-size:.86rem;min-height:1.3em;margin:4px 0 8px;font-weight:600}
+  .pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:280px;margin:0 auto 10px}
+  .pin-pad button{border:1px solid var(--border);background:var(--surface);color:var(--ink);border-radius:14px;height:58px;font-size:1.45rem;font-weight:600;font-family:'IBM Plex Mono',monospace;cursor:pointer;transition:transform .08s,background .15s}
+  .pin-pad button:hover{background:var(--surface-2)}
+  .pin-pad button:active{transform:scale(.94);background:var(--accent-soft)}
+  .pin-pad button.ghost{border-color:transparent;background:transparent;font-size:1.1rem;font-family:inherit}
+  .pin-pad button:disabled{opacity:.35;cursor:not-allowed}
+  .pin-hint{font-size:.78rem;color:var(--ink-muted);margin:0 0 6px}
+
+  /* ---- my week ---- */
+  .me-tabs{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:4px 0 12px}
+  .me-tabs .navbtn{border:1px solid var(--border);background:var(--bg);color:var(--ink);width:40px;height:40px;border-radius:12px;font-size:1.1rem;cursor:pointer;flex:none}
+  .me-tabs .navbtn:disabled{opacity:.3;cursor:not-allowed}
+  .me-tabs .lbl{text-align:center;flex:1}
+  .me-tabs .lbl b{display:block;font-size:1.02rem}
+  .me-tabs .lbl span{display:block;font-size:.78rem;color:var(--ink-muted)}
+  .me-list{display:flex;flex-direction:column;gap:8px;max-height:44vh;overflow:auto;padding:2px}
+  .me-row{display:grid;grid-template-columns:52px 1fr auto;gap:12px;align-items:center;padding:10px 12px;border:1px solid var(--border);border-radius:14px;background:var(--surface);text-align:left;width:100%;cursor:pointer;font:inherit;color:inherit;animation:rise .35s cubic-bezier(.2,.8,.2,1) both;transition:transform .15s,box-shadow .2s}
+  .me-row:hover{transform:translateX(3px);box-shadow:0 4px 12px -8px rgba(36,26,18,.3)}
+  .me-row.today{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 30%,transparent)}
+  .me-row.past{opacity:.75}
+  .me-row.confirmed{background:var(--good-soft);border-color:color-mix(in srgb,var(--good) 50%,var(--border))}
+  .me-row .dy{text-align:center;font-weight:700;line-height:1.1}
+  .me-row .dy small{display:block;font-weight:500;color:var(--ink-muted);font-size:.72rem;margin-top:2px}
+  .me-row .mid{display:flex;flex-direction:column;gap:3px;min-width:0}
+  .me-row .mid .tm{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:.95rem}
+  .me-row .mid .tm .st{font-family:'Karla',sans-serif;font-weight:600;color:var(--ink-muted);font-size:.8rem;margin-left:6px}
+  .me-row .mid .sub{font-size:.76rem;color:var(--ink-muted)}
+  .me-row .ok{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border);display:grid;place-items:center;font-size:.9rem;color:transparent;flex:none}
+  .me-row.confirmed .ok{background:var(--good);border-color:var(--good);color:#fff}
+  .me-row .ok.todo{color:var(--accent);border-color:var(--accent);font-size:.7rem;font-weight:700;width:auto;padding:0 8px;border-radius:999px;height:24px}
+  .me-empty{text-align:center;color:var(--ink-muted);padding:22px 10px;font-size:.92rem}
+  .me-empty .big{font-size:2.2rem;display:inline-block;margin-bottom:8px;animation:sway 4s ease-in-out infinite}
+  .me-note{font-size:.78rem;color:var(--ink-muted);margin:10px 0 0;text-align:center}
+  .tc-sum .tile.diff.plus b{color:var(--good)}
+  .tc-sum .tile.diff.minus b{color:var(--danger)}
+
+  .shift.mine{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
+  .shift.mine .who::before{content:"you";display:inline-block;font-size:.62rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:6px;padding:1px 6px;margin-right:7px;vertical-align:middle}
+
+  .roster .person{grid-template-columns:1fr auto auto auto}
+  .roster .nm small{display:block;font-weight:500;font-size:.72rem;color:var(--ink-muted)}
+  .roster .nm small.haspin{color:var(--good)}
+  .roster .pinbtn{border:1px solid var(--border);background:var(--surface);border-radius:8px;padding:5px 8px;font-size:.78rem;font-weight:600;cursor:pointer;white-space:nowrap}
+  .roster .pinbtn:hover{border-color:var(--accent)}
+  .roster .pinbtn.arm{background:var(--danger-soft);border-color:var(--danger);color:var(--danger)}
+  .roster .pinbtn:disabled{opacity:.4;cursor:not-allowed}
+
   /* ---- Time clock panel ---- */
   .tc-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:4px 0 12px}
   .tc-head .navbtn{border:1px solid var(--border);background:var(--bg);color:var(--ink);width:40px;height:40px;border-radius:12px;font-size:1.1rem;cursor:pointer;flex:none}
@@ -98,8 +181,8 @@
     .hdr-right{align-items:stretch}
     .hdr-actions{width:100%}
     .hdr-actions{flex-wrap:wrap}
-    .hdr-actions .bellbtn,.hdr-actions .loginbtn,.hdr-actions .clockbtn{flex:1;text-align:center;justify-content:center;padding:12px 6px;font-size:.9rem;white-space:normal;line-height:1.2}
-    .hdr-actions .clockbtn{white-space:nowrap}
+    .hdr-actions .bellbtn,.hdr-actions .loginbtn,.hdr-actions .clockbtn,.hdr-actions .mebtn{flex:1;text-align:center;justify-content:center;padding:12px 6px;font-size:.9rem;white-space:normal;line-height:1.2}
+    .hdr-actions .clockbtn,.hdr-actions .mebtn{white-space:nowrap}
     .hdr-actions .loginbtn{flex:1 1 100%}
     .tc-row .tm .io{font-size:.82rem}
     .tc-sum .tile b{font-size:1.15rem}
@@ -329,7 +412,7 @@
   .flashnew{animation:flash .9s ease}
 
   @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none !important;transition:none !important}}
-  @media print{.adminbar,.weektools,.addrow2,footer,.toast,.archiverow{display:none !important}}
+  @media print{.adminbar,.weektools,.addrow2,footer,.toast,.archiverow,.mestrip,.hdr-actions{display:none !important}}
 </style>
 </head>
 <body>
@@ -344,6 +427,7 @@
     </div>
     <div class="hdr-right">
       <div class="hdr-actions">
+        <button class="mebtn" id="meBtn" type="button" style="display:none" aria-haspopup="dialog">👤 Who are you?</button>
         <button class="clockbtn" id="clockBtn" type="button" style="display:none" aria-haspopup="dialog"><span class="cled" aria-hidden="true"></span><span class="lbl">⏱ Time clock</span><span class="cnt" id="clockCnt" style="display:none">0</span></button>
         <button class="bellbtn" id="bellBtn" type="button" style="display:none">🔔 Notify me</button>
         <button class="loginbtn" id="managerLink" type="button">🔑 Manager login</button>
@@ -363,6 +447,11 @@
       <button class="abtn lang" id="langBtn" type="button" title="Language / Lingua">🇮🇹 IT</button>
       <button class="abtn" id="logoutBtn" type="button" data-t="logoutBtn">Log out</button>
     </div>
+  </div>
+
+  <div class="mestrip" id="meStrip" role="region" aria-label="Your shifts">
+    <div class="hi"><span class="av" id="meAv">?</span><div class="txt"><b id="meHi">Hi!</b><span id="meNext"></span></div></div>
+    <button class="btn primary" id="meOpenBtn" type="button">📅 My week</button>
   </div>
 
   <div class="hero" id="heroStatus" aria-live="polite"></div>
@@ -565,6 +654,52 @@
   </div>
 </div>
 
+<!-- Who are you? (staff, once per device) -->
+<div class="overlay" id="whoOverlay">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="whoTitle">
+    <h2 id="whoTitle">Who are you?</h2>
+    <p class="lead" id="whoLead">Tap your name to see your shifts and hours. The first time you'll create a 4-digit PIN — only you know it.</p>
+    <div class="who-grid" id="whoGrid"></div>
+    <div class="actions"><span class="spacer"></span><button class="btn" id="whoSkip" type="button">Not now</button></div>
+  </div>
+</div>
+
+<!-- PIN -->
+<div class="overlay" id="pinOverlay">
+  <div class="sheet pin-sheet" role="dialog" aria-modal="true" aria-labelledby="pinTitle">
+    <div class="pin-who"><span class="av" id="pinAv">?</span><span id="pinName"></span></div>
+    <h2 id="pinTitle">Enter your PIN</h2>
+    <p class="lead" id="pinLead"></p>
+    <div class="pin-dots" id="pinDots" aria-live="polite"><span></span><span></span><span></span><span></span></div>
+    <div class="pin-err" id="pinErr"></div>
+    <div class="pin-pad" id="pinPad"></div>
+    <p class="pin-hint" id="pinHint">Numbers only. Forgot it? Ask Marta to reset it.</p>
+    <div class="actions" style="justify-content:center"><button class="btn" id="pinBack" type="button">← Back</button></div>
+  </div>
+</div>
+
+<!-- My week (staff) -->
+<div class="overlay" id="meOverlay">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="meTitle">
+    <h2 id="meTitle">My week</h2>
+    <p class="lead" id="meLead">Your shifts, and your hours from the Toast time clock.</p>
+    <div class="me-tabs">
+      <button class="navbtn" id="mePrev" type="button" aria-label="Previous week">‹</button>
+      <div class="lbl"><b id="meWeekLbl"></b><span id="meWeekSub"></span></div>
+      <button class="navbtn" id="meNext" type="button" aria-label="Next week">›</button>
+    </div>
+    <div class="tc-sum" id="meSum"></div>
+    <div class="me-list" id="meList"></div>
+    <p class="me-note" id="meNote"></p>
+    <div class="actions">
+      <button class="linkbtn" id="meSwitch" type="button">Not you? Switch</button>
+      <button class="linkbtn" id="meLogout" type="button">Log out here</button>
+      <span class="spacer"></span>
+      <button class="btn" id="meClose" type="button">Close</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -579,7 +714,7 @@
   var DAY_KEY_BY_JSDAY=["sun","mon","tue","wed","thu","fri","sat"];
   var STATUS_LABEL={closed:"Closed",holiday:"Holiday · closed",half:"Half day",event:"Private event"};
   function hoursFor(wk,day){ var n=dayNote(wk,day); if(n&&n.status==="half"&&n.open&&n.close) return {open:n.open,close:n.close}; return OPENING[day]; }
-  var PW_KEY="bl_admin_pw", ARCHIVE_KEY="bl_show_archive", LANG_KEY="bl_lang";
+  var PW_KEY="bl_admin_pw", ARCHIVE_KEY="bl_show_archive", LANG_KEY="bl_lang", ME_TOKEN_KEY="bl_me_token", ME_NAME_KEY="bl_me_name", ME_SKIP_KEY="bl_me_skip";
 
   // ---------- manager-mode language (staff always see English) ----------
   var I18N={
@@ -597,7 +732,7 @@
       holidayNote:"This day is <b>{h}</b> — open or closed is your call.",
       pOpen:"Open · regular hours", pClosedFor:"Closed for {h}", pFullDay:"Full day", pHalfFor:"Half day for {h}", pHalf:"Half day", pHalfSub:"Choose the hours below", pEvent:"Private event", pEventSub:"Bar reserved · shifts still shown", pOther:"Closed — other reason", pOtherSub:"Type the reason below so the team knows",
       reasonPh2:"Reason, e.g. Renovation · Staff training · Bad weather", errReason:"Please type the reason — the team will see it.", errClose:"Closing time must be after opening time.", dayOpenSet:"Day set to open",
-      staffTitle:"Staff", staffLead:"Names offered when you create a shift. Add a birthday (month/day/year) and the team gets a surprise on that day 🎂. Removing a name never deletes past shifts — the archive stays complete.",
+      staffTitle:"Staff", staffLead:"Names offered when you create a shift. Add a birthday (month/day/year) and the team gets a surprise on that day 🎂. Removing a name never deletes past shifts — the archive stays complete. Each person creates a personal PIN to see their own shifts and hours; <b>Reset PIN</b> if they forget it (it also signs out all their devices).",
       newNamePh:"New name", noNames:"No names yet.", nameExists:"That name is already on the list", removeQ:"Remove?", bdaySaved:"Birthday saved for {n}", bdayRemoved:"Birthday removed",
       removeTap:"Tap again to remove {n}{s}. Past weeks are kept.", upcoming1:" and 1 upcoming shift", upcomingN:" and {k} upcoming shifts", removed:"{n} removed{s}. Past shifts kept in the archive.", deleted1:" · 1 upcoming shift deleted", deletedN:" · {k} upcoming shifts deleted",
       historyTitle:"Change history", historyLead:"Every edit made from manager mode, newest first. Confirmation times are included in the CSV archive.", loading:"Loading…", historyFail:"Couldn't load the history.", noChanges:"No changes recorded yet.", historyNeedsDb:"History is available once the database is connected.",
@@ -605,6 +740,7 @@
       weekCreated:"Week of {r} created", weekCopied:"Week of {r} created with {k} shifts copied — adjust names and times", weekNoPrev:"Week created (no previous week to copy from)", noPrev:"There's no previous week to copy.", copied:"Shifts copied from the previous week", weekDeleted:"Week deleted",
       welcome:"Welcome! You're in manager mode.", noDb:"Heads up: the database isn't connected, so changes won't be saved.", loggedOut:"Logged out of manager mode.",
       conflict:"Someone else changed the schedule from another device. I reloaded the latest version — please redo your change.", pwInvalid:"Password no longer valid. Please log in again.", dbMissing:"The database isn't connected yet — changes can't be saved.", saveFail:"Couldn't save. Please try again.",
+      pinSet:"PIN set", pinDevices:"{k} device{p}", pinNone:"No PIN yet", pinReset:"Reset PIN", pinResetSure:"Sure? Reset", pinResetDone:"PIN reset for {n} — they'll create a new one next time", pinResetFail:"Couldn't reset the PIN. Try again.", viewWeek:"View {n}'s week", staffLeadPin:" Each person creates a personal PIN to see their own shifts and hours; <b>Reset PIN</b> if they forget it (it also signs out all their devices).",
       toastPick:"— Toast employee —", toastLoading:"Loading Toast…", toastLinked:"{n} linked to Toast", toastUnlinked:"{n} unlinked from Toast", notified:"Team notified ✓ ({k} phone{p})", notifiedNone:"Changes noted — nobody has notifications turned on yet.", notifyFail:"Couldn't send the notification. It will go out automatically later.", markedClosed:"{h} ✓"
     },
     it:{
@@ -621,7 +757,7 @@
       holidayNote:"Questo giorno è <b>{h}</b> — aprire o chiudere lo decidi tu.",
       pOpen:"Aperto · orario normale", pClosedFor:"Chiuso per {h}", pFullDay:"Tutto il giorno", pHalfFor:"Mezza giornata per {h}", pHalf:"Mezza giornata", pHalfSub:"Scegli gli orari qui sotto", pEvent:"Evento privato", pEventSub:"Locale riservato · i turni restano visibili", pOther:"Chiuso — altro motivo", pOtherSub:"Scrivi il motivo qui sotto così i ragazzi lo sanno",
       reasonPh2:"Motivo, es. Lavori · Formazione · Maltempo", errReason:"Scrivi il motivo — i ragazzi lo vedranno.", errClose:"L'orario di chiusura deve essere dopo l'apertura.", dayOpenSet:"Giorno impostato su aperto",
-      staffTitle:"Staff", staffLead:"I nomi proposti quando crei un turno. Aggiungi il compleanno (mese/giorno/anno) e quel giorno il team riceve una sorpresa 🎂. Togliere un nome non cancella mai i turni passati — l'archivio resta completo.",
+      staffTitle:"Staff", staffLead:"I nomi proposti quando crei un turno. Aggiungi il compleanno (mese/giorno/anno) e quel giorno il team riceve una sorpresa 🎂. Togliere un nome non cancella mai i turni passati — l'archivio resta completo. Ognuno crea un PIN personale per vedere i propri turni e le proprie ore; <b>Azzera PIN</b> se lo dimentica (scollega anche tutti i suoi dispositivi).",
       newNamePh:"Nuovo nome", noNames:"Nessun nome ancora.", nameExists:"Nome già presente", removeQ:"Rimuovi?", bdaySaved:"Compleanno salvato per {n}", bdayRemoved:"Compleanno rimosso",
       removeTap:"Tocca di nuovo per rimuovere {n}{s}. Le settimane passate restano.", upcoming1:" e 1 turno futuro", upcomingN:" e {k} turni futuri", removed:"{n} rimosso/a{s}. I turni passati restano in archivio.", deleted1:" · 1 turno futuro cancellato", deletedN:" · {k} turni futuri cancellati",
       historyTitle:"Cronologia modifiche", historyLead:"Ogni modifica fatta dalla modalità manager, dalla più recente. Le ore di conferma sono nell'archivio CSV.", loading:"Caricamento…", historyFail:"Impossibile caricare la cronologia.", noChanges:"Nessuna modifica registrata.", historyNeedsDb:"La cronologia è disponibile quando il database è collegato.",
@@ -629,6 +765,7 @@
       weekCreated:"Settimana {r} creata", weekCopied:"Settimana {r} creata con {k} turni copiati — sistema nomi e orari", weekNoPrev:"Settimana creata (nessuna precedente da copiare)", noPrev:"Non c'è una settimana precedente da copiare.", copied:"Turni copiati dalla settimana precedente", weekDeleted:"Settimana eliminata",
       welcome:"Ciao! Sei in modalità manager.", noDb:"Attenzione: database non collegato, le modifiche non verranno salvate.", loggedOut:"Uscita dalla modalità manager.",
       conflict:"Qualcun altro ha modificato i turni da un altro dispositivo. Ho ricaricato l'ultima versione — ripeti la modifica.", pwInvalid:"Password non più valida. Accedi di nuovo.", dbMissing:"Il database non è ancora collegato — le modifiche non si salvano.", saveFail:"Salvataggio non riuscito. Riprova.",
+      pinSet:"PIN creato", pinDevices:"{k} dispositiv{p}", pinNone:"Nessun PIN", pinReset:"Azzera PIN", pinResetSure:"Sicura? Azzera", pinResetDone:"PIN azzerato per {n} — ne creerà uno nuovo al prossimo accesso", pinResetFail:"Impossibile azzerare il PIN. Riprova.", viewWeek:"Vedi la settimana di {n}", staffLeadPin:" Ognuno crea un PIN personale per vedere i propri turni e le proprie ore; <b>Azzera PIN</b> se lo dimentica (scollega anche tutti i suoi dispositivi).",
       toastPick:"— dipendente Toast —", toastLoading:"Carico Toast…", toastLinked:"{n} collegato/a a Toast", toastUnlinked:"{n} scollegato/a da Toast", notified:"Ragazzi avvisati ✓ ({k} telefon{p})", notifiedNone:"Modifiche registrate — nessuno ha ancora attivato le notifiche.", notifyFail:"Invio non riuscito. Partirà automaticamente più tardi.", markedClosed:"{h} ✓"
     }
   };
@@ -646,7 +783,8 @@
     features:{storage:false,admin:false},
     admin:false, password:"", activeWeek:null, showArchive:false,
     saving:false, dirtyTimer:null, editing:null, dayEditing:null, confirming:null,
-    pendingConfirm:{}, pollTimer:null, pendingNotify:0, idleTimer:null, toastToday:null, toastEmployees:null
+    pendingConfirm:{}, pollTimer:null, pendingNotify:0, idleTimer:null, toastToday:null, toastEmployees:null,
+    me:{name:null,token:null}, accounts:null
   };
 
   // ---------- helpers ----------
@@ -771,6 +909,7 @@
   async function api(path,opts){
     opts=opts||{}; var headers={"Content-Type":"application/json"};
     if(opts.auth && state.password) headers["x-admin-password"]=state.password;
+    if(state.me.token) headers["x-staff-token"]=state.me.token;
     var res=await fetch(path,{method:opts.method||"GET",headers:headers,body:opts.body?JSON.stringify(opts.body):undefined,cache:"no-store"});
     var json=null; try{json=await res.json();}catch(e){}
     return {ok:res.ok,status:res.status,json:json||{}};
@@ -825,7 +964,7 @@
   }
 
   // ---------- rendering ----------
-  function renderAll(){renderUpdated();renderHero();renderTabs();renderDays();renderAdminUI();}
+  function renderAll(){renderUpdated();renderHero();renderTabs();renderDays();renderAdminUI();renderMe();}
 
   function renderUpdated(){
     var el=$("updatedNote");
@@ -969,7 +1108,8 @@
       var confirmed=shifts.filter(function(s){return !!state.confirmations[shiftKey(wk,key,s.id)];}).length;
       var rows=shifts.length?shifts.map(function(s){
         var ok=!!state.confirmations[shiftKey(wk,key,s.id)];
-        return '<button type="button" class="shift'+(ok?" confirmed":"")+'" data-day="'+key+'" data-id="'+h(s.id)+'" aria-pressed="'+ok+'">'
+        var mine=!!state.me.name&&s.name===state.me.name;
+        return '<button type="button" class="shift'+(ok?" confirmed":"")+(mine?" mine":"")+'" data-day="'+key+'" data-id="'+h(s.id)+'" aria-pressed="'+ok+'">'
           +'<span class="check" aria-hidden="true">✓</span>'
           +'<span class="main"><span class="who">'+h(s.name)+(s.station?'<span class="st">'+h(s.station)+'</span>':"")+'</span><span class="when mono">'+range12(s.start,s.end)+'</span>'+clockBadge(wk,key,s,isToday,isPast)+'</span>'
           +'<span class="edit" aria-hidden="true">✎</span></button>';
@@ -1223,9 +1363,23 @@
   function renderRoster(){
     var el=$("rosterList"); if(!state.data.birthdays) state.data.birthdays={}; if(!state.data.toastMap) state.data.toastMap={};
     el.innerHTML=state.data.staff.length?state.data.staff.map(function(n,i){
-      var b=state.data.birthdays[n]||"";
-      return '<div class="person"><span class="nm">'+h(n)+'</span><label class="bday">🎂 <input type="date" data-name="'+h(n)+'" value="'+h(b)+'" aria-label="Birthday of '+h(n)+'"></label><button type="button" class="x" data-i="'+i+'" aria-label="Remove '+h(n)+'">✕</button></div>';
+      var b=state.data.birthdays[n]||""; var acc=(state.accounts||{})[n];
+      var accTxt=acc&&acc.pin?t("pinSet")+(acc.devices?" · "+t("pinDevices",{k:acc.devices,p:lang==="it"?(acc.devices===1?"o":"i"):(acc.devices===1?"":"s")}):""):t("pinNone");
+      return '<div class="person"><span class="nm">'+h(n)+'<small class="'+(acc&&acc.pin?"haspin":"")+'">'+(state.accounts?h(accTxt):"")+'</small></span>'
+        +'<label class="bday">🎂 <input type="date" data-name="'+h(n)+'" value="'+h(b)+'" aria-label="Birthday of '+h(n)+'"></label>'
+        +'<button type="button" class="pinbtn view" data-name="'+h(n)+'" title="'+h(t("viewWeek",{n:n}))+'" aria-label="'+h(t("viewWeek",{n:n}))+'">📅</button>'
+        +'<button type="button" class="pinbtn reset" data-name="'+h(n)+'"'+(acc&&(acc.pin||acc.devices)?"":" disabled")+'>🔑 '+t("pinReset")+'</button>'
+        +'<button type="button" class="x" data-i="'+i+'" aria-label="Remove '+h(n)+'">✕</button></div>';
     }).join(""):'<div class="empty-note">'+t("noNames")+'</div>';
+    el.querySelectorAll(".pinbtn.view").forEach(function(b){b.addEventListener("click",function(){ $("staffOverlay").classList.remove("show"); openMe(b.getAttribute("data-name")); });});
+    el.querySelectorAll(".pinbtn.reset").forEach(function(b){b.addEventListener("click",async function(){
+      var n=b.getAttribute("data-name");
+      if(!b.dataset.arm){ b.dataset.arm="1"; b.classList.add("arm"); b.textContent=t("pinResetSure"); setTimeout(function(){ if(b.isConnected&&b.dataset.arm){ b.dataset.arm=""; b.classList.remove("arm"); b.textContent="🔑 "+t("pinReset"); } },4000); return; }
+      b.disabled=true;
+      var r=await api("/api/me",{method:"POST",auth:true,body:{action:"reset",name:n}});
+      if(r.ok){ toast(t("pinResetDone",{n:n}),4200); await loadAccounts(); renderRoster(); }
+      else { toast(t("pinResetFail")); b.disabled=false; b.dataset.arm=""; b.classList.remove("arm"); b.textContent="🔑 "+t("pinReset"); }
+    });});
     el.querySelectorAll(".x").forEach(function(b){b.addEventListener("click",function(){
       var i=Number(b.getAttribute("data-i")); var n=state.data.staff[i]; if(!n) return;
       var up=upcomingShiftsOf(n);
@@ -1304,6 +1458,16 @@
   $("daySave").addEventListener("click",saveDayFromEditor);
   $("dayStatus").addEventListener("change",syncHalfHours);
   $("bellBtn").addEventListener("click",togglePush);
+  $("meBtn").addEventListener("click",function(){ if(state.me.name) openMe(null); else openWho(false); });
+  $("meOpenBtn").addEventListener("click",function(){ openMe(null); });
+  $("whoSkip").addEventListener("click",function(){ $("whoOverlay").classList.remove("show"); storageSet(ME_SKIP_KEY,String(Date.now())); });
+  $("pinBack").addEventListener("click",function(){ $("pinOverlay").classList.remove("show"); pin.name=null; openWho(false); });
+  $("meClose").addEventListener("click",function(){ $("meOverlay").classList.remove("show"); });
+  $("meSwitch").addEventListener("click",function(){ $("meOverlay").classList.remove("show"); openWho(false); });
+  $("meLogout").addEventListener("click",meLogout);
+  $("mePrev").addEventListener("click",function(){ meShiftWeek(-1); });
+  $("meNext").addEventListener("click",function(){ meShiftWeek(1); });
+  document.addEventListener("keydown",function(e){ if(!$("pinOverlay").classList.contains("show")) return; if(/^[0-9]$/.test(e.key)){ e.preventDefault(); pinPress(e.key); } else if(e.key==="Backspace"){ e.preventDefault(); pinPress("del"); } });
   $("clockBtn").addEventListener("click",openClock);
   $("clockClose").addEventListener("click",function(){ $("clockOverlay").classList.remove("show"); });
   $("tcPrev").addEventListener("click",function(){ tcShift(-1); });
@@ -1311,9 +1475,9 @@
   $("tcRefresh").addEventListener("click",function(){ loadClock(false); });
   $("notifyBtn").addEventListener("click",function(){sendNotifyNow(false);});
   $("langBtn").addEventListener("click",function(){setLang(lang==="en"?"it":"en");});
-  $("weekClose").addEventListener("click",function(){$("weekOverlay").classList.remove("show");});
+  $("weekClose").addEventListener("click",function(){$("weekOverlay").classList.remove("show");maybeWhoPopup();});
   document.addEventListener("visibilitychange",function(){ if(document.visibilityState==="hidden"&&state.admin&&state.pendingNotify&&state.password&&!state.dirtyTimer&&!state.saving){ try{ fetch("/api/notify",{method:"POST",headers:{"x-admin-password":state.password,"Content-Type":"application/json"},keepalive:true}); state.pendingNotify=0; }catch(e){} } });
-  $("staffBtn").addEventListener("click",function(){renderRoster();$("staffOverlay").classList.add("show");});
+  $("staffBtn").addEventListener("click",function(){renderRoster();$("staffOverlay").classList.add("show");loadAccounts().then(renderRoster);});
   $("staffClose").addEventListener("click",function(){$("staffOverlay").classList.remove("show");});
   $("addStaffBtn").addEventListener("click",addStaff);
   $("newStaffInput").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();addStaff();}});
@@ -1322,7 +1486,7 @@
   $("exportBtn").addEventListener("click",exportCSV);
   $("newWeekBtn").addEventListener("click",openNewWeek);
   $("nwCancel").addEventListener("click",function(){$("newWeekOverlay").classList.remove("show");});
-  $("bdayClose").addEventListener("click",function(){$("bdayOverlay").classList.remove("show");});
+  $("bdayClose").addEventListener("click",function(){$("bdayOverlay").classList.remove("show");maybeWhoPopup();});
   $("deleteWeekBtn").addEventListener("click",deleteWeek);
   $("copyBtn").addEventListener("click",copyText);
   $("archiveToggle").addEventListener("click",function(){state.showArchive=!state.showArchive;storageSet(ARCHIVE_KEY,state.showArchive?"1":null);ensureActiveWeek();renderTabs();renderDays();renderAdminUI();});
@@ -1335,6 +1499,217 @@
     clearInterval(state.pollTimer);
     state.pollTimer=setInterval(function(){ if(document.visibilityState==="visible"&&!anyModalOpen()){ load(true); loadToastToday(); } },45000);
     document.addEventListener("visibilitychange",function(){ if(document.visibilityState==="visible"&&!anyModalOpen()) load(true); });
+  }
+
+  // ---------- personal access: name + PIN, remembered on this device ----------
+  function meSet(name,token){ state.me.name=name||null; state.me.token=token||null; storageSet(ME_NAME_KEY,name||null); storageSet(ME_TOKEN_KEY,token||null); }
+  async function meWhoAmI(){
+    if(!state.me.token) return;
+    var r=await api("/api/me?action=who");
+    if(r.ok&&r.json.name){ meSet(r.json.name,state.me.token); }
+    else if(r.status===401||r.status===404){ meSet(null,null); }
+    renderMe();
+  }
+  function maybeWhoPopup(){
+    if(state.me.name||state.admin||!state.features.storage||!state.data.staff.length) return;
+    if(anyModalOpen()) return;
+    var skip=Number(storageGet(ME_SKIP_KEY)||0); if(skip&&Date.now()-skip<24*3600*1000) return;
+    openWho(true);
+  }
+  // next shift of a person: today's shift if it hasn't ended, otherwise the first upcoming one
+  function nextShiftOf(name){
+    var now=new Date(), todayISO=toISO(now), m=now.getHours()*60+now.getMinutes(); var best=null;
+    Object.keys(state.data.weeks).sort().forEach(function(wk){
+      DAY_KEYS.forEach(function(d,i){
+        var date=addDays(fromISO(wk),i), iso=toISO(date); if(iso<todayISO) return;
+        (state.data.weeks[wk][d]||[]).forEach(function(s){
+          if(s.name!==name) return; if(iso===todayISO&&mins(s.end)<=m) return;
+          var key=iso+" "+s.start; if(!best||key<best.key) best={key:key,week:wk,day:d,date:date,iso:iso,s:s};
+        });
+      });
+    });
+    return best;
+  }
+  function renderMe(){
+    var b=$("meBtn"), strip=$("meStrip");
+    if(!state.features.storage||(!state.data.staff.length&&!state.me.name)){ b.style.display="none"; strip.classList.remove("show"); return; }
+    b.style.display="";
+    if(state.me.name&&state.data.staff.indexOf(state.me.name)===-1){ meSet(null,null); toast("Your access was removed. Ask Marta if that's a mistake.",5000); }
+    if(!state.me.name){ b.className="mebtn"; b.innerHTML="👤 Who are you?"; strip.classList.remove("show"); return; }
+    var n=state.me.name, col=avColor(n), ini=h(initials(n));
+    b.className="mebtn on"; b.innerHTML='<span class="mav" style="background:'+col+'">'+ini+'</span>'+h(n.split(/\s+/)[0]);
+    $("meAv").textContent=initials(n); $("meAv").style.background=col;
+    $("meHi").textContent="Hi "+n.split(/\s+/)[0]+" 👋";
+    var nx=nextShiftOf(n), el=$("meNext"); el.className="";
+    if(!nx){ el.textContent="No upcoming shifts on the schedule."; }
+    else {
+      var now=new Date(), todayISO=toISO(now), m=now.getHours()*60+now.getMinutes(), tomorrowISO=toISO(addDays(now,1));
+      var on=nx.iso===todayISO&&m>=mins(nx.s.start);
+      var when=nx.iso===todayISO?"Today":nx.iso===tomorrowISO?"Tomorrow":dateLabel(nx.date);
+      el.textContent=(on?"On shift now · ":"Next shift: "+when+" · ")+range12(nx.s.start,nx.s.end)+(nx.s.station?" · "+nx.s.station:"");
+      if(nx.iso===todayISO) el.className="soon";
+    }
+    strip.classList.add("show");
+  }
+
+  // -- who are you --
+  function openWho(auto){
+    var names=state.data.staff.slice().sort(function(a,b){return a.localeCompare(b);});
+    $("whoGrid").innerHTML=names.map(function(n,i){ return '<button type="button" class="who-name" data-name="'+h(n)+'" style="animation-delay:'+Math.min(i*35,350)+'ms"><span class="av" style="background:'+avColor(n)+'">'+h(initials(n))+'</span><span class="nm">'+h(n)+'</span></button>'; }).join("");
+    $("whoGrid").querySelectorAll(".who-name").forEach(function(b){ b.addEventListener("click",function(){ beginPin(b.getAttribute("data-name")); }); });
+    $("whoSkip").textContent=state.me.name?"Cancel":"Not now";
+    $("whoOverlay").classList.add("show");
+  }
+
+  // -- PIN --
+  var pin={name:null, mode:"login", buf:"", first:"", busy:false};
+  function renderPinPad(){
+    var keys=["1","2","3","4","5","6","7","8","9","","0","del"];
+    $("pinPad").innerHTML=keys.map(function(k){ if(k==="") return '<span></span>'; return '<button type="button" data-k="'+k+'" class="'+(k==="del"?"ghost":"")+'" aria-label="'+(k==="del"?"Delete":k)+'">'+(k==="del"?"⌫":k)+'</button>'; }).join("");
+    $("pinPad").querySelectorAll("button").forEach(function(b){ b.addEventListener("click",function(){ pinPress(b.getAttribute("data-k")); }); });
+  }
+  renderPinPad();
+  function pinDots(){ var d=$("pinDots"); d.classList.remove("ok"); d.querySelectorAll("span").forEach(function(x,i){ x.classList.toggle("on",i<pin.buf.length); }); }
+  function pinShake(msg){ var d=$("pinDots"); d.classList.remove("shake"); void d.offsetWidth; d.classList.add("shake"); $("pinErr").textContent=msg||""; pin.buf=""; setTimeout(pinDots,350); if(navigator.vibrate) try{navigator.vibrate(60);}catch(e){} }
+  function pinTitle(){
+    var first=pin.name.split(/\s+/)[0];
+    if(pin.mode==="create"){ $("pinTitle").textContent="Create your PIN"; $("pinLead").textContent="Choose 4 numbers only you know. You'll use them on a new phone or computer."; }
+    else if(pin.mode==="confirm"){ $("pinTitle").textContent="Type it again"; $("pinLead").textContent="Just to be sure — enter the same 4 numbers."; }
+    else { $("pinTitle").textContent="Enter your PIN"; $("pinLead").textContent="Hi "+first+"! Type your 4-digit PIN to see your shifts and hours."; }
+    $("pinHint").style.display=pin.mode==="login"?"":"none";
+  }
+  async function beginPin(name){
+    $("whoOverlay").classList.remove("show");
+    pin.name=name; pin.buf=""; pin.first=""; pin.busy=false; pin.mode="login";
+    $("pinName").textContent=name; $("pinAv").textContent=initials(name); $("pinAv").style.background=avColor(name);
+    $("pinErr").textContent=""; pinDots(); pinTitle(); $("pinOverlay").classList.add("show");
+    var r=await api("/api/me",{method:"POST",body:{action:"begin",name:name}});
+    if(!r.ok){ $("pinErr").textContent="Can't check this name right now. Please try again."; return; }
+    pin.mode=r.json.hasPin?"login":"create"; pinTitle();
+    if(r.json.locked) pinLocked(r.json.retryIn);
+  }
+  function pinLocked(sec){ var m=Math.ceil(sec/60); $("pinErr").textContent="Too many tries. Wait "+(m>1?m+" minutes":"a minute")+" and try again."; pin.buf=""; pinDots(); }
+  function pinPress(k){
+    if(pin.busy||!pin.name) return;
+    if(k==="del"){ pin.buf=pin.buf.slice(0,-1); pinDots(); $("pinErr").textContent=""; return; }
+    if(pin.buf.length>=4) return;
+    pin.buf+=k; pinDots(); $("pinErr").textContent="";
+    if(pin.buf.length===4) setTimeout(pinSubmit,120);
+  }
+  async function pinSubmit(){
+    if(pin.busy||pin.buf.length!==4) return;
+    if(pin.mode==="create"){ pin.first=pin.buf; pin.buf=""; pin.mode="confirm"; pinTitle(); pinDots(); return; }
+    if(pin.mode==="confirm"){
+      if(pin.buf!==pin.first){ pin.mode="create"; pin.first=""; pinTitle(); pinShake("The two PINs don't match — start again."); return; }
+      pin.busy=true;
+      var rc=await api("/api/me",{method:"POST",body:{action:"create",name:pin.name,pin:pin.buf}});
+      pin.busy=false;
+      if(rc.ok) return pinSuccess(rc.json,true);
+      if(rc.status===409){ pin.mode="login"; pinTitle(); pinShake("This name already has a PIN. Enter it, or ask Marta to reset it."); return; }
+      pinShake("Couldn't save your PIN. Please try again."); pin.mode="create"; pinTitle(); return;
+    }
+    pin.busy=true;
+    var r=await api("/api/me",{method:"POST",body:{action:"login",name:pin.name,pin:pin.buf}});
+    pin.busy=false;
+    if(r.ok) return pinSuccess(r.json,false);
+    if(r.status===401) pinShake("Wrong PIN."+(r.json.attemptsLeft<=2?" "+r.json.attemptsLeft+" tr"+(r.json.attemptsLeft===1?"y":"ies")+" left.":""));
+    else if(r.status===423){ pinShake(""); pinLocked(r.json.retryIn||300); }
+    else if(r.status===404){ pin.mode="create"; pinTitle(); pinShake("No PIN yet for this name — create one."); }
+    else pinShake("Something went wrong. Please try again.");
+  }
+  function pinSuccess(j,created){
+    $("pinDots").classList.add("ok");
+    if(state.me.token&&state.me.token!==j.token) api("/api/me",{method:"POST",body:{action:"logout"}}); // this device was someone else's — close that access
+    meSet(j.name,j.token); pin.name=null;
+    setTimeout(function(){
+      $("pinOverlay").classList.remove("show"); renderMe(); renderDays();
+      toast(created?"PIN saved ✓ Welcome, "+j.name.split(/\s+/)[0]+"!":"Welcome back, "+j.name.split(/\s+/)[0]+" 👋");
+      openMe(null);
+    },350);
+  }
+  async function meLogout(){
+    var tok=state.me.token; $("meOverlay").classList.remove("show");
+    if(tok) api("/api/me",{method:"POST",body:{action:"logout"}});
+    meSet(null,null); renderMe(); renderDays(); toast("Logged out on this device.");
+  }
+
+  // -- my week --
+  var me={week:null, name:null, hours:{}, loading:null};
+  function meWeeks(){ return weekKeys(); }
+  function openMe(asName){
+    var name=asName||state.me.name; if(!name) return;
+    me.name=name; me.week=null;
+    var keys=meWeeks(), cur=currentMondayISO();
+    me.week=keys.indexOf(cur)!==-1?cur:(keys.filter(function(k){return k>=cur;})[0]||keys[keys.length-1]||null);
+    var first=name.split(/\s+/)[0];
+    $("meTitle").textContent=(asName&&asName!==state.me.name?possessive(name):"My")+" week";
+    $("meLead").textContent=(asName&&asName!==state.me.name?first+"'s":"Your")+" shifts, and hours from the Toast time clock.";
+    $("meSwitch").style.display=asName&&asName!==state.me.name?"none":""; $("meLogout").style.display=asName&&asName!==state.me.name?"none":"";
+    renderMePanel(); $("meOverlay").classList.add("show"); loadMeHours();
+  }
+  function meShiftWeek(n){ var keys=meWeeks(), i=keys.indexOf(me.week); var j=i+n; if(j<0||j>=keys.length) return; me.week=keys[j]; renderMePanel(); loadMeHours(); }
+  async function loadMeHours(){
+    if(!me.week||!state.features.toast) { renderMePanel(); return; }
+    var key=me.name+"|"+me.week;
+    var cached=me.hours[key]; if(cached&&Date.now()-cached.at<60000&&me.week<currentMondayISO()) return;
+    var asAdmin=me.name!==state.me.name;
+    var r=await api("/api/me?action=hours&week="+me.week+(asAdmin?"&name="+encodeURIComponent(me.name):""),{auth:asAdmin});
+    if(r.ok){ me.hours[key]={at:Date.now(),data:r.json}; } else if(!cached){ me.hours[key]={at:Date.now(),data:null,error:true}; }
+    renderMePanel();
+  }
+  function renderMePanel(){
+    var keys=meWeeks(), wk=me.week; var lbl=$("meWeekLbl"), sub=$("meWeekSub"), list=$("meList"), sum=$("meSum"), note=$("meNote");
+    $("mePrev").disabled=!wk||keys.indexOf(wk)<=0; $("meNext").disabled=!wk||keys.indexOf(wk)>=keys.length-1;
+    if(!wk){ lbl.textContent="No weeks yet"; sub.textContent=""; list.innerHTML='<div class="me-empty"><span class="big">🗓️</span>Nothing published yet.</div>'; sum.innerHTML=""; note.textContent=""; return; }
+    var l=weekLabel(wk); lbl.textContent=l.tag; sub.textContent=l.range;
+    var start=fromISO(wk), today=new Date(), todayISO=toISO(today), week=state.data.weeks[wk]||emptyWeek();
+    var hk=me.name+"|"+wk, hrs=me.hours[hk]&&me.hours[hk].data; var byDay={}; if(hrs&&hrs.entries) hrs.entries.forEach(function(e){ (byDay[e.day]=byDay[e.day]||[]).push(e); });
+    var rows=[], schedMin=0, schedSoFarMin=0, workedMs=0, nowMs=Date.now(), nowMin=today.getHours()*60+today.getMinutes();
+    DAY_KEYS.forEach(function(d,i){
+      var date=addDays(start,i), iso=toISO(date); var isToday=iso===todayISO, isPast=iso<todayISO;
+      var mine=sortShifts((week[d]||[]).filter(function(s){return s.name===me.name;}));
+      var punches=byDay[d]||[];
+      mine.forEach(function(s){ var len=mins(s.end)-mins(s.start); schedMin+=len; if(isPast) schedSoFarMin+=len; else if(isToday&&nowMin>mins(s.start)) schedSoFarMin+=Math.min(len,nowMin-mins(s.start)); });
+      punches.forEach(function(e){ workedMs+=(e.out?Date.parse(e.out):nowMs)-Date.parse(e.in); });
+      if(!mine.length&&!punches.length) return;
+      if(mine.length){
+        mine.forEach(function(s){
+          var ok=!!state.confirmations[shiftKey(wk,d,s.id)];
+          var clockTxt="";
+          if(punches.length){ var f=punches[0], la=punches[punches.length-1]; var ms=punches.reduce(function(a,e){return a+((e.out?Date.parse(e.out):nowMs)-Date.parse(e.in));},0); clockTxt='⏱ '+fmtClock(f.in)+' → '+(la.out?fmtClock(la.out):'now')+' · '+durText(ms)+(la.out?'':' so far'); }
+          else if(isPast&&hrs&&hrs.linked) clockTxt='No clock-in recorded';
+          else if(isToday&&hrs&&hrs.linked) clockTxt='Not clocked in yet';
+          var dn=dayNote(wk,d); var closed=dn&&isClosedStatus(dn.status);
+          rows.push('<button type="button" class="me-row'+(ok?" confirmed":"")+(isToday?" today":"")+(isPast?" past":"")+'" data-day="'+d+'" data-id="'+h(s.id)+'" style="animation-delay:'+Math.min(rows.length*45,400)+'ms">'
+            +'<span class="dy">'+DAY_SHORT[d]+'<small>'+MONTHS[date.getMonth()]+' '+date.getDate()+'</small></span>'
+            +'<span class="mid"><span class="tm">'+range12(s.start,s.end)+(s.station?'<span class="st">'+h(s.station)+'</span>':'')+'</span>'
+            +(closed?'<span class="sub">⚠ Day marked '+h(STATUS_LABEL[dn.status])+'</span>':clockTxt?'<span class="sub">'+clockTxt+'</span>':'')+'</span>'
+            +(ok?'<span class="ok">✓</span>':isPast?'<span class="ok" aria-hidden="true"></span>':(me.name===state.me.name?'<span class="ok todo">confirm</span>':'<span class="ok" aria-hidden="true"></span>'))
+            +'</button>');
+        });
+      } else {
+        // clocked in without a scheduled shift (covering, extra hours)
+        var f2=punches[0], la2=punches[punches.length-1]; var ms2=punches.reduce(function(a,e){return a+((e.out?Date.parse(e.out):nowMs)-Date.parse(e.in));},0);
+        rows.push('<div class="me-row past" style="cursor:default"><span class="dy">'+DAY_SHORT[d]+'<small>'+MONTHS[date.getMonth()]+' '+date.getDate()+'</small></span><span class="mid"><span class="tm">'+durText(ms2)+'</span><span class="sub">⏱ '+fmtClock(f2.in)+' → '+(la2.out?fmtClock(la2.out):'now')+' · not on the schedule</span></span><span></span></div>');
+      }
+    });
+    var workedMin=Math.round(workedMs/60000);
+    var showWorked=state.features.toast&&hrs&&hrs.linked;
+    var isCur=wk>=currentMondayISO(); var diff=workedMin-(isCur?schedSoFarMin:schedMin); var diffTxt=(diff>=0?"+":"−")+durText(Math.abs(diff)*60000);
+    sum.innerHTML='<div class="tile"><b>'+durText(schedMin*60000)+'</b><span>scheduled</span></div>'
+      +'<div class="tile'+(showWorked?" on":"")+'"><b>'+(showWorked?durText(workedMin*60000):"—")+'</b><span>worked'+(wk===currentMondayISO()&&showWorked?" so far":"")+'</span></div>'
+      +'<div class="tile diff'+(showWorked?(diff>=0?" plus":" minus"):"")+'"><b>'+(showWorked?diffTxt:"—")+'</b><span>difference'+(isCur&&showWorked?" so far":"")+'</span></div>';
+    list.innerHTML=rows.length?rows.join(""):'<div class="me-empty"><span class="big">🌴</span>No shifts for you this week.</div>';
+    list.querySelectorAll(".me-row[data-id]").forEach(function(b){ b.addEventListener("click",function(){ if(me.name!==state.me.name) return; var d=b.getAttribute("data-day"); var isPastRow=b.classList.contains("past"); if(isPastRow) return; $("meOverlay").classList.remove("show"); state.activeWeek=wk; renderTabs(); renderDays(); onShiftTap(wk,d,b.getAttribute("data-id")); }); });
+    if(!state.features.toast) note.textContent="Worked hours appear when the Toast time clock is connected.";
+    else if(!hrs) note.textContent=me.hours[hk]&&me.hours[hk].error?"Toast isn't answering right now — scheduled shifts are still shown.":"Loading hours from Toast…";
+    else if(!hrs.linked) note.textContent="Toast doesn't recognise this name yet — ask Marta to link it.";
+    else note.textContent="Hours from Toast · updated "+fmtClock(hrs.fetchedAt);
+  }
+  async function loadAccounts(){
+    if(!state.admin) return;
+    var r=await api("/api/me?action=list",{auth:true});
+    if(r.ok) state.accounts=r.json.accounts||{};
   }
 
   // ---------- push notifications ----------
@@ -1382,6 +1757,7 @@
   (async function init(){
     state.showArchive=storageGet(ARCHIVE_KEY)==="1";
     lang=storageGet(LANG_KEY)==="it"?"it":"en"; applyLang();
+    state.me.token=storageGet(ME_TOKEN_KEY)||null; state.me.name=state.me.token?(storageGet(ME_NAME_KEY)||null):null;
     await load(false);
     maybeBirthdayPopup(); maybeWeekPopup(); renderBell(); renderClockBtn(); loadToastToday();
     var saved=storageGet(PW_KEY);
@@ -1390,6 +1766,8 @@
       if(r.ok){state.password=saved;state.admin=true;ensureActiveWeek();renderAll();$("saveStatus").textContent="Ready";}
       else storageSet(PW_KEY,null);
     }
+    await meWhoAmI();
+    maybeWhoPopup();
     startPolling();
   })();
 })();

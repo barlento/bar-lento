@@ -3,8 +3,7 @@ const auth = require("../lib/auth");
 const { diffData } = require("../lib/diff");
 const push = require("../lib/push");
 const toast = require("../lib/toast");
-
-
+const accounts = require("../lib/accounts");
 
 function send(res, status, body) {
   res.setHeader("Cache-Control", "no-store");
@@ -46,6 +45,9 @@ module.exports = async (req, res) => {
       await store.saveSchedule(doc);
       await store.removeConfirmations(resetKeys).catch(() => {});
       await store.pruneConfirmations(data).catch(() => {});
+      // Someone removed from staff loses their personal access (PIN + devices). Past shifts stay in the archive.
+      const gone = (current.data.staff || []).filter((n) => !data.staff.includes(n));
+      if (gone.length) await accounts.removeAccounts(gone).catch(() => {});
       if (changes.length) {
         await store.appendLog({ at: doc.updatedAt, version: doc.version, changes: changes.slice(0, 200) }).catch(() => {});
         // Only what matters to employees accumulates for ONE summary push later
