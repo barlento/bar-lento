@@ -882,12 +882,12 @@
 <div class="overlay" id="rulesOverlay">
   <div class="sheet wide" role="dialog" aria-modal="true" aria-labelledby="rulesTitle">
     <h2 id="rulesTitle">📜 House Rules</h2>
-    <p class="lead" id="rulesLead">Please read the Bar Lento House Rules to the end, then confirm with your email. You'll be asked only once.</p>
+    <p class="lead" id="rulesLead">Please read the Bar Lento House Rules to the end, then confirm with your email. You'll be asked again only when the rules change.</p>
     <span class="rules-ver" id="rulesVer"></span>
     <div class="rules-body" id="rulesBody"></div>
     <div class="rules-scrollhint" id="rulesScrollHint">↓ Scroll to the end to continue</div>
     <div class="rules-ack" id="rulesAckForm">
-      <div class="field"><label for="rulesEmail">Your email</label><input id="rulesEmail" type="email" autocomplete="email" inputmode="email" autocapitalize="none" placeholder="name@example.com"></div>
+      <div class="field"><label for="rulesEmail">Your email <span class="opt" id="rulesSigning"></span></label><input id="rulesEmail" type="email" autocomplete="email" inputmode="email" autocapitalize="none" placeholder="name@example.com"></div>
       <label class="rules-check dis" id="rulesCheckRow"><input type="checkbox" id="rulesCheck" disabled><span id="rulesAckText"></span></label>
       <div class="err" id="rulesErr"></div>
     </div>
@@ -1110,7 +1110,7 @@
     admin:false, password:"", activeWeek:null, showArchive:false,
     saving:false, dirtyTimer:null, editing:null, dayEditing:null, confirming:null,
     pendingConfirm:{}, pollTimer:null, pendingNotify:0, idleTimer:null, toastToday:null, toastEmployees:null,
-    me:{name:null,token:null,rulesAck:null}, accounts:null
+    me:{name:null,token:null,rulesAck:undefined}, accounts:null
   };
 
   // ---------- helpers ----------
@@ -1819,7 +1819,7 @@
     el.innerHTML=state.data.staff.length?state.data.staff.map(function(n,i){
       var b=state.data.birthdays[n]||""; var acc=(state.accounts||{})[n];
       var accTxt=acc&&acc.pin?t("pinSet")+(acc.devices?" · "+t("pinDevices",{k:acc.devices,p:lang==="it"?(acc.devices===1?"o":"i"):(acc.devices===1?"":"s")}):""):t("pinNone");
-      var rulesTxt=""; if(rulesActive()&&state.accounts){ var ra=acc&&acc.rules; rulesTxt=ra&&ra.version===RULES.version?'<small class="rules haspin">'+h(t("rulesOk",{d:dateShort(new Date(ra.at)),e:ra.email||""}))+'</small>':'<small class="rules">'+h(t("rulesNo"))+'</small>'; }
+      var rulesTxt=""; if(rulesActive()&&state.accounts){ var ra=acc&&acc.rules; rulesTxt=ra&&ra.version===RULES.version?'<small class="rules haspin">'+h(t("rulesOk",{d:ackDate(ra.at),e:ra.email||""}))+'</small>':'<small class="rules">'+h(t("rulesNo"))+'</small>'; }
       return '<div class="person"><span class="nm">'+h(n)+'<small class="'+(acc&&acc.pin?"haspin":"")+'">'+(state.accounts?h(accTxt):"")+'</small>'+rulesTxt+'</span>'
         +'<label class="bday">🎂 <input type="date" data-name="'+h(n)+'" value="'+h(b)+'" aria-label="Birthday of '+h(n)+'"></label>'
         +'<button type="button" class="pinbtn view" data-name="'+h(n)+'" title="'+h(t("viewWeek",{n:n}))+'" aria-label="'+h(t("viewWeek",{n:n}))+'">📅</button>'
@@ -1983,12 +1983,13 @@
   }
 
   // ---------- personal access: name + PIN, remembered on this device ----------
-  function meSet(name,token){ state.me.name=name||null; state.me.token=token||null; storageSet(ME_NAME_KEY,name||null); storageSet(ME_TOKEN_KEY,token||null); }
+  function meSet(name,token){ state.me.name=name||null; state.me.token=token||null; if(!name) state.me.rulesAck=undefined; storageSet(ME_NAME_KEY,name||null); storageSet(ME_TOKEN_KEY,token||null); }
   async function meWhoAmI(){
     if(!state.me.token) return;
-    var r=await api("/api/me?action=who");
+    var r; try{ r=await api("/api/me?action=who"); }catch(e){ r={ok:false,status:0,json:{}}; }
     if(r.ok&&r.json.name){ meSet(r.json.name,state.me.token); state.me.rulesAck=r.json.rulesAck||null; }
-    else if(r.status===401||r.status===404){ meSet(null,null); }
+    else if(r.status===401||r.status===404){ meSet(null,null); state.me.rulesAck=undefined; }
+    else { state.me.rulesAck=undefined; } // server hiccup: unknown → never force the rules on a guess
     renderMe();
   }
   // The schedule opens only for a known person (or the manager): no anonymous browsing.
@@ -2039,7 +2040,8 @@
   // -- House Rules: read to the end + email + checkbox, once per version; the record lives on the server --
   var RULES=window.BL_RULES||null; var rules={mandatory:false,scrolled:false};
   function rulesActive(){ return !!(RULES&&RULES.version&&/^\d{4}-\d{2}-\d{2}$/.test(RULES.version)); }
-  function rulesRequired(){ return rulesActive()&&!!state.me.name&&!state.admin&&(!state.me.rulesAck||state.me.rulesAck.version!==RULES.version); }
+  function rulesRequired(){ return rulesActive()&&!!state.me.name&&state.me.rulesAck!==undefined&&(!state.me.rulesAck||state.me.rulesAck.version!==RULES.version); }
+  function ackDate(iso){ var d=new Date(iso||""); if(isNaN(d)) return "—"; try{ return d.toLocaleDateString(lang==="it"?"it-IT":"en-US",{year:"numeric",month:"short",day:"numeric"}); }catch(e){ return dateShort(d)+", "+d.getFullYear(); } }
   function maybeRulesPopup(){ if(!rulesRequired()||mustIdentify()) return false; if($("rulesOverlay").classList.contains("show")) return true; openRules(true); return true; }
   function renderRulesBody(){
     var b=$("rulesBody"); var html='<p class="intro">'+h(RULES.intro)+'</p>';
@@ -2055,8 +2057,8 @@
     var o=$("rulesOverlay"); if(mandatory) o.dataset.lock="1"; else delete o.dataset.lock;
     $("rulesAckForm").style.display=mandatory?"":"none"; $("rulesAgree").style.display=mandatory?"":"none"; $("rulesClose").style.display=mandatory?"none":"";
     $("rulesScrollHint").style.display=mandatory?"":"none";
-    $("rulesLead").textContent=mandatory?"Please read the Bar Lento House Rules to the end, then confirm with your email. You'll be asked only once.":"The Bar Lento House Rules you acknowledged"+(state.me.rulesAck&&state.me.rulesAck.at?" on "+dateShort(new Date(state.me.rulesAck.at))+".":".");
-    $("rulesEmail").value=""; $("rulesCheck").checked=false; $("rulesCheck").disabled=true; $("rulesCheckRow").classList.add("dis"); $("rulesErr").textContent=""; $("rulesAgree").disabled=true;
+    $("rulesLead").textContent=mandatory?"Please read the Bar Lento House Rules to the end, then confirm with your email. You'll be asked again only when the rules change.":"The Bar Lento House Rules you acknowledged"+(state.me.rulesAck&&state.me.rulesAck.at?" on "+ackDate(state.me.rulesAck.at)+".":".");
+    $("rulesSigning").textContent=state.me.name?"· signing as "+state.me.name:""; $("rulesEmail").value=""; $("rulesCheck").checked=false; $("rulesCheck").disabled=true; $("rulesCheckRow").classList.add("dis"); $("rulesErr").textContent=""; $("rulesAgree").disabled=true;
     o.classList.add("show"); setTimeout(rulesScrolled,300);
   }
   function rulesScrolled(){
@@ -2069,10 +2071,11 @@
     if(!rulesEmailOk()){ $("rulesErr").textContent="Please enter a valid email address."; return; }
     if(!$("rulesCheck").checked){ $("rulesErr").textContent="Please tick the box to confirm."; return; }
     $("rulesAgree").disabled=true;
-    var r=await api("/api/me",{method:"POST",body:{action:"ackRules",email:$("rulesEmail").value.trim(),version:RULES.version}});
+    var r; try{ r=await api("/api/me",{method:"POST",body:{action:"ackRules",email:$("rulesEmail").value.trim(),version:RULES.version}}); }catch(e){ r={ok:false,status:0,json:{}}; }
     if(r.ok){ state.me.rulesAck=r.json.rulesAck||{version:RULES.version,at:new Date().toISOString()}; var o=$("rulesOverlay"); delete o.dataset.lock; o.classList.remove("show"); toast("Thank you! House Rules acknowledged ✓",3000); afterLoginFlow(); }
     else if(r.status===401){ $("rulesOverlay").classList.remove("show"); meSet(null,null); renderMe(); maybeWhoPopup(); }
-    else { $("rulesErr").textContent="Couldn't save right now. Please try again."; $("rulesAgree").disabled=false; }
+    else if(r.status===400&&r.json&&r.json.error==="bad_version"){ $("rulesErr").textContent="The rules were just updated — please reload the page and read the new version."; }
+    else { $("rulesErr").textContent="Couldn't save right now — check your connection and try again."; $("rulesAgree").disabled=false; }
   }
   // what a person sees right after signing in, in order: rules (once) → birthday → new week → week in review → My week
   function afterLoginFlow(){ var shown=maybeRulesPopup()||maybeBirthdayPopup()||maybeWeekPopup()||maybeRecapPopup(); if(!shown) openMe(null); }
@@ -2186,7 +2189,7 @@
     setTimeout(async function(){
       $("pinOverlay").classList.remove("show"); $("whoOverlay").classList.remove("show"); renderMe(); renderDays();
       toast(created?"PIN saved ✓ Welcome, "+j.name.split(/\s+/)[0]+"!":"Welcome back, "+j.name.split(/\s+/)[0]+" 👋");
-      state.me.rulesAck=null; if(!created) await meWhoAmI();
+      state.me.rulesAck=undefined; await meWhoAmI();
       afterLoginFlow();
     },350);
   }

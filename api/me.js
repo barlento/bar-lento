@@ -2,6 +2,8 @@ const store = require("../lib/store");
 const auth = require("../lib/auth");
 const accounts = require("../lib/accounts");
 const toast = require("../lib/toast");
+const crypto = require("crypto");
+const RULES = require("../rules.js");
 
 function send(res, status, body) {
   res.setHeader("Cache-Control", "no-store");
@@ -74,16 +76,18 @@ module.exports = async (req, res) => {
       const doc = await store.getSchedule();
       if (action === "list") {
         if (!isAdmin) return send(res, 401, { error: "unauthorized" });
-        const [summary, acks] = await Promise.all([accounts.summary(), accounts.allRulesAck().catch(() => ({}))]);
-        Object.keys(acks).forEach((n) => { summary[n] = summary[n] || { pin: false, devices: 0 }; summary[n].rules = { version: acks[n].version, at: acks[n].at, email: acks[n].email }; });
-        return send(res, 200, { accounts: summary });
+        const [summary, acks, former] = await Promise.all([accounts.summary(), accounts.allRulesAck().catch(() => ({})), accounts.allRulesAckArchive().catch(() => ({}))]);
+        Object.keys(acks).forEach((n) => { summary[n] = summary[n] || { pin: false, devices: 0 }; summary[n].rules = { version: acks[n].version, at: acks[n].at, email: acks[n].email, history: acks[n].history || [] }; });
+        // Acknowledgments of people no longer on staff (legal archive), for the manager's records.
+        const formerAcks = Object.keys(former).map((k) => Object.assign({ key: k }, former[k]));
+        return send(res, 200, { accounts: summary, formerAcks, rulesVersion: RULES.version || null });
       }
       // Who is on this device? (also used by "hours" below)
       let name = await accounts.whoIs(tokenFrom(req), doc.data.staff);
       if (action === "who") {
         if (!name) return send(res, 401, { error: "unauthorized" });
         const ack = await accounts.getRulesAck(name).catch(() => null);
-        return send(res, 200, { name, rulesAck: ack ? { version: ack.version, at: ack.at } : null });
+        return send(res, 200, { name, rulesAck: ack ? { version: ack.version, at: ack.at } : null, rulesVersion: RULES.version || null });
       }
       if (action === "hours") {
         const asked = String(url.searchParams.get("name") || "");
@@ -125,9 +129,16 @@ module.exports = async (req, res) => {
       if (!who) return send(res, 401, { error: "unauthorized" });
       const email = String(body.email || "").trim().toLowerCase().slice(0, 120);
       const version = String(body.version || "").trim().slice(0, 20);
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) || !/^\d{4}-\d{2}-\d{2}$/.test(version)) return send(res, 400, { error: "bad_request" });
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return send(res, 400, { error: "bad_request" });
+      // Only the version that is actually published can be acknowledged.
+      if (!RULES.version || version !== RULES.version) return send(res, 400, { error: "bad_version", current: RULES.version || null });
+      // First acknowledgment of a version wins (the legal record is never overwritten); older versions travel along as history.
+      const prev = await accounts.getRulesAck(who).catch(() => null);
+      if (prev && prev.version === version) return send(res, 200, { ok: true, rulesAck: { version: prev.version, at: prev.at } });
       const at = new Date().toISOString();
-      await accounts.setRulesAck(who, { version, email, at, ua: String(req.headers["user-agent"] || "").slice(0, 160) });
+      const hash = crypto.createHash("sha256").update(JSON.stringify(RULES)).digest("hex"); // fingerprint of the exact text acknowledged
+      const history = prev ? (prev.history || []).concat([{ version: prev.version, email: prev.email, at: prev.at, ua: prev.ua, hash: prev.hash || null }]) : [];
+      await accounts.setRulesAck(who, { version, email, at, ua: String(req.headers["user-agent"] || "").slice(0, 160), hash, history });
       await store.appendLog({ at, version: null, changes: [`House Rules ${version} acknowledged by ${who} (${email})`] }).catch(() => {});
       return send(res, 200, { ok: true, rulesAck: { version, at } });
     }
