@@ -1058,7 +1058,7 @@
       if($("statsOverlay").classList.contains("show")) { statsTitles(); renderStats(); }
     }
   }
-  function setLang(l){ storageSet(LANG_KEY,l==="it"?"it":"en"); applyLang(); }
+  function setLang(l){ storageSet(LANG_KEY,l==="it"?"it":"en"); applyLang(); if(state.admin&&!state.saving&&!state.dirtyTimer) $("saveStatus").textContent=t("statusReady"); }
 
   var state={
     version:0, updatedAt:null, data:{staff:[],birthdays:{},weeks:{}}, confirmations:{},
