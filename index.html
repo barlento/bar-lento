@@ -99,10 +99,6 @@
   .rules-check{display:flex;gap:10px;align-items:flex-start;font-size:.86rem;line-height:1.4;margin-bottom:8px;cursor:pointer}
   .rules-check input{width:22px;height:22px;flex:none;margin-top:1px;accent-color:var(--good)}
   .rules-check.dis{opacity:.5}
-  .roster .nm small.rules{display:block}
-  .roster .nm small.docs{display:block;letter-spacing:.06em}
-  .roster .nm small.docs .doc-ic{opacity:.3;filter:grayscale(1)}
-  .roster .nm small.docs .doc-ic.ok{opacity:1;filter:none}
   .rules-body p{margin:6px 0}
   .rules-body h2.pk{font-size:1.02rem;margin:22px 0 2px;padding-top:14px;border-top:2px solid var(--border);color:var(--ink)}
   .rules-body h2.pk:first-of-type{border-top:none;padding-top:0;margin-top:4px}
@@ -180,13 +176,6 @@
   .shift.mine{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
   .shift.mine .who::before{content:"you";display:inline-block;font-size:.62rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:6px;padding:1px 6px;margin-right:7px;vertical-align:middle}
 
-  .roster .person{grid-template-columns:1fr auto auto auto auto}
-  .roster .nm small{display:block;font-weight:500;font-size:.72rem;color:var(--ink-muted)}
-  .roster .nm small.haspin{color:var(--good)}
-  .roster .pinbtn{border:1px solid var(--border);background:var(--surface);border-radius:8px;padding:5px 8px;font-size:.78rem;font-weight:600;cursor:pointer;white-space:nowrap}
-  .roster .pinbtn:hover{border-color:var(--accent)}
-  .roster .pinbtn.arm{background:var(--danger-soft);border-color:var(--danger);color:var(--danger)}
-  .roster .pinbtn:disabled{opacity:.4;cursor:not-allowed}
   /* ---- Leaderboard ---- */
   :root{--gold:#c9a227;--gold-soft:#fbf3d6;--silver:#9aa3ad;--bronze:#b9722d}
   .lbbtn{border:2px solid var(--gold);background:linear-gradient(135deg,#fff6d6,#f3dc8f);color:#6b4e00;border-radius:12px;padding:10px 14px;font-size:.95rem;font-weight:700;cursor:pointer;white-space:nowrap;position:relative;overflow:hidden}
@@ -416,21 +405,40 @@
   .shiftcard .n{font-weight:700;font-size:1.05rem}
   .shiftcard .d{color:var(--ink-muted);font-size:.86rem}
 
-  .roster{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
-  .roster .person{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;background:var(--surface-2);font-weight:600;font-size:.92rem}
-  .roster .person .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .roster .bday{display:flex;align-items:center;gap:4px;font-size:.8rem;color:var(--ink-muted);font-weight:500}
-  .roster .bday input{padding:6px 8px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--ink);font:inherit;font-size:.85rem;max-width:150px}
-  .roster .x{border:none;background:none;color:var(--danger);font-size:1rem;cursor:pointer;padding:4px 8px}
+  .roster{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;max-height:56vh;overflow:auto;padding:2px}
+  .roster .person{display:grid;grid-template-columns:36px 1fr auto auto;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;background:var(--surface);border:1px solid var(--border);font-weight:700;font-size:.92rem;width:100%;text-align:left;cursor:pointer;font-family:inherit;color:inherit}
+  .roster .person:hover{border-color:var(--accent)}
+  .roster .person .av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:.82rem;font-weight:800}
+  .roster .person .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.2}
+  .roster .person .nm small{display:block;font-weight:500;font-size:.72rem;color:var(--ink-muted);margin-top:2px}
+  .roster .person .nm small.ok{color:var(--good)}
+  .roster .person .bd{font-size:.74rem;font-weight:600;color:var(--ink-muted);white-space:nowrap}
+  .roster .person .go{color:var(--ink-muted);font-size:1.1rem}
+  .pcard{border:1px solid var(--border);border-radius:12px;background:var(--surface);padding:10px 12px;margin-bottom:8px}
+  .pcard .ph{font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:6px}
+  .pcard .pr{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:.88rem;font-weight:600}
+  .pcard .pr+.pr{margin-top:6px}
+  .pcard .pr .dim{color:var(--ink-muted);font-weight:500}
+  .pcard .pr .ok{color:var(--good)}
+  .pcard input[type="date"]{padding:6px 8px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--ink);font:inherit;font-size:.9rem}
+  .pcard .pinbtn{border:1px solid var(--border);background:var(--surface-2);border-radius:8px;padding:6px 10px;font-size:.8rem;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit;color:inherit}
+  .pcard .pinbtn.arm{background:var(--danger-soft);border-color:var(--danger);color:var(--danger)}
+  .pcard .pinbtn:disabled{opacity:.4;cursor:not-allowed}
+  .pcard .doc-ic{opacity:.3;filter:grayscale(1)}
+  .pcard .doc-ic.ok{opacity:1;filter:none}
+  .btn.danger-link{border-color:transparent;background:none;color:var(--danger);font-weight:700}
+  .btn.danger-link.arm{background:var(--danger-soft);border-color:var(--danger)}
 
   .holinote{display:flex;align-items:center;gap:8px;background:var(--party-soft);color:var(--party);border-radius:10px;padding:10px 12px;font-size:.9rem;font-weight:600;margin:0 0 12px}
-  .presets{display:flex;flex-direction:column;gap:6px}
-  .preset{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;text-align:left;border:1px solid var(--border);background:var(--surface);border-radius:10px;padding:10px 12px;font-size:.9rem;font-weight:600;cursor:pointer}
+  .presets{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:2px 0 12px}
+  .preset{display:flex;flex-direction:column;align-items:flex-start;gap:4px;width:100%;text-align:left;border:1.5px solid var(--border);background:var(--surface);border-radius:14px;padding:12px 12px 10px;font-size:.9rem;font-weight:700;cursor:pointer;min-height:84px;font-family:inherit;color:inherit}
+  .preset:last-child:nth-child(odd){grid-column:1/-1;min-height:0;flex-direction:row;align-items:center;gap:10px}
+  .preset .ic{font-size:1.5rem;line-height:1}
   .preset:hover{border-color:var(--accent);background:var(--accent-soft)}
   .preset.active{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-ink)}
-  .preset .ic{font-size:1.1rem;flex:none}
-  .preset .tx{flex:1}
-  .preset .sub{display:block;font-weight:500;font-size:.76rem;color:var(--ink-muted)}
+  .preset .tx{flex:1;line-height:1.25}
+  .preset .sub{display:block;font-weight:500;font-size:.74rem;color:var(--ink-muted);margin-top:2px}
+  .preset.active .sub{color:inherit;opacity:.8}
   .badge.half{background:var(--teal-soft);color:var(--teal)}
 
   .clock{display:inline-flex;align-items:center;gap:5px;font-size:.74rem;font-weight:700;padding:2px 8px;border-radius:999px;margin-top:3px;width:fit-content}
@@ -594,6 +602,7 @@
   .pin-dots span{width:15px;height:15px}
   .pin-hint,.me-note{font-size:.72rem}
   .roster .person{padding:7px 9px;font-size:.86rem}
+  .presets{gap:6px} .preset{padding:10px 10px 8px;min-height:74px;font-size:.84rem}
   .me-hero .av{width:48px;height:48px;font-size:1.1rem}
   .me-hero .t b{font-size:1.02rem}
   .me-hero .t span,.me-team{font-size:.78rem}
@@ -785,32 +794,25 @@
     <h2 id="dayTitle" data-t="dayTitle">Day settings</h2>
     <p class="lead" id="dayLead"></p>
     <div id="dayHoliday" class="holinote" style="display:none"></div>
-    <div class="field">
-      <label data-t="quickChoice">Quick choice</label>
-      <div class="presets" id="dayPresets"></div>
-    </div>
-    <div class="field">
-      <label for="dayStatus" data-t="status">Status</label>
-      <select id="dayStatus">
-        <option value="" data-t="stOpen">Open (regular hours)</option>
-        <option value="half" data-t="stHalf">Half day (custom hours)</option>
-        <option value="closed" data-t="stClosed">Closed</option>
-        <option value="holiday" data-t="stHoliday">Closed for holiday</option>
-        <option value="event" data-t="stEvent">Private event</option>
-      </select>
-    </div>
-    <div class="row2" id="halfHours" style="display:none">
-      <div class="field"><label for="halfOpen" data-t="opens">Opens</label><select id="halfOpen" class="mono"></select></div>
-      <div class="field"><label for="halfClose" data-t="closes">Closes</label><select id="halfClose" class="mono"></select></div>
-    </div>
-    <div class="field">
-      <label for="dayNote"><span data-t="reason">Reason / note</span> <span class="opt" data-t="reasonOpt">(shown to everyone)</span></label>
-      <input id="dayNote" type="text" maxlength="140" placeholder="e.g. Closed for Christmas Day · Private party · Staff training" data-tp="reasonPh">
+    <div class="presets" id="dayPresets"></div>
+    <select id="dayStatus" style="display:none" aria-hidden="true">
+      <option value=""></option><option value="half"></option><option value="closed"></option><option value="holiday"></option><option value="event"></option>
+    </select>
+    <div id="dayMore" style="display:none">
+      <div class="row2" id="halfHours" style="display:none">
+        <div class="field"><label for="halfOpen" data-t="opens">Opens</label><select id="halfOpen" class="mono"></select></div>
+        <div class="field"><label for="halfClose" data-t="closes">Closes</label><select id="halfClose" class="mono"></select></div>
+      </div>
+      <div class="field" id="dayNoteField">
+        <label for="dayNote"><span data-t="reason">Reason / note</span> <span class="opt" data-t="reasonOpt">(shown to everyone)</span></label>
+        <input id="dayNote" type="text" maxlength="140" placeholder="e.g. Closed for Christmas Day · Private party · Staff training" data-tp="reasonPh">
+      </div>
     </div>
     <div class="err" id="dayErr"></div>
     <div class="actions">
       <button class="btn" id="dayCancel" type="button" data-t="cancel">Cancel</button>
-      <button class="btn primary" id="daySave" type="button" data-t="save">Save</button>
+      <span class="spacer"></span>
+      <button class="btn primary" id="daySave" type="button" data-t="save" style="display:none">Save</button>
     </div>
   </div>
 </div>
@@ -819,14 +821,23 @@
 <div class="overlay" id="staffOverlay">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="staffTitle">
     <h2 id="staffTitle" data-t="staffTitle">Staff</h2>
-    <p class="lead" data-t="staffLead">Names offered when you create a shift. Add a birthday (month/day/year) and the team gets a surprise on that day 🎂. Removing a name never deletes past shifts — the archive stays complete.</p>
-    <p style="margin:-6px 0 10px"><a class="linkbtn" id="staffRulesLink" href="/rules.html" target="_blank" rel="noopener" data-t="rulesLink" style="display:none">📜 House Rules (print)</a></p>
+    <p class="lead" data-t="staffLead">Tap a name for birthday, PIN and documents. Removing a name never deletes past weeks.</p>
     <div class="roster" id="rosterList"></div>
     <div class="addrow">
       <input id="newStaffInput" type="text" placeholder="New name" data-tp="newNamePh" autocapitalize="words">
       <button class="btn primary" id="addStaffBtn" type="button" data-t="add">Add</button>
     </div>
-    <div class="actions"><button class="btn" id="staffClose" type="button" data-t="close">Close</button></div>
+    <div class="actions"><a class="linkbtn" id="staffRulesLink" href="/docs.html" target="_blank" rel="noopener" data-t="rulesLink" style="display:none">🖨 Print documents</a><span class="spacer"></span><button class="btn" id="staffClose" type="button" data-t="close">Close</button></div>
+  </div>
+</div>
+
+<!-- One person (from Staff): birthday, access, documents, week, remove -->
+<div class="overlay" id="personOverlay">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="personTitle">
+    <h2 id="personTitle"></h2>
+    <p class="lead" id="personLead"></p>
+    <div id="personBody"></div>
+    <div class="actions"><button class="btn danger-link" id="personRemove" type="button"></button><span class="spacer"></span><button class="btn" id="personClose" type="button" data-t="close">Close</button></div>
   </div>
 </div>
 
@@ -1023,11 +1034,11 @@
       delete:"Delete", deleteSure:"Sure? Delete", cancel:"Cancel", save:"Save", close:"Close", add:"Add",
       errName:"Pick or type a name.", errEnd:"End time must be after start time.", shiftDeleted:"Shift deleted",
       dayTitle:"Day settings", quickChoice:"Quick choice", status:"Status", stOpen:"Open (regular hours)", stHalf:"Half day (custom hours)", stClosed:"Closed", stHoliday:"Closed for holiday", stEvent:"Private event",
-      opens:"Opens", closes:"Closes", reason:"Reason / note", reasonOpt:"(shown to everyone)", reasonPh:"e.g. Closed for Christmas Day · Private party · Staff training", regularHours:"regular hours",
+      opens:"Opens", closes:"Closes", reason:"Reason / note", reasonOpt:"(shown to everyone)", reasonPh:"e.g. Closed for Christmas Day · Private party · Staff training", regularHours:"regular hours", usually:"usually", reasonPhHalf:"optional note, e.g. Early close for a private dinner",
       holidayNote:"This day is <b>{h}</b> — open or closed is your call.",
       pOpen:"Open · regular hours", pClosedFor:"Closed for {h}", pFullDay:"Full day", pHalfFor:"Half day for {h}", pHalf:"Half day", pHalfSub:"Choose the hours below", pEvent:"Private event", pEventSub:"Bar reserved · shifts still shown", pOther:"Closed — other reason", pOtherSub:"Type the reason below so the team knows",
       reasonPh2:"Reason, e.g. Renovation · Staff training · Bad weather", errReason:"Please type the reason — the team will see it.", errClose:"Closing time must be after opening time.", dayOpenSet:"Day set to open",
-      staffTitle:"Staff", staffLead:"Names offered when you create a shift. Add a birthday (month/day/year) and the team gets a surprise on that day 🎂. Removing a name never deletes past shifts — the archive stays complete. Each person creates a personal PIN to see their own shifts and hours; <b>Reset PIN</b> if they forget it (it also signs out all their devices).",
+      staffTitle:"Staff", staffLead:"Tap a name for birthday, PIN and documents. Removing a name never deletes past weeks.",
       newNamePh:"New name", noNames:"No names yet.", nameExists:"That name is already on the list", removeQ:"Remove?", bdaySaved:"Birthday saved for {n}", bdayRemoved:"Birthday removed",
       removeTap:"Tap again to remove {n}{s}. Past weeks are kept.", upcoming1:" and 1 upcoming shift", upcomingN:" and {k} upcoming shifts", removed:"{n} removed{s}. Past shifts kept in the archive.", deleted1:" · 1 upcoming shift deleted", deletedN:" · {k} upcoming shifts deleted",
       historyTitle:"Change history", historyLead:"Every edit made from manager mode, newest first. Confirmation times are included in the CSV archive.", loading:"Loading…", historyFail:"Couldn't load the history.", noChanges:"No changes recorded yet.", historyNeedsDb:"History is available once the database is connected.",
@@ -1066,7 +1077,7 @@
       readLead:"Please read this document to the end, then confirm with your email: your signed copy is emailed to you and to the owner.", readLeadNoMail:"Please read this document to the end, then confirm with your email.", readLeadDone:"You acknowledged this document on {d}.", readLeadDoneTrain:"You completed this training on {d}.", readLeadTrain:"Watch the video (links at the end), then confirm with your email: your training record is emailed to you and to the owner.",
       agreeTrain:"✓ I completed the training", agree:"✓ I have read and agree", thanksDoc:"Thank you! Your signed copy is on its way to {e}", thanksDocNoMail:"Thank you! Document acknowledged ✓", thanksTrain:"Training recorded ✓ — confirmation on its way to {e}", thanksTrainNoMail:"Training recorded ✓",
       rosterDocs:"📂 Documents {k}/{n}", copiesSent:"Signed copies sent to {e}: {k}", sendCopies:"✉ Re-send all signed copies by email", linksHead:"Links", contactsHead:"Contacts — write to all of them",
-      rulesOk:"📜 Rules ✓ {d} · {e}", rulesNo:"📜 Rules not acknowledged yet", rulesLink:"📜 House Rules (print)", copyNotSent:"copy not emailed yet", sendCopy:"✉ Send signed copy by email", copySent:"Signed copy sent to {e}", copyFail:"Couldn't send the email ({r})", mailOff:"Email isn't configured yet on the server (Vercel settings).",
+      rulesOk:"📜 Rules ✓ {d} · {e}", rulesNo:"📜 Rules not acknowledged yet", rulesLink:"🖨 Print documents", stNotIn:"Hasn't signed in yet", stLine:"PIN ✓ · Rules {r} · Docs {k}/{n}", stLineNoDocs:"PIN ✓ · Rules {r}", phBirthday:"🎂 Birthday", phAccess:"🔑 Access", phDocs:"📂 Documents", phWeek:"📅 Shifts and hours", viewWeekBtn:"View week", removeName:"Remove {n}", noBirthday:"not set", devicesShort:"{k} device{p}", personLead:"Birthday, personal PIN and signed documents.", trainingRow:"Training {y}", copyNotSent:"copy not emailed yet", sendCopy:"✉ Send signed copy by email", copySent:"Signed copy sent to {e}", copyFail:"Couldn't send the email ({r})", mailOff:"Email isn't configured yet on the server (Vercel settings).",
       pinSet:"PIN set", pinDevices:"{k} device{p}", pinNone:"No PIN yet", pinReset:"Reset PIN", pinResetSure:"Sure? Reset", pinResetDone:"PIN reset for {n} — they'll create a new one next time", pinResetFail:"Couldn't reset the PIN. Try again.", viewWeek:"View {n}'s week", staffLeadPin:" Each person creates a personal PIN to see their own shifts and hours; <b>Reset PIN</b> if they forget it (it also signs out all their devices).",
       toastPick:"— Toast employee —", toastLoading:"Loading Toast…", toastLinked:"{n} linked to Toast", toastUnlinked:"{n} unlinked from Toast", notified:"Team notified ✓ ({k} phone{p})", notifiedNone:"Changes noted — nobody has notifications turned on yet.", notifyFail:"Couldn't send the notification. It will go out automatically later.", markedClosed:"{h} ✓"
     },
@@ -1080,11 +1091,11 @@
       delete:"Elimina", deleteSure:"Sicura? Elimina", cancel:"Annulla", save:"Salva", close:"Chiudi", add:"Aggiungi",
       errName:"Scegli o scrivi un nome.", errEnd:"L'orario di fine deve essere dopo l'inizio.", shiftDeleted:"Turno eliminato",
       dayTitle:"Impostazioni giorno", quickChoice:"Scelta rapida", status:"Stato", stOpen:"Aperto (orario normale)", stHalf:"Mezza giornata (orario ridotto)", stClosed:"Chiuso", stHoliday:"Chiuso per festività", stEvent:"Evento privato",
-      opens:"Apre", closes:"Chiude", reason:"Motivo / nota", reasonOpt:"(la vedono tutti)", reasonPh:"es. Chiuso per Natale · Festa privata · Formazione staff", regularHours:"orario normale",
+      opens:"Apre", closes:"Chiude", reason:"Motivo / nota", reasonOpt:"(la vedono tutti)", reasonPh:"es. Chiuso per Natale · Festa privata · Formazione staff", regularHours:"orario normale", usually:"di solito", reasonPhHalf:"nota facoltativa, es. Chiusura anticipata per cena privata",
       holidayNote:"Questo giorno è <b>{h}</b> — aprire o chiudere lo decidi tu.",
       pOpen:"Aperto · orario normale", pClosedFor:"Chiuso per {h}", pFullDay:"Tutto il giorno", pHalfFor:"Mezza giornata per {h}", pHalf:"Mezza giornata", pHalfSub:"Scegli gli orari qui sotto", pEvent:"Evento privato", pEventSub:"Locale riservato · i turni restano visibili", pOther:"Chiuso — altro motivo", pOtherSub:"Scrivi il motivo qui sotto così i ragazzi lo sanno",
       reasonPh2:"Motivo, es. Lavori · Formazione · Maltempo", errReason:"Scrivi il motivo — i ragazzi lo vedranno.", errClose:"L'orario di chiusura deve essere dopo l'apertura.", dayOpenSet:"Giorno impostato su aperto",
-      staffTitle:"Staff", staffLead:"I nomi proposti quando crei un turno. Aggiungi il compleanno (mese/giorno/anno) e quel giorno il team riceve una sorpresa 🎂. Togliere un nome non cancella mai i turni passati — l'archivio resta completo. Ognuno crea un PIN personale per vedere i propri turni e le proprie ore; <b>Azzera PIN</b> se lo dimentica (scollega anche tutti i suoi dispositivi).",
+      staffTitle:"Staff", staffLead:"Tocca un nome per compleanno, PIN e documenti. Togliere un nome non cancella mai le settimane passate.",
       newNamePh:"Nuovo nome", noNames:"Nessun nome ancora.", nameExists:"Nome già presente", removeQ:"Rimuovi?", bdaySaved:"Compleanno salvato per {n}", bdayRemoved:"Compleanno rimosso",
       removeTap:"Tocca di nuovo per rimuovere {n}{s}. Le settimane passate restano.", upcoming1:" e 1 turno futuro", upcomingN:" e {k} turni futuri", removed:"{n} rimosso/a{s}. I turni passati restano in archivio.", deleted1:" · 1 turno futuro cancellato", deletedN:" · {k} turni futuri cancellati",
       historyTitle:"Cronologia modifiche", historyLead:"Ogni modifica fatta dalla modalità manager, dalla più recente. Le ore di conferma sono nell'archivio CSV.", loading:"Caricamento…", historyFail:"Impossibile caricare la cronologia.", noChanges:"Nessuna modifica registrata.", historyNeedsDb:"La cronologia è disponibile quando il database è collegato.",
@@ -1123,7 +1134,7 @@
       readLead:"Leggi il documento fino alla fine, poi conferma con la tua email: la copia firmata arriva a te e al titolare.", readLeadNoMail:"Leggi il documento fino alla fine, poi conferma con la tua email.", readLeadDone:"Hai firmato questo documento il {d}.", readLeadDoneTrain:"Hai completato questa formazione il {d}.", readLeadTrain:"Guarda il video (link in fondo), poi conferma con la tua email: l'attestato arriva a te e al titolare.",
       agreeTrain:"✓ Ho completato la formazione", agree:"✓ Ho letto e accetto", thanksDoc:"Grazie! La copia firmata è in arrivo a {e}", thanksDocNoMail:"Grazie! Documento firmato ✓", thanksTrain:"Formazione registrata ✓ — conferma in arrivo a {e}", thanksTrainNoMail:"Formazione registrata ✓",
       rosterDocs:"📂 Documenti {k}/{n}", copiesSent:"Copie firmate inviate a {e}: {k}", sendCopies:"✉ Reinvia tutte le copie firmate via email", linksHead:"Link", contactsHead:"Contatti — scrivi a tutti",
-      rulesOk:"📜 Regolamento ✓ {d} · {e}", rulesNo:"📜 Regolamento non ancora firmato", rulesLink:"📜 Regolamento (stampa)", copyNotSent:"copia non ancora inviata", sendCopy:"✉ Invia copia firmata via email", copySent:"Copia firmata inviata a {e}", copyFail:"Invio email non riuscito ({r})", mailOff:"Email non ancora configurata sul server (impostazioni Vercel).",
+      rulesOk:"📜 Regolamento ✓ {d} · {e}", rulesNo:"📜 Regolamento non ancora firmato", rulesLink:"🖨 Stampa documenti", stNotIn:"Non è ancora entrato/a", stLine:"PIN ✓ · Regolamento {r} · Documenti {k}/{n}", stLineNoDocs:"PIN ✓ · Regolamento {r}", phBirthday:"🎂 Compleanno", phAccess:"🔑 Accesso", phDocs:"📂 Documenti", phWeek:"📅 Turni e ore", viewWeekBtn:"Vedi settimana", removeName:"Rimuovi {n}", noBirthday:"non impostato", devicesShort:"{k} dispositiv{p}", personLead:"Compleanno, PIN personale e documenti firmati.", trainingRow:"Formazione {y}", copyNotSent:"copia non ancora inviata", sendCopy:"✉ Invia copia firmata via email", copySent:"Copia firmata inviata a {e}", copyFail:"Invio email non riuscito ({r})", mailOff:"Email non ancora configurata sul server (impostazioni Vercel).",
       pinSet:"PIN creato", pinDevices:"{k} dispositiv{p}", pinNone:"Nessun PIN", pinReset:"Azzera PIN", pinResetSure:"Sicura? Azzera", pinResetDone:"PIN azzerato per {n} — ne creerà uno nuovo al prossimo accesso", pinResetFail:"Impossibile azzerare il PIN. Riprova.", viewWeek:"Vedi la settimana di {n}", staffLeadPin:" Ognuno crea un PIN personale per vedere i propri turni e le proprie ore; <b>Azzera PIN</b> se lo dimentica (scollega anche tutti i suoi dispositivi).",
       toastPick:"— dipendente Toast —", toastLoading:"Carico Toast…", toastLinked:"{n} collegato/a a Toast", toastUnlinked:"{n} scollegato/a da Toast", notified:"Ragazzi avvisati ✓ ({k} telefon{p})", notifiedNone:"Modifiche registrate — nessuno ha ancora attivato le notifiche.", notifyFail:"Invio non riuscito. Partirà automaticamente più tardi.", markedClosed:"{h} ✓"
     }
@@ -1780,12 +1791,18 @@
   }
 
   // ---------- day settings (admin) ----------
-  function syncHalfHours(){ $("halfHours").style.display=$("dayStatus").value==="half"?"grid":"none"; }
+  // Extra fields only when the choice needs them: hours for a half day, the reason for "closed — other"; Save appears with them.
+  function syncHalfHours(){
+    var st=$("dayStatus").value, half=st==="half", closed=st==="closed";
+    $("halfHours").style.display=half?"grid":"none"; $("dayNoteField").style.display=(half||closed)?"":"none";
+    $("dayMore").style.display=(half||closed)?"":"none"; $("daySave").style.display=(half||closed)?"":"none";
+    if(half){ $("dayNote").placeholder=t("reasonPhHalf"); } else if(closed){ $("dayNote").placeholder=t("reasonPh2"); }
+  }
   function openDayEditor(wk,day){
     state.dayEditing={week:wk,day:day};
     var date=addDays(fromISO(wk),DAY_KEYS.indexOf(day)); var note=dayNote(wk,day)||{status:"",text:""};
     var hol=holidayOn(date), base=OPENING[day];
-    $("dayLead").textContent=DAY_NAMES[day]+", "+dateShort(date)+" · "+t("regularHours")+" "+range12(base.open,base.close);
+    $("dayLead").textContent=DAY_NAMES[day]+", "+dateShort(date)+" · "+t("usually")+" "+range12(base.open,base.close);
     $("dayStatus").value=note.status||""; $("dayNote").value=note.text||""; $("dayErr").textContent="";
     timeOptions($("halfOpen"),note.open||base.open); timeOptions($("halfClose"),note.close||"19:00"); syncHalfHours();
     var hb=$("dayHoliday");
@@ -1807,7 +1824,7 @@
       $("dayStatus").value=p.status; syncHalfHours();
       if(p.text||p.status===""||p.status==="holiday"||p.status==="event") $("dayNote").value=p.text;
       pe.querySelectorAll(".preset").forEach(function(x){x.classList.remove("active");}); b.classList.add("active");
-      if(p.focus){ $("dayNote").focus(); $("dayNote").placeholder=t("reasonPh2"); }
+      if(p.focus){ $("dayNote").focus(); }
       else if(!p.half){ saveDayFromEditor(); toast(p.status?t("markedClosed",{h:p.label}):t("dayOpenSet")); }
     });});
     $("dayOverlay").classList.add("show");
@@ -1858,49 +1875,74 @@
   }
 
   // ---------- staff roster ----------
+  function bdayShort(iso){ if(!iso) return ""; var m=String(iso).match(/^(\d{4})-(\d{2})-(\d{2})$/); if(!m) return ""; var d=new Date(Number(m[1]),Number(m[2])-1,Number(m[3])); try{ return d.toLocaleDateString(lang==="it"?"it-IT":"en-US",{month:"short",day:"numeric"}); }catch(e){ return m[2]+"/"+m[3]; } }
+  function personStatus(n){
+    var acc=(state.accounts||{})[n]; if(!state.accounts) return {txt:"",ok:false};
+    if(!acc||(!acc.pin&&!acc.devices&&!acc.rules&&!acc.docs)) return {txt:t("stNotIn"),ok:false};
+    var ra=acc.rules, okR=!!(ra&&rulesActive()&&ra.version===RULES.version); var nDocs=(DOCS.list||[]).length, kOk=0;
+    (DOCS.list||[]).forEach(function(d){ var a=acc.docs&&acc.docs[d.id]; if(a&&a.version===d.version) kOk++; });
+    var allOk=(!rulesActive()||okR)&&kOk===nDocs;
+    return {txt:nDocs?t("stLine",{r:okR?"✓":"–",k:kOk,n:nDocs}):t("stLineNoDocs",{r:okR?"✓":"–"}),ok:allOk};
+  }
   function renderRoster(){
     var el=$("rosterList"); if(!state.data.birthdays) state.data.birthdays={}; if(!state.data.toastMap) state.data.toastMap={};
-    el.innerHTML=state.data.staff.length?state.data.staff.map(function(n,i){
-      var b=state.data.birthdays[n]||""; var acc=(state.accounts||{})[n];
-      var accTxt=acc&&acc.pin?t("pinSet")+(acc.devices?" · "+t("pinDevices",{k:acc.devices,p:lang==="it"?(acc.devices===1?"o":"i"):(acc.devices===1?"":"s")}):""):t("pinNone");
-      var rulesTxt="", mailBtn="", anyAck=false; if(rulesActive()&&state.accounts){ var ra=acc&&acc.rules; var okR=ra&&ra.version===RULES.version; anyAck=!!ra; rulesTxt=okR?'<small class="rules haspin">'+h(t("rulesOk",{d:ackDate(ra.at),e:ra.email||""}))+(ra.emailedAt?"":" · "+h(t("copyNotSent")))+'</small>':'<small class="rules">'+h(t("rulesNo"))+'</small>'; }
-      var docsTxt=""; if(state.accounts&&(DOCS.list||[]).length){ var da=(acc&&acc.docs)||{}, kOk=0; var ics=(DOCS.list||[]).map(function(d){ var a=da[d.id]; var ok=!!(a&&a.version===d.version); if(a) anyAck=true; if(ok) kOk++; return '<span class="doc-ic'+(ok?" ok":"")+'" title="'+h(d.short||d.title)+(ok?" ✓ "+ackDate(a.at):" — not yet")+'">'+h(d.icon||"📄")+'</span>'; }).join(" "); docsTxt='<small class="docs'+(kOk===(DOCS.list||[]).length?" haspin":"")+'">'+h(t("rosterDocs",{k:kOk,n:(DOCS.list||[]).length}))+' '+ics+'</small>'; }
-      if(anyAck&&state.mailEnabled) mailBtn='<button type="button" class="pinbtn mail" data-name="'+h(n)+'" title="'+h(t("sendCopies"))+'">✉</button>';
-      rulesTxt+=docsTxt;
-      return '<div class="person"><span class="nm">'+h(n)+'<small class="'+(acc&&acc.pin?"haspin":"")+'">'+(state.accounts?h(accTxt):"")+'</small>'+rulesTxt+'</span>'
-        +'<label class="bday">🎂 <input type="date" data-name="'+h(n)+'" value="'+h(b)+'" aria-label="Birthday of '+h(n)+'"></label>'
-        +mailBtn+'<button type="button" class="pinbtn view" data-name="'+h(n)+'" title="'+h(t("viewWeek",{n:n}))+'" aria-label="'+h(t("viewWeek",{n:n}))+'">📅</button>'
-        +'<button type="button" class="pinbtn reset" data-name="'+h(n)+'"'+(acc&&(acc.pin||acc.devices)?"":" disabled")+'>🔑 '+t("pinReset")+'</button>'
-        +'<button type="button" class="x" data-i="'+i+'" aria-label="Remove '+h(n)+'">✕</button></div>';
+    el.innerHTML=state.data.staff.length?state.data.staff.map(function(n){
+      var st=personStatus(n), b=state.data.birthdays[n]||"";
+      return '<button type="button" class="person" data-name="'+h(n)+'"><span class="av" style="background:'+avColor(n)+'">'+h(initials(n))+'</span><span class="nm">'+h(n)+(st.txt?'<small class="'+(st.ok?"ok":"")+'">'+h(st.txt)+'</small>':'')+'</span><span class="bd">'+(b?'🎂 '+h(bdayShort(b)):'')+'</span><span class="go">›</span></button>';
     }).join(""):'<div class="empty-note">'+t("noNames")+'</div>';
-    el.querySelectorAll(".pinbtn.mail").forEach(function(b){b.addEventListener("click",async function(){
-      var n=b.getAttribute("data-name"); b.disabled=true;
+    el.querySelectorAll(".person").forEach(function(b){ b.addEventListener("click",function(){ openPerson(b.getAttribute("data-name")); }); });
+    if(person.name&&$("personOverlay").classList.contains("show")) renderPerson();
+  }
+  // ---- one person: birthday, access (PIN), documents, week, remove ----
+  var person={name:null};
+  function openPerson(n){ if(!n||state.data.staff.indexOf(n)===-1) return; person.name=n; renderPerson(); $("personOverlay").classList.add("show"); }
+  function renderPerson(){
+    var n=person.name; if(!n) return; var acc=(state.accounts||{})[n]||{}; var b=state.data.birthdays[n]||"";
+    $("personTitle").innerHTML='<span style="display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;color:#fff;font-size:.8rem;vertical-align:middle;margin-right:8px;background:'+avColor(n)+'">'+h(initials(n))+'</span>'+h(n);
+    $("personLead").textContent=t("personLead");
+    var html='<div class="pcard"><div class="ph">'+h(t("phBirthday"))+'</div><div class="pr"><span class="dim">'+(b?h(bdayShort(b)+", "+b.slice(0,4)):h(t("noBirthday")))+'</span><input type="date" value="'+h(b)+'" aria-label="Birthday of '+h(n)+'"></div></div>';
+    var accTxt=acc.pin?t("pinSet")+(acc.devices?" · "+t("devicesShort",{k:acc.devices,p:lang==="it"?(acc.devices===1?"o":"i"):(acc.devices===1?"":"s")}):""):t("pinNone");
+    html+='<div class="pcard"><div class="ph">'+h(t("phAccess"))+'</div><div class="pr"><span class="'+(acc.pin?"ok":"dim")+'">'+h(accTxt)+'</span><button type="button" class="pinbtn reset"'+(acc.pin||acc.devices?"":" disabled")+'>🔑 '+h(t("pinReset"))+'</button></div></div>';
+    if(rulesActive()||(DOCS.list||[]).length){
+      var ra=acc.rules, okR=!!(ra&&rulesActive()&&ra.version===RULES.version); var anyAck=!!ra;
+      html+='<div class="pcard"><div class="ph">'+h(t("phDocs"))+'</div>';
+      if(rulesActive()) html+='<div class="pr"><span>📜 House Rules</span><span class="'+(okR?"ok":"dim")+'">'+(okR?"✓ "+h(ackDate(ra.at))+(ra.emailedAt?"":" · "+h(t("copyNotSent"))):"–")+'</span></div>';
+      (DOCS.list||[]).forEach(function(d){ var a=acc.docs&&acc.docs[d.id]; var ok=!!(a&&a.version===d.version); if(a) anyAck=true; html+='<div class="pr"><span><span class="doc-ic'+(ok?" ok":"")+'">'+h(d.icon||"📄")+'</span> '+h(d.kind==="training"?t("trainingRow",{y:d.version}):(d.short||d.title))+'</span><span class="'+(ok?"ok":"dim")+'">'+(ok?"✓ "+h(ackDate(a.at)):"–")+'</span></div>'; });
+      if(anyAck&&state.mailEnabled) html+='<div class="pr"><span class="dim" style="font-size:.78rem">'+(ra&&ra.email?"✉ "+h(ra.email):"")+'</span><button type="button" class="pinbtn mail">'+h(t("sendCopies"))+'</button></div>';
+      html+='</div>';
+    }
+    html+='<div class="pcard"><div class="ph">'+h(t("phWeek"))+'</div><div class="pr"><span class="dim">'+h(t("viewWeek",{n:n}))+'</span><button type="button" class="pinbtn view">📅 '+h(t("viewWeekBtn"))+'</button></div></div>';
+    var body=$("personBody"); body.innerHTML=html;
+    var rm=$("personRemove"); rm.textContent="✕ "+t("removeName",{n:n}); rm.dataset.arm=""; rm.classList.remove("arm"); rm.dataset.name=n;
+    body.querySelectorAll(".pinbtn.mail").forEach(function(b){b.addEventListener("click",async function(){
+      b.disabled=true;
       var r=await api("/api/me",{method:"POST",auth:true,body:{action:"sendCopies",name:n}});
       b.disabled=false;
-      if(r.ok){ toast(t("copiesSent",{e:r.json.email||"",k:(r.json.sent||[]).join(", ")}),4500); await loadAccounts(); renderRoster(); }
+      if(r.ok){ toast(t("copiesSent",{e:r.json.email||"",k:(r.json.sent||[]).join(", ")}),4500); await loadAccounts(); renderPerson(); renderRoster(); }
       else if(r.status===503) toast(t("mailOff"),4000);
       else toast(t("copyFail",{r:(r.json&&r.json.detail)||r.status}),4500);
     });});
-    el.querySelectorAll(".pinbtn.view").forEach(function(b){b.addEventListener("click",function(){ $("staffOverlay").classList.remove("show"); openMe(b.getAttribute("data-name")); });});
-    el.querySelectorAll(".pinbtn.reset").forEach(function(b){b.addEventListener("click",async function(){
-      var n=b.getAttribute("data-name");
+    body.querySelectorAll(".pinbtn.view").forEach(function(b){b.addEventListener("click",function(){ $("personOverlay").classList.remove("show"); $("staffOverlay").classList.remove("show"); openMe(n); });});
+    body.querySelectorAll(".pinbtn.reset").forEach(function(b){b.addEventListener("click",async function(){
       if(!b.dataset.arm){ b.dataset.arm="1"; b.classList.add("arm"); b.textContent=t("pinResetSure"); setTimeout(function(){ if(b.isConnected&&b.dataset.arm){ b.dataset.arm=""; b.classList.remove("arm"); b.textContent="🔑 "+t("pinReset"); } },4000); return; }
       b.disabled=true;
       var r=await api("/api/me",{method:"POST",auth:true,body:{action:"reset",name:n}});
-      if(r.ok){ toast(t("pinResetDone",{n:n}),4200); await loadAccounts(); renderRoster(); }
+      if(r.ok){ toast(t("pinResetDone",{n:n}),4200); await loadAccounts(); renderPerson(); renderRoster(); }
       else { toast(t("pinResetFail")); b.disabled=false; b.dataset.arm=""; b.classList.remove("arm"); b.textContent="🔑 "+t("pinReset"); }
     });});
-    el.querySelectorAll(".x").forEach(function(b){b.addEventListener("click",function(){
-      var i=Number(b.getAttribute("data-i")); var n=state.data.staff[i]; if(!n) return;
-      var up=upcomingShiftsOf(n);
-      if(!b.dataset.arm){ var sfx=up.length?(up.length===1?t("upcoming1"):t("upcomingN",{k:up.length})):""; b.dataset.arm="1"; b.textContent=t("removeQ"); b.style.fontWeight="700"; toast(t("removeTap",{n:n,s:sfx}),4000); setTimeout(function(){if(b.isConnected){b.dataset.arm="";b.textContent="✕";b.style.fontWeight="";}},4000); return; }
-      state.data.staff.splice(i,1); delete state.data.birthdays[n];
-      up.forEach(function(u){ state.data.weeks[u.week][u.day]=state.data.weeks[u.week][u.day].filter(function(s){return s.id!==u.id;}); delete state.confirmations[shiftKey(u.week,u.day,u.id)]; });
-      renderRoster(); renderAll(); scheduleSave();
-      toast(t("removed",{n:n,s:up.length?(up.length===1?t("deleted1"):t("deletedN",{k:up.length})):""}),4200);
-    });});
-    el.querySelectorAll('input[type="date"]').forEach(function(inp){inp.addEventListener("change",function(){var n=inp.getAttribute("data-name");if(inp.value)state.data.birthdays[n]=inp.value;else delete state.data.birthdays[n];renderDays();scheduleSave();toast(inp.value?t("bdaySaved",{n:n}):t("bdayRemoved"));});});
+    body.querySelectorAll('input[type="date"]').forEach(function(inp){inp.addEventListener("change",function(){ if(inp.value) state.data.birthdays[n]=inp.value; else delete state.data.birthdays[n]; renderDays(); scheduleSave(); toast(inp.value?t("bdaySaved",{n:n}):t("bdayRemoved")); renderPerson(); renderRoster(); });});
   }
+  function removePerson(){
+    var b=$("personRemove"), n=b.dataset.name; var i=state.data.staff.indexOf(n); if(i===-1) return;
+    var up=upcomingShiftsOf(n);
+    if(!b.dataset.arm){ var sfx=up.length?(up.length===1?t("upcoming1"):t("upcomingN",{k:up.length})):""; b.dataset.arm="1"; b.classList.add("arm"); b.textContent=t("removeQ")+" "+t("removeName",{n:n}); toast(t("removeTap",{n:n,s:sfx}),4000); setTimeout(function(){ if(b.isConnected&&b.dataset.arm){ b.dataset.arm=""; b.classList.remove("arm"); b.textContent="✕ "+t("removeName",{n:n}); } },4000); return; }
+    state.data.staff.splice(i,1); delete state.data.birthdays[n];
+    up.forEach(function(u){ state.data.weeks[u.week][u.day]=state.data.weeks[u.week][u.day].filter(function(s){return s.id!==u.id;}); delete state.confirmations[shiftKey(u.week,u.day,u.id)]; });
+    $("personOverlay").classList.remove("show"); person.name=null;
+    renderRoster(); renderAll(); scheduleSave();
+    toast(t("removed",{n:n,s:up.length?(up.length===1?t("deleted1"):t("deletedN",{k:up.length})):""}),4200);
+  }
+
   function addStaff(){
     var v=$("newStaffInput").value.trim(); if(!v) return;
     if(state.data.staff.some(function(n){return n.toLowerCase()===v.toLowerCase();})){toast(t("nameExists"));return;}
@@ -2008,7 +2050,9 @@
   $("langBtn").addEventListener("click",function(){setLang(lang==="en"?"it":"en"); toast(lang==="it"?"Italiano attivo solo su questo dispositivo, in modalità manager.":"English restored on this device.",2600);});
   $("weekClose").addEventListener("click",function(){$("weekOverlay").classList.remove("show");maybeRecapPopup();});
   document.addEventListener("visibilitychange",function(){ if(document.visibilityState==="hidden"&&state.admin&&state.pendingNotify&&state.password&&!state.dirtyTimer&&!state.saving){ try{ fetch("/api/notify",{method:"POST",headers:{"x-admin-password":state.password,"Content-Type":"application/json"},keepalive:true}); state.pendingNotify=0; }catch(e){} } });
-  $("staffBtn").addEventListener("click",function(){renderRoster();$("staffRulesLink").style.display=rulesActive()?"":"none";$("staffOverlay").classList.add("show");loadAccounts().then(renderRoster);});
+  $("staffBtn").addEventListener("click",function(){renderRoster();$("staffRulesLink").style.display=(rulesActive()||(DOCS.list||[]).length)?"":"none";$("staffOverlay").classList.add("show");loadAccounts().then(renderRoster);});
+  $("personClose").addEventListener("click",function(){ $("personOverlay").classList.remove("show"); });
+  $("personRemove").addEventListener("click",removePerson);
   $("staffClose").addEventListener("click",function(){$("staffOverlay").classList.remove("show");});
   $("addStaffBtn").addEventListener("click",addStaff);
   $("newStaffInput").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();addStaff();}});
