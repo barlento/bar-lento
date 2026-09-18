@@ -56,40 +56,50 @@ window.BL_RULES = {
       "If you find either of them open, close it and immediately tell an owner or the manager, in person and by email.",
       "Keys, codes and passwords are personal. Never share them or leave them unattended."
     ]},
-    { h: "9. Honesty and theft", items: [
+    { h: "9. Closing the bar", items: [
+      "Closing is done by an owner or the manager. On days when no owner or manager is present, an owner or the manager assigns the closing to a team member on shift and tells them in advance.",
+      "Whoever closes follows the closing checklist: close the day on the Toast POS, check fridges, gas and equipment, take the trash out, turn off lights, lock the office door and the wine room door, and lock every entrance. If anything cannot be completed or looks wrong, message the owners and the manager before leaving.",
+      "Never leave the bar unattended while it is open, and never hand keys to anyone who is not on the team."
+    ]},
+    { h: "10. Honesty and theft", items: [
       "Taking cash, product, food, drinks, tips that are not yours, or property belonging to Bar Lento, to guests or to colleagues is theft.",
       "Theft, fraud or deliberate damage leads to immediate termination of employment, will be reported to the police, and Bar Lento may seek restitution through all remedies available under law.",
       "Complimentary items, discounts and voids are given only with a manager's authorization and are recorded in the POS."
     ]},
-    { h: "10. Payments, cash and tips", items: [
+    { h: "11. Payments, cash and tips", items: [
       "Bar Lento is cashless: every payment for food and drinks is made by card or contactless. Do not accept cash for any order, and never keep cash of the business in your possession.",
       "Card tips are recorded in Toast and paid out according to Bar Lento's tip policy, which is explained to you separately. Tips belong to the team members who earn them, as protected by New York Labor Law §196-d.",
       "If a guest wants to leave a cash tip, tell the manager before accepting it, so that it is recorded and included in the tip payout correctly. Never keep undeclared cash."
     ]},
-    { h: "11. Video surveillance and electronic monitoring notice", items: [
+    { h: "12. Video surveillance and electronic monitoring notice", items: [
       "For the safety of everyone and to prevent loss, Bar Lento uses video cameras that record 24 hours a day in the bar, dining and service areas, storage areas, the office, the wine room, the backyard and the entrances. There are no cameras in restrooms or in the changing area.",
       "Recordings may be reviewed by the owners and the manager and may be shared with law enforcement.",
       "This section is also Bar Lento's written notice under New York Civil Rights Law §52-c: activity on Bar Lento systems and accounts, including the Toast POS and the schedule app, may be monitored and recorded. Your acknowledgment of these rules confirms that you received this notice."
     ]},
-    { h: "12. Staff meal and breaks", items: [
+    { h: "13. Staff meal and breaks", items: [
       "Every team member receives one free simple staff meal per shift, for example pasta in bianco or the simple dish of the day, to be eaten during your break, off the floor.",
       "Meal breaks are provided as required by New York Labor Law §162 and are scheduled by the manager according to the shift."
     ]},
-    { h: "13. Health, allergies and accommodations", items: [
+    { h: "14. Accidents and injuries at work", items: [
+      "If you get hurt at work, even slightly, or if you see an accident or a dangerous situation (a spill, a broken glass, a loose step), tell the manager immediately and before leaving your shift.",
+      "Work-related injuries are handled through New York workers' compensation insurance, as required by law. Reporting right away protects you and lets Bar Lento file what the law requires within the deadlines.",
+      "Nobody is ever penalized for reporting an injury or a safety problem."
+    ]},
+    { h: "15. Health, allergies and accommodations", items: [
       "If you have an allergy, a medical condition or a disability that we should know about for your safety, or if you need an accommodation, you may tell us by email to the contacts below. Sharing this information is voluntary and it is kept confidential.",
       "Bar Lento provides reasonable accommodations as required by law and will discuss your needs with you."
     ]},
-    { h: "14. Guests' privacy and confidential information", items: [
+    { h: "16. Guests' privacy and confidential information", items: [
       "What happens at Bar Lento stays at Bar Lento. Never share information about guests with anyone outside the team: who was here, what they ordered, what they said, where they sat.",
       "Never write down, photograph or copy a guest's card details or personal data.",
       "Do not photograph or film guests, and do not post photos, videos or comments about guests or about what happens during service on social media. If you want to post something about Bar Lento itself, ask a manager first.",
-      "Recipes, suppliers, prices, sales figures and internal documents are confidential business information: keep them inside the team. This rule is about guests and business information, not about your right to talk about your own working conditions (see section 16)."
+      "Recipes, suppliers, prices, sales figures and internal documents are confidential business information: keep them inside the team. This rule is about guests and business information, not about your right to talk about your own working conditions (see section 18)."
     ]},
-    { h: "15. How to communicate with us", items: [
+    { h: "17. How to communicate with us", items: [
       "For anything work-related, including absences, lateness, questions, problems, urgent matters and information you want on record, send one email to all of the addresses listed below. Speak to the manager on duty as well when the matter is urgent.",
       "Keep your contact details up to date so that we can reach you."
     ]},
-    { h: "16. Your rights", items: [
+    { h: "18. Your rights", items: [
       "Nothing in these rules limits your rights under the law, including your right to discuss wages and working conditions with your coworkers, to take leave you are entitled to, and to report what you believe is a violation of the law to Bar Lento or to a public authority.",
       "Bar Lento does not retaliate against anyone for exercising these rights or for reporting a concern in good faith."
     ]}
