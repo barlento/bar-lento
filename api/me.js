@@ -56,6 +56,7 @@ function sumMinutes(list) {
 //   POST {action:"create", name, pin}    → first PIN → token
 //   POST {action:"login", name, pin}     → token
 //   POST {action:"logout"}  (x-staff-token)
+//   POST {action:"ackRules", email, version} (x-staff-token) → House Rules read & acknowledged (once per version)
 //   GET  ?action=who                      (x-staff-token) → {name}
 //   GET  ?action=hours&week=YYYY-MM-DD    (x-staff-token, or manager + &name=) → Toast clock-ins of that week
 //   GET  ?action=recap&week=YYYY-MM-DD    (x-staff-token) → that week vs the week before (for the encouraging weekly review)
@@ -73,13 +74,16 @@ module.exports = async (req, res) => {
       const doc = await store.getSchedule();
       if (action === "list") {
         if (!isAdmin) return send(res, 401, { error: "unauthorized" });
-        return send(res, 200, { accounts: await accounts.summary() });
+        const [summary, acks] = await Promise.all([accounts.summary(), accounts.allRulesAck().catch(() => ({}))]);
+        Object.keys(acks).forEach((n) => { summary[n] = summary[n] || { pin: false, devices: 0 }; summary[n].rules = { version: acks[n].version, at: acks[n].at, email: acks[n].email }; });
+        return send(res, 200, { accounts: summary });
       }
       // Who is on this device? (also used by "hours" below)
       let name = await accounts.whoIs(tokenFrom(req), doc.data.staff);
       if (action === "who") {
         if (!name) return send(res, 401, { error: "unauthorized" });
-        return send(res, 200, { name });
+        const ack = await accounts.getRulesAck(name).catch(() => null);
+        return send(res, 200, { name, rulesAck: ack ? { version: ack.version, at: ack.at } : null });
       }
       if (action === "hours") {
         const asked = String(url.searchParams.get("name") || "");
@@ -113,6 +117,20 @@ module.exports = async (req, res) => {
     if (req.method !== "POST") { res.setHeader("Allow", "GET, POST"); return send(res, 405, { error: "method_not_allowed" }); }
 
     if (action === "logout") { await accounts.logout(tokenFrom(req)); return send(res, 200, { ok: true }); }
+
+    // House Rules read & acknowledged (once per version). Recorded with the email the person typed, the time, and the device.
+    if (action === "ackRules") {
+      const doc0 = await store.getSchedule();
+      const who = await accounts.whoIs(tokenFrom(req), doc0.data.staff);
+      if (!who) return send(res, 401, { error: "unauthorized" });
+      const email = String(body.email || "").trim().toLowerCase().slice(0, 120);
+      const version = String(body.version || "").trim().slice(0, 20);
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) || !/^\d{4}-\d{2}-\d{2}$/.test(version)) return send(res, 400, { error: "bad_request" });
+      const at = new Date().toISOString();
+      await accounts.setRulesAck(who, { version, email, at, ua: String(req.headers["user-agent"] || "").slice(0, 160) });
+      await store.appendLog({ at, version: null, changes: [`House Rules ${version} acknowledged by ${who} (${email})`] }).catch(() => {});
+      return send(res, 200, { ok: true, rulesAck: { version, at } });
+    }
 
     if (action === "reset") {
       if (!isAdmin) return send(res, 401, { error: "unauthorized" });

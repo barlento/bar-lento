@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bar Lento — House Rules</title>
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+<style>
+  body{margin:0;background:#F3EDE1;color:#1F150C;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.5}
+  .page{max-width:760px;margin:0 auto;padding:24px 20px 60px}
+  .card{background:#FFFCF6;border:1px solid #D6C6A6;border-radius:16px;padding:26px 28px}
+  h1{font-size:1.5rem;margin:0 0 4px}
+  .sub{color:#5A4A39;font-size:.9rem;margin:0 0 6px}
+  .ver{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;background:#F1DDBD;color:#3E2208;border-radius:999px;padding:3px 10px;margin:6px 0 18px}
+  p.intro{font-size:.95rem}
+  h2{font-size:1.05rem;margin:22px 0 6px;color:#3E2208}
+  ul{margin:0;padding-left:20px}
+  li{margin:5px 0;font-size:.95rem}
+  .contacts{margin-top:22px;padding:14px 16px;border-radius:12px;background:#ECE3D2;font-size:.92rem}
+  .contacts b{display:block;margin-bottom:6px}
+  .ack{margin-top:22px;padding:14px 16px;border-left:4px solid #C9701E;background:#FFF7EA;font-size:.92rem;font-style:italic}
+  .tools{display:flex;gap:10px;justify-content:flex-end;margin-bottom:14px}
+  .tools button,.tools a{border:1px solid #D6C6A6;background:#FFFCF6;color:#1F150C;border-radius:10px;padding:8px 14px;font-size:.88rem;font-weight:600;cursor:pointer;text-decoration:none}
+  .empty{text-align:center;color:#5A4A39;padding:40px 10px}
+  @media print{body{background:#fff}.page{padding:0;max-width:none}.card{border:none;padding:0}.tools{display:none}}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="tools"><a href="/">← Back to the schedule</a><button type="button" onclick="window.print()">🖨 Print / Save as PDF</button></div>
+  <div class="card" id="doc"><div class="empty">Loading…</div></div>
+</div>
+<script src="/rules.js"></script>
+<script>
+(function(){
+  var R=window.BL_RULES; var el=document.getElementById("doc");
+  function h(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+  if(!R||!R.version){ el.innerHTML='<div class="empty">The House Rules are not published yet.</div>'; return; }
+  var html='<h1>'+h(R.title)+'</h1><p class="sub">'+h(R.subtitle)+'</p><span class="ver">Version '+h(R.version)+'</span><p class="intro">'+h(R.intro)+'</p>';
+  R.sections.forEach(function(s){ html+='<h2>'+h(s.h)+'</h2><ul>'+s.items.map(function(i){return '<li>'+h(i)+'</li>';}).join("")+'</ul>'; });
+  html+='<div class="contacts"><b>Contacts — write to all of them</b>'+R.contacts.map(function(c){return h(c.name)+' · <a href="mailto:'+h(c.email)+'">'+h(c.email)+'</a>';}).join("<br>")+'</div>';
+  html+='<div class="ack">'+h(R.ack)+'</div>';
+  el.innerHTML=html;
+})();
+</script>
+</body>
+</html>
