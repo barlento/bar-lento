@@ -329,6 +329,7 @@
   .shift.confirmed{background:var(--good-soft);border-color:color-mix(in srgb,var(--good) 55%,transparent)}
   .shift.confirmed .check{background:var(--good);border-color:var(--good);color:#fff}
   .shift.confirmed .when::after{content:"· confirmed";margin-left:4px;color:var(--good);font-weight:600}
+  body.it .shift.confirmed .when::after{content:"· confermato"}
   .shift .edit{display:none;color:var(--ink-muted);font-size:.9rem;flex:none}
   body.admin .shift .edit{display:inline}
   .empty-note{color:var(--ink-muted);font-size:.78rem;font-style:italic;padding:4px 2px}
@@ -589,13 +590,13 @@
       <span class="mark" aria-hidden="true">🍸</span>
       <div>
         <h1>Bar Lento</h1>
-        <div class="tag">Weekly schedule — New York</div>
+        <div class="tag" data-t="tagline">Weekly schedule — New York</div>
       </div>
     </div>
     <div class="hdr-right">
       <div class="hdr-actions">
         <button class="mebtn" id="meBtn" type="button" style="display:none" aria-haspopup="dialog">👤 Who are you?</button>
-        <button class="clockbtn" id="clockBtn" type="button" style="display:none" aria-haspopup="dialog"><span class="cled" aria-hidden="true"></span><span class="lbl">⏱ Time clock</span><span class="cnt" id="clockCnt" style="display:none">0</span></button>
+        <button class="clockbtn" id="clockBtn" type="button" style="display:none" aria-haspopup="dialog"><span class="cled" aria-hidden="true"></span><span class="lbl" data-t="clockBtn">⏱ Time clock</span><span class="cnt" id="clockCnt" style="display:none">0</span></button>
         <button class="bellbtn" id="bellBtn" type="button" style="display:none">🔔 Notify me</button>
         <button class="loginbtn" id="managerLink" type="button">🔑 Manager login</button>
       </div>
@@ -619,7 +620,7 @@
 
   <div class="mestrip" id="meStrip" role="region" aria-label="Your shifts">
     <div class="hi"><span class="av" id="meAv">?</span><div class="txt"><b id="meHi">Hi!</b><span id="meNext"></span></div></div>
-    <div class="mebtns"><button class="btn primary" id="meOpenBtn" type="button">📅 My week</button><button class="btn" id="meStatsBtn" type="button">⭐ My stats</button></div>
+    <div class="mebtns"><button class="btn primary" id="meOpenBtn" type="button" data-t="myWeek">📅 My week</button><button class="btn" id="meStatsBtn" type="button" data-t="myStats">⭐ My stats</button></div>
   </div>
 
   <div class="hero" id="heroStatus" aria-live="polite"></div>
@@ -640,7 +641,7 @@
   <footer class="note">
     <span id="footHint">Tap your shift to confirm you've seen it. Your shifts are marked YOU.</span>
     <div class="links">
-      <button class="btn sm" id="copyBtn" type="button">Copy as text</button>
+      <button class="btn sm" id="copyBtn" type="button" data-t="copyBtn">Copy as text</button>
     </div>
   </footer>
 </div>
@@ -799,45 +800,45 @@
     <p class="lead" id="statsLead">Your hours and punctuality, from Toast. Only you see this.</p>
     <div id="statsBody">
       <div class="lb-tabs" role="tablist">
-        <button type="button" class="active" data-period="week">This week</button>
-        <button type="button" data-period="month">This month</button>
-        <button type="button" data-period="all">All time</button>
+        <button type="button" class="active" data-period="week" data-t="thisWeek">This week</button>
+        <button type="button" data-period="month" data-t="thisMonth">This month</button>
+        <button type="button" data-period="all" data-t="allTime">All time</button>
       </div>
       <div class="me-hero" id="statsHero"></div>
       <div class="tc-sum me-sum" id="statsSum"></div>
       <div class="me-msg" id="statsMsg"></div>
       <div class="me-team" id="statsTeam"></div>
-      <details class="lb-rules"><summary>How this is calculated</summary><p>Hours are your clocked time from Toast. “On time” is the share of your scheduled shifts where you clocked in within 5 minutes of the start (shown after 3 clocked shifts). Only clocked shifts count, and closed days never count against you. Nobody else can see your numbers.</p></details>
-      <div class="tc-foot"><span id="statsUpdated"></span><button class="refresh" id="statsRefresh" type="button">↻ Refresh</button></div>
+      <details class="lb-rules"><summary data-t="statsRulesSum">How this is calculated</summary><p data-t="statsRules">Hours are your clocked time from Toast. “On time” is the share of your scheduled shifts where you clocked in within 5 minutes of the start (shown after 3 clocked shifts). Only clocked shifts count, and closed days never count against you. Nobody else can see your numbers.</p></details>
+      <div class="tc-foot"><span id="statsUpdated"></span><button class="refresh" id="statsRefresh" type="button" data-t="refresh">↻ Refresh</button></div>
     </div>
-    <div class="actions"><button class="btn" id="statsWeekBtn" type="button">📅 My week</button><span class="spacer"></span><button class="btn" id="statsClose" type="button">Close</button></div>
+    <div class="actions"><button class="btn" id="statsWeekBtn" type="button" data-t="myWeek">📅 My week</button><span class="spacer"></span><button class="btn" id="statsClose" type="button" data-t="close">Close</button></div>
   </div>
 </div>
 
 <!-- Leaderboard (everyone) -->
 <div class="overlay" id="lbOverlay">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="lbTitle">
-    <h2 id="lbTitle">🏆 Team ranking <span class="pill">Managers only</span></h2>
-    <p class="lead">Hours worked + punctuality, straight from Toast. Staff don't see this — each person only sees their own stats.</p>
+    <h2 id="lbTitle"><span data-t="lbTitle">🏆 Team ranking</span> <span class="pill" data-t="managersOnly">Managers only</span></h2>
+    <p class="lead" data-t="lbLead">Hours worked + punctuality, straight from Toast. Staff don't see this — each person only sees their own stats.</p>
     <div class="lb-tabs" role="tablist">
-      <button type="button" class="active" data-period="week">This week</button>
-      <button type="button" data-period="month">This month</button>
-      <button type="button" data-period="all">All time</button>
+      <button type="button" class="active" data-period="week" data-t="thisWeek">This week</button>
+      <button type="button" data-period="month" data-t="thisMonth">This month</button>
+      <button type="button" data-period="all" data-t="allTime">All time</button>
     </div>
     <div class="podium" id="lbPodium"></div>
-    <div class="lb-head"><span>#</span><span></span><span>Name</span><span>Hours</span><span>On time</span></div>
+    <div class="lb-head"><span>#</span><span></span><span data-t="colName">Name</span><span data-t="colHours">Hours</span><span data-t="colOnTime">On time</span></div>
     <div class="lb-list" id="lbList"><div class="tc-empty">Loading…</div></div>
-    <details class="lb-rules"><summary>How the ranking works</summary><p>Hours are your clocked time from Toast. “On time” is the share of your scheduled shifts where you clocked in within 5 minutes of the start (shown after 3 clocked shifts). The order combines both: hours first, with a boost for punctuality and for your current on-time streak 🔥. Only clocked shifts count, and closed days never count against anyone.</p></details>
-    <div class="tc-foot"><span id="lbUpdated"></span><button class="refresh" id="lbRefresh" type="button">↻ Refresh</button></div>
-    <div class="actions"><button class="btn" id="lbClose" type="button">Close</button></div>
+    <details class="lb-rules"><summary data-t="lbRulesSum">How the ranking works</summary><p data-t="lbRules">Hours are your clocked time from Toast. “On time” is the share of your scheduled shifts where you clocked in within 5 minutes of the start (shown after 3 clocked shifts). The order combines both: hours first, with a boost for punctuality and for your current on-time streak 🔥. Only clocked shifts count, and closed days never count against anyone.</p></details>
+    <div class="tc-foot"><span id="lbUpdated"></span><button class="refresh" id="lbRefresh" type="button" data-t="refresh">↻ Refresh</button></div>
+    <div class="actions"><button class="btn" id="lbClose" type="button" data-t="close">Close</button></div>
   </div>
 </div>
 
 <!-- Time clock (everyone) -->
 <div class="overlay" id="clockOverlay">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="clockTitle">
-    <h2 id="clockTitle">⏱ Time clock</h2>
-    <p class="lead" id="clockLead">Clock-ins and clock-outs from Toast, live.</p>
+    <h2 id="clockTitle" data-t="tcTitle">⏱ Time clock</h2>
+    <p class="lead" id="clockLead" data-t="tcLead">Clock-ins and clock-outs from Toast, live.</p>
     <div class="tc-head">
       <button class="navbtn" id="tcPrev" type="button" aria-label="Previous day">‹</button>
       <div class="tc-date"><b id="tcDate">Today</b><span id="tcDateSub"></span></div>
@@ -845,8 +846,8 @@
     </div>
     <div class="tc-sum" id="tcSum"></div>
     <div class="tc-list" id="tcList"><div class="tc-empty">Loading…</div></div>
-    <div class="tc-foot"><span id="tcUpdated"></span><button class="refresh" id="tcRefresh" type="button">↻ Refresh</button></div>
-    <div class="actions"><button class="btn" id="clockClose" type="button">Close</button></div>
+    <div class="tc-foot"><span id="tcUpdated"></span><button class="refresh" id="tcRefresh" type="button" data-t="refresh">↻ Refresh</button></div>
+    <div class="actions"><button class="btn" id="clockClose" type="button" data-t="close">Close</button></div>
   </div>
 </div>
 
@@ -912,8 +913,8 @@
       <button class="linkbtn" id="meSwitch" type="button">Not you? Switch</button>
       <button class="linkbtn" id="meLogout" type="button">Log out here</button>
       <span class="spacer"></span>
-      <button class="btn" id="meStatsLink" type="button">⭐ My stats</button>
-      <button class="btn" id="meClose" type="button">Close</button>
+      <button class="btn" id="meStatsLink" type="button" data-t="myStats">⭐ My stats</button>
+      <button class="btn" id="meClose" type="button" data-t="close">Close</button>
     </div>
   </div>
 </div>
@@ -925,12 +926,14 @@
   "use strict";
 
   var DAY_KEYS=["mon","tue","wed","thu","fri","sat","sun"];
-  var DAY_NAMES={mon:"Monday",tue:"Tuesday",wed:"Wednesday",thu:"Thursday",fri:"Friday",sat:"Saturday",sun:"Sunday"};
-  var DAY_SHORT={mon:"Mon",tue:"Tue",wed:"Wed",thu:"Thu",fri:"Fri",sat:"Sat",sun:"Sun"};
+  var L_EN={days:{mon:"Monday",tue:"Tuesday",wed:"Wednesday",thu:"Thursday",fri:"Friday",sat:"Saturday",sun:"Sunday"},short:{mon:"Mon",tue:"Tue",wed:"Wed",thu:"Thu",fri:"Fri",sat:"Sat",sun:"Sun"},months:["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]};
+  var L_IT={days:{mon:"Lunedì",tue:"Martedì",wed:"Mercoledì",thu:"Giovedì",fri:"Venerdì",sat:"Sabato",sun:"Domenica"},short:{mon:"Lun",tue:"Mar",wed:"Mer",thu:"Gio",fri:"Ven",sat:"Sab",sun:"Dom"},months:["gen","feb","mar","apr","mag","giu","lug","ago","set","ott","nov","dic"]};
+  var DAY_NAMES=L_EN.days, DAY_SHORT=L_EN.short;
   var OPENING={mon:{open:"16:00",close:"22:00"},tue:{open:"16:00",close:"22:00"},wed:{open:"16:00",close:"22:00"},thu:{open:"16:00",close:"22:00"},fri:{open:"16:00",close:"23:00"},sat:{open:"16:00",close:"23:00"},sun:{open:"16:00",close:"22:00"}};
-  var MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  var MONTHS=L_EN.months;
   var DAY_KEY_BY_JSDAY=["sun","mon","tue","wed","thu","fri","sat"];
   var STATUS_LABEL={closed:"Closed",holiday:"Holiday · closed",half:"Half day",event:"Private event"};
+  function statusLabel(st){ return t({closed:"stClosedLbl",holiday:"stHolidayLbl",half:"stHalfLbl",event:"stEventLbl"}[st]||"stClosedLbl"); }
   function hoursFor(wk,day){ var n=dayNote(wk,day); if(n&&n.status==="half"&&n.open&&n.close) return {open:n.open,close:n.close}; return OPENING[day]; }
   var PW_KEY="bl_admin_pw", ARCHIVE_KEY="bl_show_archive", LANG_KEY="bl_lang", ME_TOKEN_KEY="bl_me_token", ME_NAME_KEY="bl_me_name";
 
@@ -958,6 +961,31 @@
       weekCreated:"Week of {r} created", weekCopied:"Week of {r} created with {k} shifts copied — adjust names and times", weekNoPrev:"Week created (no previous week to copy from)", noPrev:"There's no previous week to copy.", copied:"Shifts copied from the previous week", weekDeleted:"Week deleted",
       welcome:"Welcome! You're in manager mode.", noDb:"Heads up: the database isn't connected, so changes won't be saved.", loggedOut:"Logged out of manager mode.",
       conflict:"Someone else changed the schedule from another device. I reloaded the latest version — please redo your change.", pwInvalid:"Password no longer valid. Please log in again.", dbMissing:"The database isn't connected yet — changes can't be saved.", saveFail:"Couldn't save. Please try again.",
+      tagline:"Weekly schedule — New York", mgrLogin:"🔑 Manager login", whoBtn:"👤 Who are you?", clockBtn:"⏱ Time clock", bellOff:"🔔 Notify me", bellOn:"🔔 Notifications on", bellBlocked:"🔕 Notifications blocked", bellIos:"🔔 Notifications",
+      updatedAt:"Updated {d}", previewMode:"preview mode", scheduleUpdated:"Schedule updated ✨", loadFail:"Couldn't load the schedule. Please try again.",
+      openNow:"Open now", closedNow:"Closed now", closedToday:"Closed today", closedTodayHol:"Closed today · Holiday", halfDayTag:"(half day)", workingToday:"Working today:", noShiftsToday:"No shifts assigned for today",
+      thisWeek:"This week", nextWeek:"Next week", pastWeek:"Past week", weekTag:"Week", hidePast:"Hide past weeks", pastArchive:"Past weeks · archive ({n})", noWeeks:"No weeks published yet.",
+      todayTag:"· today", noShiftsClosed:"No shifts — closed", noShiftsAssigned:"No shifts assigned", allConfirmed:"✓ all confirmed", confirmedN:"{c}/{n} confirmed", bdayChip:"🎂 {n} birthday",
+      stClosedLbl:"Closed", stHolidayLbl:"Holiday · closed", stHalfLbl:"Half day", stEventLbl:"Private event",
+      notClockedIn:"not clocked in", clockedIn:"clocked in {t}", lateBy:" · {t} late",
+      footStaff:"Tap your shift to confirm you've seen it. Your shifts are marked YOU.", copyBtn:"Copy as text", copied:"Copied! Paste it in WhatsApp.", nothingToCopy:"Nothing to copy", copyFail:"Copy failed",
+      tcTitle:"⏱ Time clock", tcLead:"Clock-ins and clock-outs from Toast, live.", today:"Today", yesterday:"Yesterday", tomorrow:"Tomorrow", onTheClock:"on the clock", people:"people", person:"person", totalHours:"total hours",
+      nobodyPast:"Nobody clocked in on this day.", nobodyYet:"Nobody has clocked in yet today.", tcOff:"Time clock is not connected.", onClockNow:"on the clock now", shiftDone:"shift done", nowWord:"now", updatedFromToast:"Updated {t} · from Toast", refresh:"↻ Refresh", toastDown:"Toast isn't answering right now — try again in a moment.",
+      lbTitle:"🏆 Team ranking", managersOnly:"Managers only", lbLead:"Hours worked + punctuality, straight from Toast. Staff don't see this — each person only sees their own stats.", thisMonth:"This month", allTime:"All time",
+      colName:"Name", colHours:"Hours", colOnTime:"On time", lbRulesSum:"How the ranking works", lbRules:"Hours are your clocked time from Toast. “On time” is the share of your scheduled shifts where you clocked in within 5 minutes of the start (shown after 3 clocked shifts). The order combines both: hours first, with a boost for punctuality and for your current on-time streak 🔥. Only clocked shifts count, and closed days never count against anyone.",
+      addPeople:"Add people in Staff to start the leaderboard.", shift1:"shift", shiftN:"shifts", inARow:"🔥 {n} in a row", noClockedYet:"no clocked shifts yet", onTimePct:"{p}% on time", avgLate:"avg +{n} min", neverLate:"never late", newTag:"new", takesLead:"🏆 {n} takes the lead!", last180:"Last 180 days", sinceD:"Since {d}", weekOfD:"Week of {d}", updatedT:"updated {t}", place1:"1st", place2:"2nd", place3:"3rd", ofThree:"{n}/3 shifts",
+      myWeek:"📅 My week", myStats:"⭐ My stats", weekOfName:"{n} week", myWeekTitle:"My week", weekLeadMine:"Your shifts, and hours from the Toast time clock.", weekLeadOf:"{n} shifts, and hours from the Toast time clock.",
+      scheduled:"scheduled", worked:"worked", soFar:" so far", difference:"difference", noShiftsMine:"No shifts for you this week.", noShiftsPerson:"No shifts this week.", noWeeksYet:"No weeks yet", nothingPublished:"Nothing published yet.",
+      hoursFromToast:"Hours from Toast · updated {t}", notLinked:"Toast doesn't recognise this name yet — link it in Staff.", loadingHours:"Loading hours from Toast…", hoursNeedToast:"Worked hours appear when the Toast time clock is connected.", toastDownShort:"Toast isn't answering right now — scheduled shifts are still shown.",
+      noClockIn:"No clock-in recorded", notClockedYet:"Not clocked in yet", notOnSchedule:"not on the schedule", dayMarked:"⚠ Day marked {s}", confirmChip:"confirm",
+      statsTitle:"⭐ My stats", statsOf:"⭐ {n} stats", statsLeadMine:"Your hours and punctuality, from Toast. Only you see this.", statsLeadOf:"{n} hours and punctuality, from Toast.",
+      hoursTile:"hours", onTimeTile:"on time", streakTile:"in a row", onClockSince:"On the clock now · since {t}", shiftsClocked:"{n} clocked", noClockedShifts:"No clocked shifts yet", loadingWord:"Loading…",
+      teamHours:"Team hours {p}", teamOnTime:"Team on time", teamShifts:"Shifts worked by the team", teamOnNow:"On the clock right now", pThisWeek:"this week", pThisMonth:"this month", p180:"(180 days)",
+      statsRulesSum:"How this is calculated", statsRules:"Hours are your clocked time from Toast. “On time” is the share of your scheduled shifts where you clocked in within 5 minutes of the start (shown after 3 clocked shifts). Only clocked shifts count, and closed days never count against you. Nobody else can see your numbers.",
+      bStreak:"🔥 {n} on-time shifts in a row", bPerfect:"🎯 Perfect punctuality", b30:"💪 30+ hours", b20:"💪 20+ hours", bShifts:"🏅 {n} shifts",
+      m0:"Your stats will appear after your first clocked shift. Welcome aboard! 🍸", m1:"Keep going — after 3 scheduled shifts you'll see your punctuality too.", m90:"Amazing — you're almost always right on time. Thank you! ⭐", m80:"Great job — solid punctuality. Keep it up!", m60:"Good work. A few minutes earlier and you're in the green zone.", mLow:"Thanks for your hours! Aim to clock in within 5 minutes of your start — you've got this.",
+      hi:"Hi {n} 👋", nextShift:"Next shift: {w} · ", onShiftNow:"On shift now · ", noUpcoming:"No upcoming shifts on the schedule.",
+      histEntry:"{d} · {t} · v{v}",
       pinSet:"PIN set", pinDevices:"{k} device{p}", pinNone:"No PIN yet", pinReset:"Reset PIN", pinResetSure:"Sure? Reset", pinResetDone:"PIN reset for {n} — they'll create a new one next time", pinResetFail:"Couldn't reset the PIN. Try again.", viewWeek:"View {n}'s week", staffLeadPin:" Each person creates a personal PIN to see their own shifts and hours; <b>Reset PIN</b> if they forget it (it also signs out all their devices).",
       toastPick:"— Toast employee —", toastLoading:"Loading Toast…", toastLinked:"{n} linked to Toast", toastUnlinked:"{n} unlinked from Toast", notified:"Team notified ✓ ({k} phone{p})", notifiedNone:"Changes noted — nobody has notifications turned on yet.", notifyFail:"Couldn't send the notification. It will go out automatically later.", markedClosed:"{h} ✓"
     },
@@ -983,18 +1011,54 @@
       weekCreated:"Settimana {r} creata", weekCopied:"Settimana {r} creata con {k} turni copiati — sistema nomi e orari", weekNoPrev:"Settimana creata (nessuna precedente da copiare)", noPrev:"Non c'è una settimana precedente da copiare.", copied:"Turni copiati dalla settimana precedente", weekDeleted:"Settimana eliminata",
       welcome:"Ciao! Sei in modalità manager.", noDb:"Attenzione: database non collegato, le modifiche non verranno salvate.", loggedOut:"Uscita dalla modalità manager.",
       conflict:"Qualcun altro ha modificato i turni da un altro dispositivo. Ho ricaricato l'ultima versione — ripeti la modifica.", pwInvalid:"Password non più valida. Accedi di nuovo.", dbMissing:"Il database non è ancora collegato — le modifiche non si salvano.", saveFail:"Salvataggio non riuscito. Riprova.",
+      tagline:"Turni settimanali — New York", mgrLogin:"🔑 Accesso manager", whoBtn:"👤 Chi sei?", clockBtn:"⏱ Timbrature", bellOff:"🔔 Avvisami", bellOn:"🔔 Notifiche attive", bellBlocked:"🔕 Notifiche bloccate", bellIos:"🔔 Notifiche",
+      updatedAt:"Aggiornato {d}", previewMode:"anteprima", scheduleUpdated:"Turni aggiornati ✨", loadFail:"Impossibile caricare i turni. Riprova.",
+      openNow:"Aperto ora", closedNow:"Chiuso ora", closedToday:"Chiuso oggi", closedTodayHol:"Chiuso oggi · Festivo", halfDayTag:"(mezza giornata)", workingToday:"Oggi lavorano:", noShiftsToday:"Nessun turno assegnato per oggi",
+      thisWeek:"Questa settimana", nextWeek:"Prossima settimana", pastWeek:"Settimana passata", weekTag:"Settimana", hidePast:"Nascondi settimane passate", pastArchive:"Settimane passate · archivio ({n})", noWeeks:"Nessuna settimana pubblicata.",
+      todayTag:"· oggi", noShiftsClosed:"Nessun turno — chiuso", noShiftsAssigned:"Nessun turno assegnato", allConfirmed:"✓ tutti confermati", confirmedN:"{c}/{n} confermati", bdayChip:"🎂 compleanno di {n}",
+      stClosedLbl:"Chiuso", stHolidayLbl:"Festivo · chiuso", stHalfLbl:"Mezza giornata", stEventLbl:"Evento privato",
+      notClockedIn:"non ha timbrato", clockedIn:"timbrato {t}", lateBy:" · {t} di ritardo",
+      footStaff:"Tocca il tuo turno per confermare di averlo visto. I tuoi turni sono segnati YOU.", copyBtn:"Copia come testo", copied:"Copiato! Incollalo su WhatsApp.", nothingToCopy:"Niente da copiare", copyFail:"Copia non riuscita",
+      tcTitle:"⏱ Timbrature", tcLead:"Entrate e uscite da Toast, in tempo reale.", today:"Oggi", yesterday:"Ieri", tomorrow:"Domani", onTheClock:"al lavoro", people:"persone", person:"persona", totalHours:"ore totali",
+      nobodyPast:"Nessuno ha timbrato questo giorno.", nobodyYet:"Nessuno ha ancora timbrato oggi.", tcOff:"Timbrature non collegate.", onClockNow:"al lavoro adesso", shiftDone:"turno finito", nowWord:"adesso", updatedFromToast:"Aggiornato {t} · da Toast", refresh:"↻ Aggiorna", toastDown:"Toast non risponde al momento — riprova tra poco.",
+      lbTitle:"🏆 Classifica team", managersOnly:"Solo manager", lbLead:"Ore lavorate + puntualità, direttamente da Toast. Lo staff non la vede — ognuno vede solo le proprie statistiche.", thisMonth:"Questo mese", allTime:"Sempre",
+      colName:"Nome", colHours:"Ore", colOnTime:"Puntuale", lbRulesSum:"Come funziona la classifica", lbRules:"Le ore sono il tempo timbrato su Toast. “Puntuale” è la quota di turni previsti in cui la timbratura d'entrata è entro 5 minuti dall'inizio (compare dopo 3 turni timbrati). L'ordine combina entrambi: prima le ore, con un bonus per la puntualità e per la serie di turni puntuali in corso 🔥. Contano solo i turni timbrati e i giorni di chiusura non penalizzano nessuno.",
+      addPeople:"Aggiungi persone in Staff per avviare la classifica.", shift1:"turno", shiftN:"turni", inARow:"🔥 {n} di fila", noClockedYet:"nessun turno timbrato", onTimePct:"{p}% puntuale", avgLate:"media +{n} min", neverLate:"mai in ritardo", newTag:"nuovo", takesLead:"🏆 {n} passa in testa!", last180:"Ultimi 180 giorni", sinceD:"Dal {d}", weekOfD:"Settimana del {d}", updatedT:"aggiornato {t}", place1:"1º", place2:"2º", place3:"3º", ofThree:"{n}/3 turni",
+      myWeek:"📅 La mia settimana", myStats:"⭐ Le mie statistiche", weekOfName:"Settimana di {n}", myWeekTitle:"La mia settimana", weekLeadMine:"I tuoi turni e le ore dalle timbrature Toast.", weekLeadOf:"Turni di {n} e ore dalle timbrature Toast.",
+      scheduled:"previste", worked:"lavorate", soFar:" finora", difference:"differenza", noShiftsMine:"Nessun turno per te questa settimana.", noShiftsPerson:"Nessun turno questa settimana.", noWeeksYet:"Nessuna settimana", nothingPublished:"Niente di pubblicato.",
+      hoursFromToast:"Ore da Toast · aggiornato {t}", notLinked:"Toast non riconosce ancora questo nome — collegalo in Staff.", loadingHours:"Carico le ore da Toast…", hoursNeedToast:"Le ore lavorate compaiono quando le timbrature Toast sono collegate.", toastDownShort:"Toast non risponde al momento — i turni previsti restano visibili.",
+      noClockIn:"Nessuna timbratura", notClockedYet:"Non ha ancora timbrato", notOnSchedule:"fuori turno", dayMarked:"⚠ Giorno segnato {s}", confirmChip:"conferma",
+      statsTitle:"⭐ Le mie statistiche", statsOf:"⭐ Statistiche di {n}", statsLeadMine:"Le tue ore e la tua puntualità, da Toast. Le vedi solo tu.", statsLeadOf:"Ore e puntualità di {n}, da Toast.",
+      hoursTile:"ore", onTimeTile:"puntuale", streakTile:"di fila", onClockSince:"Al lavoro adesso · da {t}", shiftsClocked:"{n} timbrati", noClockedShifts:"Nessun turno timbrato", loadingWord:"Caricamento…",
+      teamHours:"Ore del team {p}", teamOnTime:"Puntualità del team", teamShifts:"Turni lavorati dal team", teamOnNow:"Al lavoro adesso", pThisWeek:"questa settimana", pThisMonth:"questo mese", p180:"(180 giorni)",
+      statsRulesSum:"Come viene calcolato", statsRules:"Le ore sono il tempo timbrato su Toast. “Puntuale” è la quota di turni previsti in cui la timbratura d'entrata è entro 5 minuti dall'inizio (compare dopo 3 turni timbrati). Contano solo i turni timbrati e i giorni di chiusura non penalizzano. Nessun altro vede questi numeri.",
+      bStreak:"🔥 {n} turni puntuali di fila", bPerfect:"🎯 Puntualità perfetta", b30:"💪 30+ ore", b20:"💪 20+ ore", bShifts:"🏅 {n} turni",
+      m0:"Le statistiche compaiono dopo il primo turno timbrato. Benvenuto/a a bordo! 🍸", m1:"Continua così — dopo 3 turni previsti vedrai anche la puntualità.", m90:"Fantastico — quasi sempre perfettamente in orario. Grazie! ⭐", m80:"Ottimo lavoro — puntualità solida. Continua così!", m60:"Bel lavoro. Qualche minuto prima e sei nella zona verde.", mLow:"Grazie per le tue ore! Prova a timbrare entro 5 minuti dall'inizio — ce la fai.",
+      hi:"Ciao {n} 👋", nextShift:"Prossimo turno: {w} · ", onShiftNow:"In turno adesso · ", noUpcoming:"Nessun turno in programma.",
+      histEntry:"{d} · {t} · v{v}",
       pinSet:"PIN creato", pinDevices:"{k} dispositiv{p}", pinNone:"Nessun PIN", pinReset:"Azzera PIN", pinResetSure:"Sicura? Azzera", pinResetDone:"PIN azzerato per {n} — ne creerà uno nuovo al prossimo accesso", pinResetFail:"Impossibile azzerare il PIN. Riprova.", viewWeek:"Vedi la settimana di {n}", staffLeadPin:" Ognuno crea un PIN personale per vedere i propri turni e le proprie ore; <b>Azzera PIN</b> se lo dimentica (scollega anche tutti i suoi dispositivi).",
       toastPick:"— dipendente Toast —", toastLoading:"Carico Toast…", toastLinked:"{n} collegato/a a Toast", toastUnlinked:"{n} scollegato/a da Toast", notified:"Ragazzi avvisati ✓ ({k} telefon{p})", notifiedNone:"Modifiche registrate — nessuno ha ancora attivato le notifiche.", notifyFail:"Invio non riuscito. Partirà automaticamente più tardi.", markedClosed:"{h} ✓"
     }
   };
   var lang="en";
   function t(k,vars){ var s=(I18N[lang]&&I18N[lang][k])||I18N.en[k]||k; if(vars) Object.keys(vars).forEach(function(v){ s=s.split("{"+v+"}").join(vars[v]); }); return s; }
+  // Italian exists only for the manager, per device: staff always see English; log out → English; log in → the saved choice.
+  function effectiveLang(){ return (typeof state!=="undefined"&&state.admin&&storageGet(LANG_KEY)==="it")?"it":"en"; }
   function applyLang(){
+    lang=effectiveLang(); var L=lang==="it"?L_IT:L_EN; DAY_NAMES=L.days; DAY_SHORT=L.short; MONTHS=L.months;
+    document.body.classList.toggle("it",lang==="it");
     document.querySelectorAll("[data-t]").forEach(function(el){ el.innerHTML=t(el.getAttribute("data-t")); });
     document.querySelectorAll("[data-tp]").forEach(function(el){ el.placeholder=t(el.getAttribute("data-tp")); });
     var lb=document.getElementById("langBtn"); if(lb) lb.textContent=lang==="en"?"🇮🇹 IT":"🇬🇧 EN";
+    if(typeof renderAll==="function"){
+      renderAll(); renderBell(); renderClockBtn();
+      if($("clockOverlay").classList.contains("show")) renderClockPanel();
+      if($("lbOverlay").classList.contains("show")) renderLb();
+      if($("meOverlay").classList.contains("show")) { meTitles(); renderMePanel(); }
+      if($("statsOverlay").classList.contains("show")) { statsTitles(); renderStats(); }
+    }
   }
-  function setLang(l){ lang=l==="it"?"it":"en"; storageSet(LANG_KEY,lang); applyLang(); if(typeof renderAll==="function") renderAll(); }
+  function setLang(l){ storageSet(LANG_KEY,l==="it"?"it":"en"); applyLang(); }
 
   var state={
     version:0, updatedAt:null, data:{staff:[],birthdays:{},weeks:{}}, confirmations:{},
@@ -1028,8 +1092,8 @@
 
   function fmt12(t){ if(!t)return""; if(t==="00:00")return "12:00 AM"; var p=t.split(":").map(Number); var ap=p[0]>=12?"PM":"AM"; var hh=p[0]%12||12; return hh+":"+pad(p[1])+" "+ap; }
   function range12(a,b){ var A=fmt12(a),B=fmt12(b); var apA=A.slice(-2),apB=B.slice(-2); if(apA===apB) return A.slice(0,-3)+"–"+B; return A+"–"+B; }
-  function dateLabel(d){return DAY_SHORT[DAY_KEY_BY_JSDAY[d.getDay()]]+" "+MONTHS[d.getMonth()]+" "+d.getDate();}
-  function dateShort(d){return MONTHS[d.getMonth()]+" "+d.getDate();}
+  function dateLabel(d){return DAY_SHORT[DAY_KEY_BY_JSDAY[d.getDay()]]+" "+dateShort(d);}
+  function dateShort(d,L){ L=L||(lang==="it"?L_IT:L_EN); return lang==="it"&&L===L_IT ? d.getDate()+" "+L.months[d.getMonth()] : L.months[d.getMonth()]+" "+d.getDate(); }
 
   function toast(msg,ms){var t=$("toast");t.textContent=msg;t.classList.add("show");clearTimeout(t._h);t._h=setTimeout(function(){t.classList.remove("show");},ms||2400);}
 
@@ -1108,11 +1172,12 @@
     $("bdayOverlay").classList.add("show"); confetti(6000); storageSet(key,"1"); return true;
   }
 
-  function weekLabel(startISO){
-    var start=fromISO(startISO), end=addDays(start,6);
-    var range=(start.getMonth()===end.getMonth()) ? MONTHS[start.getMonth()]+" "+start.getDate()+"–"+end.getDate() : dateShort(start)+" – "+dateShort(end);
+  function weekLabel(startISO,forceEn){
+    var start=fromISO(startISO), end=addDays(start,6); var it=lang==="it"&&!forceEn; var L=it?L_IT:L_EN;
+    var range=(start.getMonth()===end.getMonth()) ? (it ? start.getDate()+"–"+end.getDate()+" "+L.months[start.getMonth()] : L.months[start.getMonth()]+" "+start.getDate()+"–"+end.getDate()) : dateShort(start,L)+" – "+dateShort(end,L);
     var cur=currentMondayISO();
-    var tag = startISO===cur ? "This week" : startISO===toISO(addDays(fromISO(cur),7)) ? "Next week" : startISO<cur ? "Past week" : "Week";
+    var tag = forceEn ? (startISO===cur ? "This week" : startISO===toISO(addDays(fromISO(cur),7)) ? "Next week" : startISO<cur ? "Past week" : "Week")
+      : (startISO===cur ? t("thisWeek") : startISO===toISO(addDays(fromISO(cur),7)) ? t("nextWeek") : startISO<cur ? t("pastWeek") : t("weekTag"));
     return {tag:tag, range:range, past:startISO<cur};
   }
 
@@ -1137,12 +1202,12 @@
 
   async function load(silent){
     var r=await api("/api/data");
-    if(!r.ok){ if(!silent) toast("Couldn't load the schedule. Please try again."); return false; }
+    if(!r.ok){ if(!silent) toast(t("loadFail")); return false; }
     var j=r.json;
     if(state.saving || state.dirtyTimer){ state.confirmations=j.confirmations||{}; renderDays(); return true; }
     var changedRemotely = silent && state.version && j.version!==state.version;
     state.version=j.version; state.updatedAt=j.updatedAt; state.data=j.data||{staff:[],weeks:{}};
-    if(changedRemotely){ setTimeout(function(){ var u=$("updatedNote"); u.classList.remove("flashnew"); void u.offsetWidth; u.classList.add("flashnew"); toast("Schedule updated ✨"); },50); }
+    if(changedRemotely){ setTimeout(function(){ var u=$("updatedNote"); u.classList.remove("flashnew"); void u.offsetWidth; u.classList.add("flashnew"); toast(t("scheduleUpdated")); },50); }
     state.confirmations=j.confirmations||{}; state.features=j.features||state.features; state.pendingNotify=j.pendingNotify||0; state.announcement=j.announcement||null;
     ensureActiveWeek(); renderAll(); return true;
   }
@@ -1190,7 +1255,7 @@
     var el=$("updatedNote");
     if(!state.updatedAt){el.textContent="";return;}
     var d=new Date(state.updatedAt);
-    el.innerHTML="Updated "+MONTHS[d.getMonth()]+" "+d.getDate()+", "+fmt12(pad(d.getHours())+":"+pad(d.getMinutes()))+(state.features.storage?"":"<br><span style='opacity:.7'>preview mode</span>");
+    el.innerHTML=t("updatedAt",{d:dateShort(d)+", "+fmt12(pad(d.getHours())+":"+pad(d.getMinutes()))})+(state.features.storage?"":"<br><span style='opacity:.7'>"+t("previewMode")+"</span>");
   }
 
   function renderHero(){
@@ -1203,16 +1268,16 @@
     var names=sortShifts(list).map(function(s){return h(s.name)+(s.station?" <span style='opacity:.7'>("+h(s.station)+")</span>":"");});
     var el=$("heroStatus"); el.className="hero"+(isOpen?" open":"")+(closedToday?" closedday":"");
     var hol=holidayOn(now);
-    var statusText = closedToday ? (note.status==="holiday"?"Closed today · Holiday":"Closed today") : (isOpen?"Open now":"Closed now");
-    var sub = closedToday ? DAY_NAMES[todayKey]+(note.text?" · "+h(note.text):"") : DAY_NAMES[todayKey]+" · "+range12(hours.open,hours.close)+(note&&note.status==="half"?" (half day)":"")+(note&&note.text?" · "+h(note.text):"");
+    var statusText = closedToday ? (note.status==="holiday"?t("closedTodayHol"):t("closedToday")) : (isOpen?t("openNow"):t("closedNow"));
+    var sub = closedToday ? DAY_NAMES[todayKey]+(note.text?" · "+h(note.text):"") : DAY_NAMES[todayKey]+" · "+range12(hours.open,hours.close)+(note&&note.status==="half"?" "+t("halfDayTag"):"")+(note&&note.text?" · "+h(note.text):"");
     if(hol) sub+=" · "+hol.icon+" "+h(hol.name);
     el.innerHTML='<div class="status"><span class="led"></span><div><div class="text">'+statusText+'</div><div class="sub">'+sub+'</div></div></div>'
-      +'<div class="whoworks">'+(names.length?'Working today: <span class="names">'+names.join(", ")+'</span>':(closedToday?'':'No shifts assigned for today'))+'</div>';
+      +'<div class="whoworks">'+(names.length?t("workingToday")+' <span class="names">'+names.join(", ")+'</span>':(closedToday?'':t("noShiftsToday")))+'</div>';
   }
 
   function renderTabs(){
     var el=$("weekTabs"); var vis=visibleWeeks();
-    if(!vis.length){el.innerHTML='<div class="empty-note">No weeks published yet.</div>';}
+    if(!vis.length){el.innerHTML='<div class="empty-note">'+t("noWeeks")+'</div>';}
     else {
       el.innerHTML=vis.map(function(k){var l=weekLabel(k);return '<button type="button" role="tab" class="tab'+(k===state.activeWeek?" active":"")+(l.past?" past":"")+'" data-week="'+k+'" aria-selected="'+(k===state.activeWeek)+'">'+l.tag+'<span class="sm">'+l.range+'</span></button>';}).join("");
       el.querySelectorAll(".tab").forEach(function(b){b.addEventListener("click",function(){state.activeWeek=b.getAttribute("data-week");renderTabs();renderDays();renderAdminUI();});});
@@ -1220,7 +1285,7 @@
     }
     var n=pastWeekCount(); var tg=$("archiveToggle");
     tg.style.display=n?"":"none";
-    tg.textContent=state.showArchive?"Hide past weeks":"Past weeks · archive ("+n+")";
+    tg.textContent=state.showArchive?t("hidePast"):t("pastArchive",{n:n});
   }
 
   // ---------- Toast clock badges ----------
@@ -1230,13 +1295,13 @@
     var list=state.toastToday.byName[s.name]||[];
     if(!list.length){
       // scheduled start passed by 20+ min and nothing punched → no-show hint (today only)
-      if(isToday){ var now=new Date(); var m=now.getHours()*60+now.getMinutes(); if(m>mins(s.start)+20 && m<mins(s.end)) return '<span class="clock noshow">not clocked in</span>'; }
+      if(isToday){ var now=new Date(); var m=now.getHours()*60+now.getMinutes(); if(m>mins(s.start)+20 && m<mins(s.end)) return '<span class="clock noshow">'+t("notClockedIn")+'</span>'; }
       return "";
     }
     var first=list[0], last=list[list.length-1];
     var inD=new Date(first.in); var inMin=inD.getHours()*60+inD.getMinutes(); var lateBy=inMin-mins(s.start);
-    var lateTxt=lateBy>10?' · '+(lateBy>=60?durText(lateBy*60000):lateBy+' min')+' late':'';
-    if(!last.out) return '<span class="clock in'+(lateBy>10?' late':'')+'">clocked in '+fmtClock(first.in)+lateTxt+'</span>';
+    var lateTxt=lateBy>10?t("lateBy",{t:(lateBy>=60?durText(lateBy*60000):lateBy+' min')}):'';
+    if(!last.out) return '<span class="clock in'+(lateBy>10?' late':'')+'">'+t("clockedIn",{t:fmtClock(first.in)})+lateTxt+'</span>';
     return '<span class="clock out">'+fmtClock(first.in)+' → '+fmtClock(last.out)+lateTxt+'</span>';
   }
   async function loadToastToday(){
@@ -1263,26 +1328,26 @@
   function renderLb(){
     var rows=lbRanked(); var list=$("lbList"), pod=$("lbPodium");
     document.querySelectorAll(".lb-tabs button").forEach(function(b){ b.classList.toggle("active",b.getAttribute("data-period")===lb.period); });
-    if(!rows){ list.innerHTML='<div class="tc-empty">Loading…</div>'; pod.innerHTML=""; $("lbUpdated").textContent=""; return; }
+    if(!rows){ list.innerHTML='<div class="tc-empty">'+t("loadingWord")+'</div>'; pod.innerHTML=""; $("lbUpdated").textContent=""; return; }
     var d=lb.data[lb.period];
-    if(!rows.length){ pod.innerHTML=""; list.innerHTML='<div class="tc-empty"><span class="big">👥</span>Add people in Staff to start the leaderboard.</div>'; return; }
+    if(!rows.length){ pod.innerHTML=""; list.innerHTML='<div class="tc-empty"><span class="big">👥</span>'+t("addPeople")+'</div>'; return; }
     var scored=rows.filter(function(r){return r.pointsLive>0;});
     // podium: 2nd, 1st, 3rd
     var order=[1,0,2];
-    pod.innerHTML=order.map(function(i){ var r=scored[i]; var cls="pod p"+(i+1)+(r?"":" empty"); if(!r) return '<div class="'+cls+'"><div class="pav" style="background:var(--border)">?</div><div class="pn">—</div><div class="ps">'+(i===0?"1st":i===1?"2nd":"3rd")+'</div></div>';
-      return '<div class="'+cls+'" style="animation-delay:'+(i*70)+'ms"><span class="medal">'+MEDALS[i]+'</span><div class="pav" style="background:'+avColor(r.name)+'">'+h(initials(r.name))+(r.on?'<span class="cled" style="position:absolute;right:-3px;bottom:-3px;width:12px;height:12px;border-radius:50%;background:var(--good);border:2px solid #fff;animation:ledpulse 1.6s ease-out infinite"></span>':"")+'</div><div class="pn">'+h(r.name)+'</div><div class="pp">'+fmtHours(r.hoursLive)+'</div><div class="pt '+(r.matched<3?'':r.onTimePct>=80?'ok':'late')+'">'+(r.matched>=3?r.onTimePct+'% on time':'—')+'</div></div>'; }).join("");
+    pod.innerHTML=order.map(function(i){ var r=scored[i]; var cls="pod p"+(i+1)+(r?"":" empty"); if(!r) return '<div class="'+cls+'"><div class="pav" style="background:var(--border)">?</div><div class="pn">—</div><div class="ps">'+(i===0?t("place1"):i===1?t("place2"):t("place3"))+'</div></div>';
+      return '<div class="'+cls+'" style="animation-delay:'+(i*70)+'ms"><span class="medal">'+MEDALS[i]+'</span><div class="pav" style="background:'+avColor(r.name)+'">'+h(initials(r.name))+(r.on?'<span class="cled" style="position:absolute;right:-3px;bottom:-3px;width:12px;height:12px;border-radius:50%;background:var(--good);border:2px solid #fff;animation:ledpulse 1.6s ease-out infinite"></span>':"")+'</div><div class="pn">'+h(r.name)+'</div><div class="pp">'+fmtHours(r.hoursLive)+'</div><div class="pt '+(r.matched<3?'':r.onTimePct>=80?'ok':'late')+'">'+(r.matched>=3?t("onTimePct",{p:r.onTimePct}):'—')+'</div></div>'; }).join("");
     // FLIP: remember old positions
     var old={}; list.querySelectorAll(".lb-row").forEach(function(el){ old[el.getAttribute("data-name")]=el.getBoundingClientRect().top; });
     var prevOrder=lb.lastOrder[lb.period]||{};
     list.innerHTML=rows.map(function(r,i){
       var rank=i+1; var mv="";
       if(r.prevRank){ if(r.prevRank>rank) mv='<span class="mv up">▲ '+(r.prevRank-rank)+'</span>'; else if(r.prevRank<rank) mv='<span class="mv down">▼ '+(rank-r.prevRank)+'</span>'; else mv=''; }
-      else if(r.pointsLive>0) mv='<span class="mv up">new</span>';
-      var sub=r.shifts?r.shifts+(r.shifts===1?' shift':' shifts')+(r.streak>=2?' · 🔥 '+r.streak+' in a row':'')+(r.on?' · <span class="ok">on the clock</span>':''):(r.on?'<span class="ok">on the clock now</span>':'no clocked shifts yet');
+      else if(r.pointsLive>0) mv='<span class="mv up">'+t("newTag")+'</span>';
+      var sub=r.shifts?r.shifts+' '+(r.shifts===1?t("shift1"):t("shiftN"))+(r.streak>=2?' · '+t("inARow",{n:r.streak}):'')+(r.on?' · <span class="ok">'+t("onTheClock")+'</span>':''):(r.on?'<span class="ok">'+t("onClockNow")+'</span>':t("noClockedYet"));
       var moved=prevOrder[r.name]&&prevOrder[r.name]>rank;
       var otShow=r.matched>=3?r.onTimePct:null;
       var otCls=otShow==null?'':(otShow>=80?'ok':'late');
-      var otSub=otShow==null?(r.matched?r.matched+'/3 shifts':'—'):(r.avgLate>0?'avg +'+r.avgLate+' min':'never late');
+      var otSub=otShow==null?(r.matched?t("ofThree",{n:r.matched}):'—'):(r.avgLate>0?t("avgLate",{n:r.avgLate}):t("neverLate"));
       return '<div class="lb-row r'+rank+(r.on?" on":"")+(moved?" up":"")+'" data-name="'+h(r.name)+'"><span class="rk">'+(rank<=3&&r.pointsLive>0?MEDALS[rank-1]:rank)+'</span><div class="av" style="background:'+avColor(r.name)+'">'+h(initials(r.name))+'</div><div class="nm"><b>'+h(r.name)+'</b><small>'+sub+'</small></div><div class="col"><b>'+fmtHours(r.hoursLive)+'</b>'+mv+'</div><div class="col '+otCls+'"><b>'+(otShow!=null?otShow+'%':'—')+'</b><small>'+otSub+'</small></div></div>';
     }).join("");
     // animate rows sliding into their new place
@@ -1290,10 +1355,10 @@
     var newOrder={}; rows.forEach(function(r,i){ newOrder[r.name]=i+1; }); lb.lastOrder[lb.period]=newOrder;
     // new leader → confetti (only when the leader actually changes while watching)
     var leader=scored[0]&&scored[0].name; var prevLeader=lb.lastLeader[lb.period];
-    if(leader&&prevLeader&&prevLeader!==leader){ confetti(2800); toast("🏆 "+leader+" takes the lead!",3000); }
+    if(leader&&prevLeader&&prevLeader!==leader){ confetti(2800); toast(t("takesLead",{n:leader}),3000); }
     if(leader) lb.lastLeader[lb.period]=leader;
     var anyOn=rows.some(function(r){return r.on;});
-    $("lbUpdated").innerHTML=(anyOn?'<span class="tc-live">LIVE</span> ':'')+(lb.period==="all"?"Last 180 days":lb.period==="month"?"Since "+d.start.slice(5).replace("-","/"):"Week of "+d.start.slice(5).replace("-","/"))+' · updated '+fmtClock(d.fetchedAt);
+    $("lbUpdated").innerHTML=(anyOn?'<span class="tc-live">LIVE</span> ':'')+(lb.period==="all"?t("last180"):lb.period==="month"?t("sinceD",{d:d.start.slice(5).replace("-","/")}):t("weekOfD",{d:d.start.slice(5).replace("-","/")}))+' · '+t("updatedT",{t:fmtClock(d.fetchedAt)});
   }
   function openLb(){
     $("lbOverlay").classList.add("show"); renderLb(); loadLb(false);
@@ -1312,7 +1377,7 @@
     var r=await api("/api/toast?action=mystats&period="+st.period+(asAdmin?"&name="+encodeURIComponent(st.name):""),{auth:asAdmin}); btn.classList.remove("spin");
     if(r.ok&&r.json&&r.json.me){ st.data[st.name+"|"+r.json.period]=r.json; }
     else if(r.status===401&&!asAdmin){ $("statsOverlay").classList.remove("show"); meSet(null,null); renderMe(); renderDays(); openWho(false); return; }
-    else if(!quiet) toast("Toast isn't answering right now — try again in a moment.",3500);
+    else if(!quiet) toast(t("toastDown"),3500);
     if($("statsOverlay").classList.contains("show")) renderStats();
   }
   function renderStats(){
@@ -1320,43 +1385,46 @@
     document.querySelectorAll("#statsOverlay .lb-tabs button").forEach(function(b){ b.classList.toggle("active",b.getAttribute("data-period")===st.period); });
     var d=st.data[st.name+"|"+st.period]; var hero=$("statsHero"), sum=$("statsSum"), msg=$("statsMsg"), team=$("statsTeam");
     var oldB=document.querySelector("#statsOverlay .me-badges"); if(oldB) oldB.remove();
-    if(!d){ hero.className="me-hero"; hero.innerHTML='<div class="av" style="background:'+avColor(st.name)+'">'+h(initials(st.name))+'</div><div class="t"><b>'+h(st.name)+'</b><span>Loading…</span></div>'; sum.innerHTML=""; msg.innerHTML=""; msg.className="me-msg neutral"; team.innerHTML=""; $("statsUpdated").textContent=""; return; }
+    if(!d){ hero.className="me-hero"; hero.innerHTML='<div class="av" style="background:'+avColor(st.name)+'">'+h(initials(st.name))+'</div><div class="t"><b>'+h(st.name)+'</b><span>'+t("loadingWord")+'</span></div>'; sum.innerHTML=""; msg.innerHTML=""; msg.className="me-msg neutral"; team.innerHTML=""; $("statsUpdated").textContent=""; return; }
     var r=d.me, now=Date.now(), hours=meCalc(r,now), on=!!r.openSince;
     hero.className="me-hero"+(on?" on":"");
-    hero.innerHTML='<div class="av" style="background:'+avColor(st.name)+'">'+h(initials(st.name))+'</div><div class="t"><b>'+h(st.name)+'</b><span>'+(on?'On the clock now · since '+fmtClock(r.openSince):(r.shifts?r.shifts+(r.shifts===1?' shift':' shifts')+' clocked':'No clocked shifts yet'))+'</span></div>';
+    hero.innerHTML='<div class="av" style="background:'+avColor(st.name)+'">'+h(initials(st.name))+'</div><div class="t"><b>'+h(st.name)+'</b><span>'+(on?t("onClockSince",{t:fmtClock(r.openSince)}):(r.shifts?t("shiftsClocked",{n:r.shifts+' '+(r.shifts===1?t("shift1"):t("shiftN"))}):t("noClockedShifts")))+'</span></div>';
     var ot=r.matched>=3?r.onTimePct:null;
-    sum.innerHTML='<div class="tile'+(on?" good":"")+'"><b>'+fmtHours(hours)+'</b><span>hours</span></div>'
-      +'<div class="tile'+(ot==null?"":ot>=80?" good":" warn")+'"><b>'+(ot==null?"—":ot+"%")+'</b><span>on time</span></div>'
-      +'<div class="tile'+(r.streak>=2?" good":"")+'"><b>'+(r.streak>=2?"🔥 "+r.streak:r.streak)+'</b><span>in a row</span></div>';
+    sum.innerHTML='<div class="tile'+(on?" good":"")+'"><b>'+fmtHours(hours)+'</b><span>'+t("hoursTile")+'</span></div>'
+      +'<div class="tile'+(ot==null?"":ot>=80?" good":" warn")+'"><b>'+(ot==null?"—":ot+"%")+'</b><span>'+t("onTimeTile")+'</span></div>'
+      +'<div class="tile'+(r.streak>=2?" good":"")+'"><b>'+(r.streak>=2?"🔥 "+r.streak:r.streak)+'</b><span>'+t("streakTile")+'</span></div>';
     // badges + message: always encouraging, never comparative
     var badges=[];
-    if(r.streak>=3) badges.push("🔥 "+r.streak+" on-time shifts in a row");
-    if(ot===100&&r.matched>=3) badges.push("🎯 Perfect punctuality");
-    if(hours>=30) badges.push("💪 30+ hours");
-    else if(hours>=20) badges.push("💪 20+ hours");
-    if(r.shifts>=10) badges.push("🏅 "+r.shifts+" shifts");
+    if(r.streak>=3) badges.push(t("bStreak",{n:r.streak}));
+    if(ot===100&&r.matched>=3) badges.push(t("bPerfect"));
+    if(hours>=30) badges.push(t("b30"));
+    else if(hours>=20) badges.push(t("b20"));
+    if(r.shifts>=10) badges.push(t("bShifts",{n:r.shifts}));
     var bHtml=badges.length?'<div class="me-badges">'+badges.map(function(b,i){return '<span style="animation-delay:'+(i*80)+'ms">'+b+'</span>';}).join("")+'</div>':"";
     var m, cls="";
-    if(!r.shifts) { m="Your stats will appear after your first clocked shift. Welcome aboard! 🍸"; cls="neutral"; }
-    else if(ot==null) { m="Keep going — after 3 scheduled shifts you'll see your punctuality too."; cls="neutral"; }
-    else if(ot>=90) m="Amazing — you're almost always right on time. Thank you! ⭐";
-    else if(ot>=80) m="Great job — solid punctuality. Keep it up!";
-    else if(ot>=60) { m="Good work. A few minutes earlier and you're in the green zone."; cls="neutral"; }
-    else { m="Thanks for your hours! Aim to clock in within 5 minutes of your start — you've got this."; cls="neutral"; }
+    if(!r.shifts) { m=t("m0"); cls="neutral"; }
+    else if(ot==null) { m=t("m1"); cls="neutral"; }
+    else if(ot>=90) m=t("m90");
+    else if(ot>=80) m=t("m80");
+    else if(ot>=60) { m=t("m60"); cls="neutral"; }
+    else { m=t("mLow"); cls="neutral"; }
     msg.className="me-msg "+cls; msg.innerHTML=m;
     msg.insertAdjacentHTML("beforebegin",bHtml);
-    var t=d.team; var teamLive=t.msClosed+t.openNow.reduce(function(a,iso){return a+Math.max(0,now-Date.parse(iso));},0);
-    team.innerHTML='<div class="row"><span>Team hours '+(st.period==="week"?"this week":st.period==="month"?"this month":"(180 days)")+'</span><b>'+fmtHours(teamLive/3600000)+'</b></div>'
-      +'<div class="row"><span>Team on time</span><b>'+(t.onTimePct==null?"—":t.onTimePct+"%")+'</b></div>'
-      +'<div class="row"><span>Shifts worked by the team</span><b>'+t.shifts+'</b></div>'
-      +(t.openNow.length?'<div class="row"><span>On the clock right now</span><b>'+t.openNow.length+'</b></div>':"");
-    $("statsUpdated").innerHTML=(on?'<span class="tc-live">LIVE</span> ':'')+'Updated '+fmtClock(d.fetchedAt)+' · from Toast';
+    var tm=d.team; var teamLive=tm.msClosed+tm.openNow.reduce(function(a,iso){return a+Math.max(0,now-Date.parse(iso));},0);
+    team.innerHTML='<div class="row"><span>'+t("teamHours",{p:(st.period==="week"?t("pThisWeek"):st.period==="month"?t("pThisMonth"):t("p180"))})+'</span><b>'+fmtHours(teamLive/3600000)+'</b></div>'
+      +'<div class="row"><span>'+t("teamOnTime")+'</span><b>'+(tm.onTimePct==null?"—":tm.onTimePct+"%")+'</b></div>'
+      +'<div class="row"><span>'+t("teamShifts")+'</span><b>'+tm.shifts+'</b></div>'
+      +(tm.openNow.length?'<div class="row"><span>'+t("teamOnNow")+'</span><b>'+tm.openNow.length+'</b></div>':"");
+    $("statsUpdated").innerHTML=(on?'<span class="tc-live">LIVE</span> ':'')+t("updatedFromToast",{t:fmtClock(d.fetchedAt)});
+  }
+  function statsTitles(){
+    var name=st.name, mine=name===state.me.name;
+    $("statsTitle").textContent=mine?t("statsTitle"):t("statsOf",{n:lang==="it"?name:possessive(name)});
+    $("statsLead").textContent=mine?t("statsLeadMine"):t("statsLeadOf",{n:lang==="it"?name:possessive(name.split(/\s+/)[0])});
   }
   function openStats(asName){
     var name=asName||state.me.name; if(!name){ openWho(false); return; }
-    st.name=name; var mine=name===state.me.name;
-    $("statsTitle").textContent=mine?"⭐ My stats":"⭐ "+possessive(name)+" stats";
-    $("statsLead").textContent=mine?"Your hours and punctuality, from Toast. Only you see this.":name.split(/\s+/)[0]+"'s hours and punctuality, from Toast.";
+    st.name=name; statsTitles();
     $("statsOverlay").classList.add("show"); renderStats(); loadStats(false);
     clearInterval(st.timer); clearInterval(st.tick);
     st.timer=setInterval(function(){ if($("statsOverlay").classList.contains("show")) loadStats(true); else { clearInterval(st.timer); clearInterval(st.tick); } },30000);
@@ -1372,8 +1440,8 @@
   function avColor(n){ var x=0; for(var i=0;i<n.length;i++) x=(x*31+n.charCodeAt(i))>>>0; return AV_COLORS[x%AV_COLORS.length]; }
   function tcDateLabel(iso){
     var today=nyTodayISO(), d=fromISO(iso);
-    var name=iso===today?"Today":iso===toISO(addDays(fromISO(today),-1))?"Yesterday":DAY_NAMES[DAY_KEY_BY_JSDAY[d.getDay()]];
-    return {main:name, sub:DAY_SHORT[DAY_KEY_BY_JSDAY[d.getDay()]]+", "+MONTHS[d.getMonth()]+" "+d.getDate()};
+    var name=iso===today?t("today"):iso===toISO(addDays(fromISO(today),-1))?t("yesterday"):DAY_NAMES[DAY_KEY_BY_JSDAY[d.getDay()]];
+    return {main:name, sub:DAY_SHORT[DAY_KEY_BY_JSDAY[d.getDay()]]+", "+dateShort(d)};
   }
   function renderClockBtn(){
     var b=$("clockBtn"); if(!state.features.toast){ b.style.display="none"; return; }
@@ -1381,7 +1449,7 @@
     var todayData=tc.cache[nyTodayISO()]; var on=todayData?todayData.entries.filter(function(e){return !e.out;}).length:0;
     b.classList.toggle("live",on>0);
     var c=$("clockCnt"); if(on>0){ if(c.textContent!==String(on)){ c.textContent=String(on); c.style.animation="none"; void c.offsetWidth; c.style.animation=""; } c.style.display=""; } else c.style.display="none";
-    b.title=on?on+" on the clock right now":"Who clocked in today";
+    b.title="";
   }
   async function loadClock(quiet){
     if(!state.features.toast) return;
@@ -1390,7 +1458,7 @@
     var r=await api("/api/toast?action=clock&date="+date);
     btn.classList.remove("spin");
     if(r.ok){ tc.cache[r.json.date]=r.json; if(r.json.date===date) tc.data=r.json; }
-    else if(!quiet){ toast("Toast isn't answering right now — try again in a moment.",3500); }
+    else if(!quiet){ toast(t("toastDown"),3500); }
     renderClockBtn();
     if($("clockOverlay").classList.contains("show")) renderClockPanel();
   }
@@ -1400,17 +1468,17 @@
     $("tcNext").disabled=date>=today;
     $("tcPrev").disabled=date<=toISO(addDays(fromISO(today),-31));
     var data=tc.cache[date]; var list=$("tcList"), sum=$("tcSum");
-    if(!data){ list.innerHTML='<div class="tc-empty">Loading…</div>'; sum.innerHTML=""; $("tcUpdated").textContent=""; return; }
+    if(!data){ list.innerHTML='<div class="tc-empty">'+t("loadingWord")+'</div>'; sum.innerHTML=""; $("tcUpdated").textContent=""; return; }
     var now=Date.now(); var entries=data.entries.slice();
     var onNow=entries.filter(function(e){return !e.out;}).length;
     var totalMs=entries.reduce(function(a,e){ return a+((e.out?Date.parse(e.out):now)-Date.parse(e.in)); },0);
     var people=Object.keys(entries.reduce(function(m,e){m[e.name]=1;return m;},{})).length;
-    sum.innerHTML='<div class="tile'+(onNow?" on":"")+'"><b>'+onNow+'</b><span>on the clock</span></div>'
-      +'<div class="tile"><b>'+people+'</b><span>'+(people===1?"person":"people")+'</span></div>'
-      +'<div class="tile"><b>'+(totalMs?durText(totalMs):"0 min")+'</b><span>total hours</span></div>';
+    sum.innerHTML='<div class="tile'+(onNow?" on":"")+'"><b>'+onNow+'</b><span>'+t("onTheClock")+'</span></div>'
+      +'<div class="tile"><b>'+people+'</b><span>'+(people===1?t("person"):t("people"))+'</span></div>'
+      +'<div class="tile"><b>'+(totalMs?durText(totalMs):"0 min")+'</b><span>'+t("totalHours")+'</span></div>';
     if(!entries.length){
       var isPast=date<today;
-      list.innerHTML='<div class="tc-empty"><span class="big">'+(isPast?"🌙":"☕")+'</span>'+(isPast?"Nobody clocked in on this day.":(state.features.toast?"Nobody has clocked in yet today.":"Time clock is not connected."))+'</div>';
+      list.innerHTML='<div class="tc-empty"><span class="big">'+(isPast?"🌙":"☕")+'</span>'+(isPast?t("nobodyPast"):(state.features.toast?t("nobodyYet"):t("tcOff")))+'</div>';
     } else {
       // people still on the clock first, then by clock-in time
       entries.sort(function(a,b){ if(!a.out!==!b.out) return a.out?1:-1; return String(a.in).localeCompare(String(b.in)); });
@@ -1419,12 +1487,12 @@
         var showFull=e.full&&e.full!==e.name;
         return '<div class="tc-row'+(on?" on":"")+'" style="animation-delay:'+Math.min(i*45,400)+'ms">'
           +'<div class="av" style="background:'+avColor(e.full||e.name)+'">'+h(initials(e.name))+'</div>'
-          +'<div class="nm">'+h(e.name)+(showFull?'<small>'+h(e.full)+'</small>':(on?'<small>on the clock now</small>':'<small>shift done</small>'))+'</div>'
-          +'<div class="tm"><span class="io"><span class="in">'+fmtClock(e.in)+'</span> → '+(on?'<span class="in">now</span>':'<span class="out">'+fmtClock(e.out)+'</span>')+'</span><span class="dur">'+(on?"⏱ ":"")+durText(ms)+'</span></div>'
+          +'<div class="nm">'+h(e.name)+(showFull?'<small>'+h(e.full)+'</small>':(on?'<small>'+t("onClockNow")+'</small>':'<small>'+t("shiftDone")+'</small>'))+'</div>'
+          +'<div class="tm"><span class="io"><span class="in">'+fmtClock(e.in)+'</span> → '+(on?'<span class="in">'+t("nowWord")+'</span>':'<span class="out">'+fmtClock(e.out)+'</span>')+'</span><span class="dur">'+(on?"⏱ ":"")+durText(ms)+'</span></div>'
           +'</div>';
       }).join("");
     }
-    $("tcUpdated").innerHTML=(date===today?'<span class="tc-live">LIVE</span> ':'')+'Updated '+fmtClock(data.fetchedAt)+' · from Toast';
+    $("tcUpdated").innerHTML=(date===today?'<span class="tc-live">LIVE</span> ':'')+t("updatedFromToast",{t:fmtClock(data.fetchedAt)});
   }
   function openClock(){
     tc.date=nyTodayISO(); renderClockPanel(); $("clockOverlay").classList.add("show");
@@ -1451,15 +1519,15 @@
           +'<span class="check" aria-hidden="true">✓</span>'
           +'<span class="main"><span class="who">'+h(s.name)+(s.station?'<span class="st">'+h(s.station)+'</span>':"")+'</span><span class="when mono">'+range12(s.start,s.end)+'</span>'+clockBadge(wk,key,s,isToday,isPast)+'</span>'
           +'<span class="edit" aria-hidden="true">✎</span></button>';
-      }).join(""):'<div class="empty-note">'+(closed?"No shifts — closed":"No shifts assigned")+'</div>';
-      var badge=note&&note.status?'<span class="badge '+note.status+'">'+STATUS_LABEL[note.status]+'</span>':"";
+      }).join(""):'<div class="empty-note">'+(closed?t("noShiftsClosed"):t("noShiftsAssigned"))+'</div>';
+      var badge=note&&note.status?'<span class="badge '+note.status+'">'+statusLabel(note.status)+'</span>':"";
       var noteHtml=note&&note.text?'<div class="daynote">'+h(note.text)+'</div>':"";
       var hol=holidayOn(date), bdays=birthdaysOn(date);
-      var chips=(hol?'<span class="holichip">'+hol.icon+' '+h(hol.name)+'</span>':"")+bdays.map(function(n){return '<span class="bdaychip">🎂 '+h(possessive(n))+' birthday</span>';}).join("");
+      var chips=(hol?'<span class="holichip">'+hol.icon+' '+h(hol.name)+'</span>':"")+bdays.map(function(n){return '<span class="bdaychip">'+t("bdayChip",{n:lang==="it"?h(n):h(possessive(n))})+'</span>';}).join("");
       if(chips) noteHtml='<div class="chips">'+chips+'</div>'+noteHtml;
       return '<div class="day-card'+(isLate?" late":"")+(isToday?" today":"")+(closed?" closed":"")+(isPast&&!state.admin?" past":"")+'" style="--i:'+i+'">'
-        +'<div class="day-head"><span class="name">'+DAY_NAMES[key]+(isToday?' <span style="color:var(--accent);font-size:.75rem">· today</span>':"")+'</span><span class="date mono">'+MONTHS[date.getMonth()]+' '+date.getDate()+'</span></div>'
-        +'<div class="day-meta">'+(closed?badge:'<span class="day-hours mono">'+range12(hours.open,hours.close)+'</span>'+(badge?' '+badge:''))+(shifts.length&&state.features.storage?'<span class="confcount'+(confirmed===shifts.length?" full":"")+'">'+(confirmed===shifts.length?"✓ all confirmed":confirmed+'/'+shifts.length+' confirmed')+'</span>':"")+'</div>'
+        +'<div class="day-head"><span class="name">'+DAY_NAMES[key]+(isToday?' <span style="color:var(--accent);font-size:.75rem">'+t("todayTag")+'</span>':"")+'</span><span class="date mono">'+dateShort(date)+'</span></div>'
+        +'<div class="day-meta">'+(closed?badge:'<span class="day-hours mono">'+range12(hours.open,hours.close)+'</span>'+(badge?' '+badge:''))+(shifts.length&&state.features.storage?'<span class="confcount'+(confirmed===shifts.length?" full":"")+'">'+(confirmed===shifts.length?t("allConfirmed"):t("confirmedN",{c:confirmed,n:shifts.length}))+'</span>':"")+'</div>'
         +noteHtml
         +'<div class="shifts">'+rows+'</div>'
         +'<div class="addrow2"><button type="button" class="addshift" data-day="'+key+'">'+t("addShift")+'</button><button type="button" class="daybtn" data-day="'+key+'" title="'+t("daySettings")+'" aria-label="'+t("daySettings")+'">⚙</button></div>'
@@ -1475,9 +1543,9 @@
     $("adminBar").classList.toggle("show",state.admin);
     $("weekTools").classList.toggle("show",state.admin);
     if(typeof renderLbBtn==="function") renderLbBtn();
-    $("managerLink").textContent=state.admin?t("exitMode"):"🔑 Manager login";
+    $("managerLink").textContent=state.admin?t("exitMode"):t("mgrLogin");
     renderNotifyBtn();
-    $("footHint").textContent=state.admin?t("footAdmin"):"Tap your shift to confirm you've seen it. Your shifts are marked YOU.";
+    $("footHint").textContent=state.admin?t("footAdmin"):t("footStaff");
     if(state.admin){
       var wk=state.activeWeek, cur=currentMondayISO();
       var nShifts=wk?DAY_KEYS.reduce(function(a,d){return a+((state.data.weeks[wk][d]||[]).length);},0):0;
@@ -1543,14 +1611,14 @@
     $("loginGo").disabled=true; $("loginErr").textContent="";
     var r=await api("/api/login",{method:"POST",body:{password:pw}});
     $("loginGo").disabled=false;
-    if(r.ok){ state.password=pw; state.admin=true; storageSet(PW_KEY,pw); $("loginOverlay").classList.remove("show"); $("whoOverlay").classList.remove("show"); ensureActiveWeek(); renderAll(); $("saveStatus").textContent=t("statusReady"); toast(t("welcome"));
+    if(r.ok){ state.password=pw; state.admin=true; storageSet(PW_KEY,pw); $("loginOverlay").classList.remove("show"); $("whoOverlay").classList.remove("show"); ensureActiveWeek(); applyLang(); $("saveStatus").textContent=t("statusReady"); toast(t("welcome"));
       if(!state.features.storage) toast(t("noDb"),5000); }
     else if(r.status===401){$("loginErr").textContent="Wrong password.";}
     else {$("loginErr").textContent="Couldn't verify the password. Please try again.";}
   }
   async function logout(silent){
     if(!silent && state.pendingNotify>0 && state.password){ await sendNotifyNow(true); }
-    clearTimeout(state.idleTimer); state.admin=false; state.password=""; storageSet(PW_KEY,null); ensureActiveWeek(); renderAll(); if(!silent) toast(t("loggedOut")); maybeWhoPopup();
+    clearTimeout(state.idleTimer); state.admin=false; state.password=""; storageSet(PW_KEY,null); ensureActiveWeek(); applyLang(); if(!silent) toast(t("loggedOut")); maybeWhoPopup();
   }
 
   // ---------- team notification (one summary push for all pending changes) ----------
@@ -1746,7 +1814,7 @@
     if(!r.ok){$("logList").innerHTML='<div class="empty-note">'+t("historyFail")+'</div>';return;}
     var entries=r.json.entries||[];
     if(!entries.length){$("logList").innerHTML='<div class="empty-note">'+(r.json.storage?t("noChanges"):t("historyNeedsDb"))+'</div>';return;}
-    $("logList").innerHTML=entries.map(function(e){var d=new Date(e.at);return '<div class="entry"><div class="when">'+MONTHS[d.getMonth()]+' '+d.getDate()+', '+d.getFullYear()+' · '+fmt12(pad(d.getHours())+":"+pad(d.getMinutes()))+' · v'+e.version+'</div><ul>'+(e.changes||[]).map(function(c){return '<li>'+h(c)+'</li>';}).join("")+'</ul></div>';}).join("");
+    $("logList").innerHTML=entries.map(function(e){var d=new Date(e.at);return '<div class="entry"><div class="when">'+dateShort(d)+', '+d.getFullYear()+' · '+fmt12(pad(d.getHours())+":"+pad(d.getMinutes()))+(e.version?' · v'+e.version:'')+'</div><ul>'+(e.changes||[]).map(function(c){return '<li>'+h(c)+'</li>';}).join("")+'</ul></div>';}).join("");
   }
   async function exportCSV(){
     toast(t("exporting"));
@@ -1761,11 +1829,11 @@
   // ---------- copy as text ----------
   function buildSummary(){
     var lines=[]; var wk=state.activeWeek; if(!wk) return "";
-    var start=fromISO(wk), l=weekLabel(wk);
+    var start=fromISO(wk), l=weekLabel(wk,true);
     lines.push("🍸 Bar Lento — Schedule "+l.range); lines.push("");
     DAY_KEYS.forEach(function(key,i){
       var date=addDays(start,i), hours=hoursFor(wk,key), note=dayNote(wk,key);
-      var head=DAY_NAMES[key]+" "+dateShort(date);
+      var head=L_EN.days[key]+" "+L_EN.months[date.getMonth()]+" "+date.getDate();
       if(note&&isClosedStatus(note.status)) head+=" — "+STATUS_LABEL[note.status].toUpperCase();
       else head+=" ("+range12(hours.open,hours.close)+")"+(note&&note.status==="event"?" — PRIVATE EVENT":"")+(note&&note.status==="half"?" — HALF DAY":"");
       lines.push(head); if(note&&note.text) lines.push("  ℹ︎ "+note.text);
@@ -1777,8 +1845,8 @@
     return lines.join("\n").trim();
   }
   function copyText(){
-    var text=buildSummary(); if(!text){toast("Nothing to copy");return;} var done=function(){toast("Copied! Paste it in WhatsApp.");};
-    var fail=function(){var ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand("copy");done();}catch(e){toast("Copy failed");}document.body.removeChild(ta);};
+    var text=buildSummary(); if(!text){toast(t("nothingToCopy"));return;} var done=function(){toast(t("copied"));};
+    var fail=function(){var ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand("copy");done();}catch(e){toast(t("copyFail"));}document.body.removeChild(ta);};
     if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done).catch(fail); else fail();
   }
 
@@ -1828,7 +1896,7 @@
   $("tcNext").addEventListener("click",function(){ tcShift(1); });
   $("tcRefresh").addEventListener("click",function(){ loadClock(false); });
   $("notifyBtn").addEventListener("click",function(){sendNotifyNow(false);});
-  $("langBtn").addEventListener("click",function(){setLang(lang==="en"?"it":"en");});
+  $("langBtn").addEventListener("click",function(){setLang(lang==="en"?"it":"en"); toast(lang==="it"?"Italiano attivo solo su questo dispositivo, in modalità manager.":"English restored on this device.",2600);});
   $("weekClose").addEventListener("click",function(){$("weekOverlay").classList.remove("show");maybeRecapPopup();});
   document.addEventListener("visibilitychange",function(){ if(document.visibilityState==="hidden"&&state.admin&&state.pendingNotify&&state.password&&!state.dirtyTimer&&!state.saving){ try{ fetch("/api/notify",{method:"POST",headers:{"x-admin-password":state.password,"Content-Type":"application/json"},keepalive:true}); state.pendingNotify=0; }catch(e){} } });
   $("staffBtn").addEventListener("click",function(){renderRoster();$("staffOverlay").classList.add("show");loadAccounts().then(renderRoster);});
@@ -1900,18 +1968,18 @@
     if(!state.features.storage||(!state.data.staff.length&&!state.me.name)){ b.style.display="none"; strip.classList.remove("show"); return; }
     b.style.display="";
     if(state.me.name&&state.data.staff.indexOf(state.me.name)===-1){ meSet(null,null); toast("Your access was removed. Ask Marta if that's a mistake.",5000); document.body.classList.toggle("locked",mustIdentify()); setTimeout(maybeWhoPopup,50); }
-    if(!state.me.name){ b.className="mebtn"; b.innerHTML="👤 Who are you?"; strip.classList.remove("show"); return; }
+    if(!state.me.name){ b.className="mebtn"; b.innerHTML=t("whoBtn"); strip.classList.remove("show"); return; }
     var n=state.me.name, col=avColor(n), ini=h(initials(n));
     b.className="mebtn on"; b.innerHTML='<span class="mav" style="background:'+col+'">'+ini+'</span>'+h(n.split(/\s+/)[0]);
     $("meAv").textContent=initials(n); $("meAv").style.background=col;
-    $("meHi").textContent="Hi "+n.split(/\s+/)[0]+" 👋";
+    $("meHi").textContent=t("hi",{n:n.split(/\s+/)[0]});
     var nx=nextShiftOf(n), el=$("meNext"); el.className="";
-    if(!nx){ el.textContent="No upcoming shifts on the schedule."; }
+    if(!nx){ el.textContent=t("noUpcoming"); }
     else {
       var now=new Date(), todayISO=toISO(now), m=now.getHours()*60+now.getMinutes(), tomorrowISO=toISO(addDays(now,1));
       var on=nx.iso===todayISO&&m>=mins(nx.s.start);
-      var when=nx.iso===todayISO?"Today":nx.iso===tomorrowISO?"Tomorrow":dateLabel(nx.date);
-      el.textContent=(on?"On shift now · ":"Next shift: "+when+" · ")+range12(nx.s.start,nx.s.end)+(nx.s.station?" · "+nx.s.station:"");
+      var when=nx.iso===todayISO?t("today"):nx.iso===tomorrowISO?t("tomorrow"):dateLabel(nx.date);
+      el.textContent=(on?t("onShiftNow"):t("nextShift",{w:when}))+range12(nx.s.start,nx.s.end)+(nx.s.station?" · "+nx.s.station:"");
       if(nx.iso===todayISO) el.className="soon";
     }
     strip.classList.add("show");
@@ -2039,14 +2107,17 @@
   // -- my week --
   var me={week:null, name:null, hours:{}, loading:null};
   function meWeeks(){ return weekKeys(); }
+  function meTitles(){
+    var name=me.name, mine=name===state.me.name;
+    $("meTitle").textContent=mine?t("myWeekTitle"):t("weekOfName",{n:lang==="it"?name:possessive(name)});
+    $("meLead").textContent=mine?t("weekLeadMine"):t("weekLeadOf",{n:lang==="it"?name:possessive(name.split(/\s+/)[0])});
+  }
   function openMe(asName){
     var name=asName||state.me.name; if(!name) return;
     me.name=name; me.week=null;
     var keys=meWeeks(), cur=currentMondayISO();
     me.week=keys.indexOf(cur)!==-1?cur:(keys.filter(function(k){return k>=cur;})[0]||keys[keys.length-1]||null);
-    var first=name.split(/\s+/)[0];
-    $("meTitle").textContent=(asName&&asName!==state.me.name?possessive(name):"My")+" week";
-    $("meLead").textContent=(asName&&asName!==state.me.name?first+"'s":"Your")+" shifts, and hours from the Toast time clock.";
+    meTitles();
     $("meSwitch").style.display=asName&&asName!==state.me.name?"none":""; $("meLogout").style.display=asName&&asName!==state.me.name?"none":"";
     renderMePanel(); $("meOverlay").classList.add("show"); loadMeHours();
   }
@@ -2063,7 +2134,7 @@
   function renderMePanel(){
     var keys=meWeeks(), wk=me.week; var lbl=$("meWeekLbl"), sub=$("meWeekSub"), list=$("meList"), sum=$("meSum"), note=$("meNote");
     $("mePrev").disabled=!wk||keys.indexOf(wk)<=0; $("meNext").disabled=!wk||keys.indexOf(wk)>=keys.length-1;
-    if(!wk){ lbl.textContent="No weeks yet"; sub.textContent=""; list.innerHTML='<div class="me-empty"><span class="big">🗓️</span>Nothing published yet.</div>'; sum.innerHTML=""; note.textContent=""; return; }
+    if(!wk){ lbl.textContent=t("noWeeksYet"); sub.textContent=""; list.innerHTML='<div class="me-empty"><span class="big">🗓️</span>'+t("nothingPublished")+'</div>'; sum.innerHTML=""; note.textContent=""; return; }
     var l=weekLabel(wk); lbl.textContent=l.tag; sub.textContent=l.range;
     var start=fromISO(wk), today=new Date(), todayISO=toISO(today), week=state.data.weeks[wk]||emptyWeek();
     var hk=me.name+"|"+wk, hrs=me.hours[hk]&&me.hours[hk].data; var byDay={}; if(hrs&&hrs.entries) hrs.entries.forEach(function(e){ (byDay[e.day]=byDay[e.day]||[]).push(e); });
@@ -2079,35 +2150,35 @@
         mine.forEach(function(s){
           var ok=!!state.confirmations[shiftKey(wk,d,s.id)];
           var clockTxt="";
-          if(punches.length){ var f=punches[0], la=punches[punches.length-1]; var ms=punches.reduce(function(a,e){return a+((e.out?Date.parse(e.out):nowMs)-Date.parse(e.in));},0); clockTxt='⏱ '+fmtClock(f.in)+' → '+(la.out?fmtClock(la.out):'now')+' · '+durText(ms)+(la.out?'':' so far'); }
-          else if(isPast&&hrs&&hrs.linked) clockTxt='No clock-in recorded';
-          else if(isToday&&hrs&&hrs.linked) clockTxt='Not clocked in yet';
+          if(punches.length){ var f=punches[0], la=punches[punches.length-1]; var ms=punches.reduce(function(a,e){return a+((e.out?Date.parse(e.out):nowMs)-Date.parse(e.in));},0); clockTxt='⏱ '+fmtClock(f.in)+' → '+(la.out?fmtClock(la.out):t("nowWord"))+' · '+durText(ms)+(la.out?'':t("soFar")); }
+          else if(isPast&&hrs&&hrs.linked) clockTxt=t("noClockIn");
+          else if(isToday&&hrs&&hrs.linked) clockTxt=t("notClockedYet");
           var dn=dayNote(wk,d); var closed=dn&&isClosedStatus(dn.status);
           rows.push('<button type="button" class="me-row'+(ok?" confirmed":"")+(isToday?" today":"")+(isPast?" past":"")+'" data-day="'+d+'" data-id="'+h(s.id)+'" style="animation-delay:'+Math.min(rows.length*45,400)+'ms">'
-            +'<span class="dy">'+DAY_SHORT[d]+'<small>'+MONTHS[date.getMonth()]+' '+date.getDate()+'</small></span>'
+            +'<span class="dy">'+DAY_SHORT[d]+'<small>'+dateShort(date)+'</small></span>'
             +'<span class="mid"><span class="tm">'+range12(s.start,s.end)+(s.station?'<span class="st">'+h(s.station)+'</span>':'')+'</span>'
-            +(closed?'<span class="sub">⚠ Day marked '+h(STATUS_LABEL[dn.status])+'</span>':clockTxt?'<span class="sub">'+clockTxt+'</span>':'')+'</span>'
-            +(ok?'<span class="ok">✓</span>':isPast?'<span class="ok" aria-hidden="true"></span>':(me.name===state.me.name?'<span class="ok todo">confirm</span>':'<span class="ok" aria-hidden="true"></span>'))
+            +(closed?'<span class="sub">'+t("dayMarked",{s:h(statusLabel(dn.status))})+'</span>':clockTxt?'<span class="sub">'+clockTxt+'</span>':'')+'</span>'
+            +(ok?'<span class="ok">✓</span>':isPast?'<span class="ok" aria-hidden="true"></span>':(me.name===state.me.name?'<span class="ok todo">'+t("confirmChip")+'</span>':'<span class="ok" aria-hidden="true"></span>'))
             +'</button>');
         });
       } else {
         // clocked in without a scheduled shift (covering, extra hours)
         var f2=punches[0], la2=punches[punches.length-1]; var ms2=punches.reduce(function(a,e){return a+((e.out?Date.parse(e.out):nowMs)-Date.parse(e.in));},0);
-        rows.push('<div class="me-row past" style="cursor:default"><span class="dy">'+DAY_SHORT[d]+'<small>'+MONTHS[date.getMonth()]+' '+date.getDate()+'</small></span><span class="mid"><span class="tm">'+durText(ms2)+'</span><span class="sub">⏱ '+fmtClock(f2.in)+' → '+(la2.out?fmtClock(la2.out):'now')+' · not on the schedule</span></span><span></span></div>');
+        rows.push('<div class="me-row past" style="cursor:default"><span class="dy">'+DAY_SHORT[d]+'<small>'+dateShort(date)+'</small></span><span class="mid"><span class="tm">'+durText(ms2)+'</span><span class="sub">⏱ '+fmtClock(f2.in)+' → '+(la2.out?fmtClock(la2.out):t("nowWord"))+' · '+t("notOnSchedule")+'</span></span><span></span></div>');
       }
     });
     var workedMin=Math.round(workedMs/60000);
     var showWorked=state.features.toast&&hrs&&hrs.linked;
     var isCur=wk>=currentMondayISO(); var diff=workedMin-(isCur?schedSoFarMin:schedMin); var diffTxt=(diff>=0?"+":"−")+durText(Math.abs(diff)*60000);
-    sum.innerHTML='<div class="tile"><b>'+durText(schedMin*60000)+'</b><span>scheduled</span></div>'
-      +'<div class="tile'+(showWorked?" on":"")+'"><b>'+(showWorked?durText(workedMin*60000):"—")+'</b><span>worked'+(wk===currentMondayISO()&&showWorked?" so far":"")+'</span></div>'
-      +'<div class="tile diff'+(showWorked?(diff>=0?" plus":" minus"):"")+'"><b>'+(showWorked?diffTxt:"—")+'</b><span>difference'+(isCur&&showWorked?" so far":"")+'</span></div>';
-    list.innerHTML=rows.length?rows.join(""):'<div class="me-empty"><span class="big">🌴</span>No shifts for you this week.</div>';
+    sum.innerHTML='<div class="tile"><b>'+durText(schedMin*60000)+'</b><span>'+t("scheduled")+'</span></div>'
+      +'<div class="tile'+(showWorked?" on":"")+'"><b>'+(showWorked?durText(workedMin*60000):"—")+'</b><span>'+t("worked")+(wk===currentMondayISO()&&showWorked?t("soFar"):"")+'</span></div>'
+      +'<div class="tile diff'+(showWorked?(diff>=0?" plus":" minus"):"")+'"><b>'+(showWorked?diffTxt:"—")+'</b><span>'+t("difference")+(isCur&&showWorked?t("soFar"):"")+'</span></div>';
+    list.innerHTML=rows.length?rows.join(""):'<div class="me-empty"><span class="big">🌴</span>'+(me.name===state.me.name?t("noShiftsMine"):t("noShiftsPerson"))+'</div>';
     list.querySelectorAll(".me-row[data-id]").forEach(function(b){ b.addEventListener("click",function(){ if(me.name!==state.me.name) return; var d=b.getAttribute("data-day"); var isPastRow=b.classList.contains("past"); if(isPastRow) return; $("meOverlay").classList.remove("show"); state.activeWeek=wk; renderTabs(); renderDays(); onShiftTap(wk,d,b.getAttribute("data-id")); }); });
-    if(!state.features.toast) note.textContent="Worked hours appear when the Toast time clock is connected.";
-    else if(!hrs) note.textContent=me.hours[hk]&&me.hours[hk].error?"Toast isn't answering right now — scheduled shifts are still shown.":"Loading hours from Toast…";
-    else if(!hrs.linked) note.textContent="Toast doesn't recognise this name yet — ask Marta to link it.";
-    else note.textContent="Hours from Toast · updated "+fmtClock(hrs.fetchedAt);
+    if(!state.features.toast) note.textContent=t("hoursNeedToast");
+    else if(!hrs) note.textContent=me.hours[hk]&&me.hours[hk].error?t("toastDownShort"):t("loadingHours");
+    else if(!hrs.linked) note.textContent=t("notLinked");
+    else note.textContent=t("hoursFromToast",{t:fmtClock(hrs.fetchedAt)});
   }
   async function loadAccounts(){
     if(!state.admin) return;
@@ -2124,13 +2195,13 @@
   async function renderBell(){
     var b=$("bellBtn");
     if(!state.features.push){ b.style.display="none"; return; }
-    if(isIOS()&&!isStandalone()){ b.style.display=""; b.className="bellbtn"; b.textContent="🔔 Notifications"; b.dataset.mode="iosinfo"; return; }
+    if(isIOS()&&!isStandalone()){ b.style.display=""; b.className="bellbtn"; b.textContent=t("bellIos"); b.dataset.mode="iosinfo"; return; }
     if(!pushSupported()){ b.style.display="none"; return; }
     b.style.display="";
     var sub=await currentPushSub();
-    if(sub&&Notification.permission==="granted"){ b.className="bellbtn on"; b.textContent="🔔 Notifications on"; b.dataset.mode="on"; }
-    else if(Notification.permission==="denied"){ b.className="bellbtn"; b.textContent="🔕 Notifications blocked"; b.dataset.mode="denied"; }
-    else { b.className="bellbtn"; b.textContent="🔔 Notify me"; b.dataset.mode="off"; }
+    if(sub&&Notification.permission==="granted"){ b.className="bellbtn on"; b.textContent=t("bellOn"); b.dataset.mode="on"; }
+    else if(Notification.permission==="denied"){ b.className="bellbtn"; b.textContent=t("bellBlocked"); b.dataset.mode="denied"; }
+    else { b.className="bellbtn"; b.textContent=t("bellOff"); b.dataset.mode="off"; }
   }
   async function togglePush(){
     var b=$("bellBtn"), mode=b.dataset.mode;
@@ -2159,14 +2230,14 @@
 
   (async function init(){
     state.showArchive=storageGet(ARCHIVE_KEY)==="1";
-    lang=storageGet(LANG_KEY)==="it"?"it":"en"; applyLang();
+    applyLang();
     state.me.token=storageGet(ME_TOKEN_KEY)||null; state.me.name=state.me.token?(storageGet(ME_NAME_KEY)||null):null;
     await load(false);
     renderBell(); renderClockBtn(); renderLbBtn(); loadToastToday();
     var saved=storageGet(PW_KEY);
     if(saved&&state.features.admin){
       var r=await api("/api/login",{method:"POST",body:{password:saved}});
-      if(r.ok){state.password=saved;state.admin=true;ensureActiveWeek();renderAll();$("saveStatus").textContent="Ready";}
+      if(r.ok){state.password=saved;state.admin=true;ensureActiveWeek();applyLang();$("saveStatus").textContent=t("statusReady");}
       else storageSet(PW_KEY,null);
     }
     await meWhoAmI();

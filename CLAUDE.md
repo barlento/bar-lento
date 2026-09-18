@@ -2,7 +2,7 @@
 
 Live site: **https://bar-lento.vercel.app** (Vercel project `bar-lento`, team "BAR LENTO", auto-deploys from `main`, ~60–90 s).
 Owner: Bar Lento, 158 8th Avenue, New York (info@barlentony.com). Floor manager: **Marta** (not technical — she edits from the site, never from code).
-The owner writes in Italian; answer him in Italian. Everything staff sees on the site is in **English** (the team is mixed Italian/American). The IT/EN toggle exists only inside manager mode.
+The owner writes in Italian; answer him in Italian. Everything staff sees on the site is in **English** (the team is mixed Italian/American). The IT/EN toggle exists only inside manager mode and must translate EVERYTHING the manager sees (header, hero, tabs, day/month names, cards, time clock, ranking, personal panels): use `t()`/`data-t` and the `L_EN`/`L_IT` day-month tables for any new text. The choice is per device (`bl_lang`), applied only while logged in as manager, English again on logout, restored on login. "Copy as text" stays English (it goes to the team).
 
 ## How to publish a change (the only job that needs code)
 Edit the files, commit, `git push origin main`. That's it — Vercel builds and publishes automatically. No build step, no npm install locally (Vercel installs `web-push`).
