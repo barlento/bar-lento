@@ -104,6 +104,9 @@
   .roster .nm small.docs .doc-ic{opacity:.3;filter:grayscale(1)}
   .roster .nm small.docs .doc-ic.ok{opacity:1;filter:none}
   .rules-body p{margin:6px 0}
+  .rules-body h2.pk{font-size:1.02rem;margin:22px 0 2px;padding-top:14px;border-top:2px solid var(--border);color:var(--ink)}
+  .rules-body h2.pk:first-of-type{border-top:none;padding-top:0;margin-top:4px}
+  .rules-body p.pk-sub{margin:0 0 8px;font-size:.78rem;color:var(--ink-muted)}
   .rules-body ul ul{margin-top:2px}
   .rules-body .links{margin-top:14px;padding:10px 12px;border-radius:10px;background:var(--surface-2);font-size:.84rem}
   .rules-body .links b{display:block;margin-bottom:4px}
@@ -1057,6 +1060,7 @@
       m0:"Your stats will appear after your first clocked shift. Welcome aboard! 🍸", m1:"Keep going — after 3 scheduled shifts you'll see your punctuality too.", m90:"Amazing — you're almost always right on time. Thank you! ⭐", m80:"Great job — solid punctuality. Keep it up!", m60:"Good work. A few minutes earlier and you're in the green zone.", mLow:"Thanks for your hours! Aim to clock in within 5 minutes of your start — you've got this.",
       hi:"Hi {n} 👋", nextShift:"Next shift: {w} · ", onShiftNow:"On shift now · ", noUpcoming:"No upcoming shifts on the schedule.",
       histEntry:"{d} · {t} · v{v}",
+      packetTitle:"Your documents", packetLead:"New York law requires Bar Lento to give you these documents. Read them to the end (about 15 minutes, paid working time), then confirm once with your email: one signed copy with everything is emailed to you and to the owner.", packetPill:"{n} documents · one signature", packetAck:"I confirm that I have received and read all the documents above: {list}.",
       docsBtn:"📂 My documents", docsTitle:"📂 My documents", docsLead:"Everything Bar Lento has given you to read and sign, with the date you signed it. Tap a document to read it again or to print it.", docsMail:"✉ Email me my signed copies", docsMailed:"Your signed copies are on their way to {e}", docsMailNone:"Nothing signed yet", docOf:"document {i} of {n}",
       docSigned:"✓ Signed {d}", docToSign:"To sign · by {d}", docLate:"Overdue · please sign now", trainDone:"✓ Completed {d}", trainTodo:"To complete this year · by {d}", trainLate:"Overdue · please complete now", later:"Later",
       readLead:"Please read this document to the end, then confirm with your email: your signed copy is emailed to you and to the owner.", readLeadNoMail:"Please read this document to the end, then confirm with your email.", readLeadDone:"You acknowledged this document on {d}.", readLeadDoneTrain:"You completed this training on {d}.", readLeadTrain:"Watch the video (links at the end), then confirm with your email: your training record is emailed to you and to the owner.",
@@ -1113,6 +1117,7 @@
       m0:"Le statistiche compaiono dopo il primo turno timbrato. Benvenuto/a a bordo! 🍸", m1:"Continua così — dopo 3 turni previsti vedrai anche la puntualità.", m90:"Fantastico — quasi sempre perfettamente in orario. Grazie! ⭐", m80:"Ottimo lavoro — puntualità solida. Continua così!", m60:"Bel lavoro. Qualche minuto prima e sei nella zona verde.", mLow:"Grazie per le tue ore! Prova a timbrare entro 5 minuti dall'inizio — ce la fai.",
       hi:"Ciao {n} 👋", nextShift:"Prossimo turno: {w} · ", onShiftNow:"In turno adesso · ", noUpcoming:"Nessun turno in programma.",
       histEntry:"{d} · {t} · v{v}",
+      packetTitle:"I tuoi documenti", packetLead:"La legge di New York obbliga Bar Lento a consegnarti questi documenti. Leggili fino alla fine (circa 15 minuti, tempo di lavoro pagato), poi conferma una volta con la tua email: una sola copia firmata con tutto arriva a te e al titolare.", packetPill:"{n} documenti · una firma", packetAck:"Confermo di aver ricevuto e letto tutti i documenti qui sopra: {list}.",
       docsBtn:"📂 I miei documenti", docsTitle:"📂 I miei documenti", docsLead:"Tutto quello che Bar Lento ti ha consegnato da leggere e firmare, con la data della firma. Tocca un documento per rileggerlo o stamparlo.", docsMail:"✉ Rimandami le mie copie firmate", docsMailed:"Le tue copie firmate sono in arrivo a {e}", docsMailNone:"Nessun documento firmato ancora", docOf:"documento {i} di {n}",
       docSigned:"✓ Firmato {d}", docToSign:"Da firmare · entro {d}", docLate:"In ritardo · firma ora", trainDone:"✓ Completata {d}", trainTodo:"Da completare quest'anno · entro {d}", trainLate:"In ritardo · completa ora", later:"Più tardi",
       readLead:"Leggi il documento fino alla fine, poi conferma con la tua email: la copia firmata arriva a te e al titolare.", readLeadNoMail:"Leggi il documento fino alla fine, poi conferma con la tua email.", readLeadDone:"Hai firmato questo documento il {d}.", readLeadDoneTrain:"Hai completato questa formazione il {d}.", readLeadTrain:"Guarda il video (link in fondo), poi conferma con la tua email: l'attestato arriva a te e al titolare.",
@@ -2120,7 +2125,7 @@
     var pend=docsPending(); if(!pend.length) return false;
     if($("rulesOverlay").classList.contains("show")) return true;
     var policies=pend.filter(function(d){return d.kind!=="training";});
-    if(policies.length){ openReader(policies[0],{sign:true,lock:true,later:false}); return true; }
+    if(policies.length){ openPacket(policies,{sign:true,lock:true,later:false}); return true; }
     var tr=pend[0];
     if(docStatus(tr).late){ openReader(tr,{sign:true,lock:true,later:false}); return true; }
     if(storageGet(DOCS_SNOOZE_KEY)===toISO(new Date())) return false;
@@ -2141,6 +2146,34 @@
     html+='<div class="ackq">'+h(doc.ack)+'</div>';
     b.innerHTML=html; b.scrollTop=0;
     $("rulesVer").textContent="Version "+doc.version; $("rulesAckText").textContent=doc.ack;
+  }
+  function renderDocInto(doc){
+    var html='';
+    (doc.sections||[]).forEach(function(sec){
+      html+='<h3>'+h(sec.h)+'</h3>';
+      if(sec.items) html+='<ul>'+sec.items.map(renderLi).join("")+'</ul>';
+      else (sec.blocks||[]).forEach(function(bl){ html+=typeof bl==="string"?'<p>'+h(bl)+'</p>':'<ul>'+bl.map(renderLi).join("")+'</ul>'; });
+    });
+    if(doc.links&&doc.links.length) html+='<div class="links"><b>'+h(t("linksHead"))+'</b>'+doc.links.map(function(l){return '<a href="'+h(l.url)+'" target="_blank" rel="noopener">'+h(l.label)+' ↗</a>';}).join("")+'</div>';
+    return html;
+  }
+  // Several policies in one read: each document in full, one contacts box, one acknowledgment sentence, one signature.
+  function openPacket(docs,opts){
+    docs=(docs||[]).filter(function(d){return d&&d.version;}); if(!docs.length) return; opts=opts||{};
+    var list=docs.map(function(d){return d.short||d.title;}).join(", ");
+    var packet={id:"packet",icon:"📂",title:t("packetTitle"),version:docs.map(function(d){return d.version;}).join("+"),docs:docs,ack:t("packetAck",{list:list}),printUrl:"/docs.html"};
+    rules.doc=packet; rules.mandatory=!!opts.sign; rules.scrolled=false; rules.backToDocs=false;
+    var b=$("rulesBody"); var html='<p class="intro">'+h(t("packetLead"))+'</p><ol>'+docs.map(function(d){return '<li>'+h(d.title)+'</li>';}).join("")+'</ol>';
+    docs.forEach(function(d){ html+='<h2 class="pk">'+h(d.icon||"📄")+' '+h(d.title)+'</h2><p class="pk-sub">'+h(d.subtitle||"")+' · Version '+h(d.version)+'</p><p class="intro">'+h(d.intro||"")+'</p>'+renderDocInto(d); });
+    var contacts=DOCS.contacts||[]; if(contacts.length) html+='<div class="contacts"><b>'+h(t("contactsHead"))+'</b>'+contacts.map(function(c){return h(c.name)+' · <a href="mailto:'+h(c.email)+'">'+h(c.email)+'</a>';}).join("<br>")+'</div>';
+    html+='<div class="ackq">'+h(packet.ack)+'</div>'; b.innerHTML=html; b.scrollTop=0;
+    var o=$("rulesOverlay"); if(opts.lock) o.dataset.lock="1"; else delete o.dataset.lock;
+    $("rulesTitle").textContent=packet.icon+" "+packet.title+" ("+docs.length+")"; $("rulesVer").textContent=t("packetPill",{n:docs.length}); $("rulesAckText").textContent=packet.ack;
+    $("rulesPrint").href="/docs.html"; $("rulesLead").textContent=t("packetLead");
+    $("rulesAckForm").style.display=opts.sign?"":"none"; $("rulesAgree").style.display=opts.sign?"":"none"; $("rulesAgree").textContent=t("agree");
+    $("rulesLater").style.display=opts.later?"":"none"; $("rulesClose").style.display=opts.lock?"none":""; $("rulesScrollHint").style.display=opts.sign?"":"none";
+    $("rulesSigning").textContent=state.me.name?"· signing as "+(state.me.fullName||state.me.name):""; $("rulesEmail").value=state.me.email||""; $("rulesCheck").checked=false; $("rulesCheck").disabled=true; $("rulesCheckRow").classList.add("dis"); $("rulesErr").textContent=""; $("rulesAgree").disabled=true;
+    o.classList.add("show"); setTimeout(rulesScrolled,300);
   }
   function docsProgress(doc){ var all=[{id:"rules"}].concat(DOCS.list||[]); var i=all.findIndex(function(d){return d.id===doc.id;}); return i>=0?t("docOf",{i:i+1,n:all.length}):""; }
   // opts: sign (show the email + checkbox + agree button), lock (cannot be dismissed), later (show "Later")
@@ -2169,13 +2202,15 @@
   function rulesEmailOk(){ return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test($("rulesEmail").value.trim()); }
   function rulesFormCheck(){ $("rulesErr").textContent=""; $("rulesAgree").disabled=!(rules.scrolled&&$("rulesCheck").checked&&rulesEmailOk()); }
   async function agreeRules(){
-    var doc=rules.doc; if(!doc) return; var isRules=doc.id==="rules", training=doc.kind==="training", email=$("rulesEmail").value.trim();
+    var doc=rules.doc; if(!doc) return; var isRules=doc.id==="rules", isPacket=doc.id==="packet", training=doc.kind==="training", email=$("rulesEmail").value.trim();
     if(!rulesEmailOk()){ $("rulesErr").textContent="Please enter a valid email address."; return; }
     if(!$("rulesCheck").checked){ $("rulesErr").textContent="Please tick the box to confirm."; return; }
     $("rulesAgree").disabled=true;
-    var r; try{ r=await api("/api/me",{method:"POST",body:isRules?{action:"ackRules",email:email,version:doc.version}:{action:"ackDoc",id:doc.id,email:email,version:doc.version}}); }catch(e){ r={ok:false,status:0,json:{}}; }
+    var body; if(isRules) body={action:"ackRules",email:email,version:doc.version}; else if(isPacket){ var vs={}; doc.docs.forEach(function(d){vs[d.id]=d.version;}); body={action:"ackDocs",ids:doc.docs.map(function(d){return d.id;}),versions:vs,email:email}; } else body={action:"ackDoc",id:doc.id,email:email,version:doc.version};
+    var r; try{ r=await api("/api/me",{method:"POST",body:body}); }catch(e){ r={ok:false,status:0,json:{}}; }
     if(r.ok){
       if(isRules) state.me.rulesAck=r.json.rulesAck||{version:doc.version,at:new Date().toISOString()};
+      else if(isPacket){ state.me.docAcks=state.me.docAcks||{}; doc.docs.forEach(function(d){ state.me.docAcks[d.id]=(r.json.acks&&r.json.acks[d.id])||{version:d.version,at:new Date().toISOString()}; }); }
       else { state.me.docAcks=state.me.docAcks||{}; state.me.docAcks[doc.id]=r.json.ack||{version:doc.version,at:new Date().toISOString()}; }
       var o=$("rulesOverlay"); delete o.dataset.lock; o.classList.remove("show");
       if(isRules) toast(r.json.emailed?"Thank you! Your signed copy is on its way to "+email:"Thank you! House Rules acknowledged ✓",3800);

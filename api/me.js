@@ -23,6 +23,31 @@ async function toastIdentity(data, name) {
     return e ? { fullName: e.name, email: e.email || "" } : null;
   } catch (e) { return null; }
 }
+function fullDoc(doc) { return Object.assign({ contacts: DOCS.contacts, printUrl: "https://bar-lento.vercel.app/docs.html?id=" + encodeURIComponent(doc.id) }, doc); }
+// One email with several documents (the "Your documents" packet) + the owner's proof. `ack.hashes` = {docId: sha256}. Never throws.
+async function emailPacket(docs, ack, ownerToo) {
+  if (!mail.enabled()) return { sent: false, reason: "mail_not_configured" };
+  try {
+    const full = docs.map(fullDoc);
+    const m = mail.packetCopy(full, ack);
+    await mail.send({ to: ack.email, subject: m.subject, html: m.html, text: m.text });
+    if (ownerToo !== false && DOCS.copyTo) {
+      const o = mail.packetCopy(full, ack, true);
+      await mail.send({ to: DOCS.copyTo, subject: o.subject, html: o.html, text: o.text }).catch((e) => console.error("owner copy failed:", e && e.message));
+    }
+    return { sent: true };
+  } catch (e) { return { sent: false, reason: String(e && e.message || e).slice(0, 160) }; }
+}
+// Build (and store) the acknowledgment record of one document; first acknowledgment of a version wins. Returns {rec, existed}.
+async function recordDocAck(docDef, who, email, at, ua, ident) {
+  const prev = await accounts.getDocAck(docDef.id, who).catch(() => null);
+  if (prev && prev.version === docDef.version) return { rec: prev, existed: true };
+  const hash = crypto.createHash("sha256").update(JSON.stringify(docDef)).digest("hex");
+  const history = prev ? (prev.history || []).concat([{ version: prev.version, email: prev.email, at: prev.at, ua: prev.ua, hash: prev.hash || null, fullName: prev.fullName || null, emailedAt: prev.emailedAt || null }]) : [];
+  const rec = { version: docDef.version, email, at, ua, hash, history, name: who, doc: docDef.id, fullName: ident ? ident.fullName : null, emailedAt: null };
+  await accounts.setDocAck(docDef.id, who, rec);
+  return { rec, existed: false };
+}
 // Email the signed copy of a document (documents.js) to the person and the owner's proof copy. Never throws.
 async function emailDocCopy(doc, ack) {
   if (!mail.enabled()) return { sent: false, reason: "mail_not_configured" };
@@ -38,14 +63,14 @@ async function emailDocCopy(doc, ack) {
   } catch (e) { return { sent: false, reason: String(e && e.message || e).slice(0, 160) }; }
 }
 // Email the signed copy to the person and a copy to the owner. Never throws.
-async function emailRulesCopy(ack) {
+async function emailRulesCopy(ack, ownerToo) {
   if (!mail.enabled()) return { sent: false, reason: "mail_not_configured" };
   try {
     // Two separate emails: the person's signed copy, and the owner's proof ("X acknowledged…") — distinct subjects so
     // mailboxes never merge them, even when the two addresses are the same.
     const m = mail.rulesCopy(ack);
     await mail.send({ to: ack.email, subject: m.subject, html: m.html, text: m.text });
-    if (RULES.copyTo) {
+    if (ownerToo !== false && RULES.copyTo) {
       const o = mail.rulesCopy(ack, true);
       await mail.send({ to: RULES.copyTo, subject: o.subject, html: o.html, text: o.text }).catch((e) => console.error("owner copy failed:", e && e.message));
     }
@@ -225,6 +250,35 @@ module.exports = async (req, res) => {
       return send(res, 200, { ok: true, id: docDef.id, ack: { version, at, emailed: mailed.sent }, emailed: mailed.sent, emailError: mailed.sent ? null : mailed.reason });
     }
 
+    // Several documents read & acknowledged at once (the "Your documents" packet after the House Rules): one signature,
+    // one record per document (same guarantees as ackDoc), one email with everything + one proof email to the owner.
+    if (action === "ackDocs") {
+      const doc0 = await store.getSchedule();
+      const who = await accounts.whoIs(tokenFrom(req), doc0.data.staff);
+      if (!who) return send(res, 401, { error: "unauthorized" });
+      const ids = Array.isArray(body.ids) ? body.ids.map(String).slice(0, 20) : [];
+      const defs = ids.map(docById).filter(Boolean);
+      if (!defs.length || defs.length !== ids.length) return send(res, 404, { error: "unknown_doc" });
+      const email = String(body.email || "").trim().toLowerCase().slice(0, 120);
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return send(res, 400, { error: "bad_request" });
+      const versions = body.versions && typeof body.versions === "object" ? body.versions : {};
+      const stale = defs.filter((d) => !d.version || String(versions[d.id] || "") !== d.version).map((d) => d.id);
+      if (stale.length) return send(res, 400, { error: "bad_version", stale });
+      const at = new Date().toISOString(), ua = String(req.headers["user-agent"] || "").slice(0, 160);
+      const ident = await toastIdentity(doc0.data, who);
+      const recs = {}, fresh = [];
+      for (const d of defs) { const r = await recordDocAck(d, who, email, at, ua, ident); recs[d.id] = r.rec; if (!r.existed) fresh.push(d); }
+      let mailed = { sent: false, reason: "nothing_new" };
+      if (fresh.length) {
+        const hashes = {}; fresh.forEach((d) => { hashes[d.id] = recs[d.id].hash; });
+        mailed = await emailPacket(fresh, { name: who, fullName: ident ? ident.fullName : null, email, at, ua, hashes });
+        if (mailed.sent) { const t = new Date().toISOString(); for (const d of fresh) { recs[d.id].emailedAt = t; await accounts.setDocAck(d.id, who, recs[d.id]).catch(() => {}); } }
+        await store.appendLog({ at, version: null, changes: [`${fresh.map((d) => `${d.short || d.title} ${d.version}`).join(", ")} acknowledged by ${who}${ident && ident.fullName ? ` (${ident.fullName})` : ""} — ${email}${mailed.sent ? " · signed copy emailed" : " · copy NOT emailed (" + mailed.reason + ")"}`] }).catch(() => {});
+      }
+      const acks = {}; defs.forEach((d) => { acks[d.id] = ackView(recs[d.id]); });
+      return send(res, 200, { ok: true, acks, emailed: mailed.sent, emailError: mailed.sent ? null : (fresh.length ? mailed.reason : null) });
+    }
+
     // (Re)send every signed copy of a person (House Rules + documents): the manager for anyone (`sendCopies`),
     // or a signed-in person for themselves (`myCopies`, from 📂 My documents). Copies go only to the emails they signed with.
     if (action === "sendCopies" || action === "myCopies") {
@@ -235,12 +289,16 @@ module.exports = async (req, res) => {
       if (!name) return send(res, 400, { error: "bad_request" });
       const sent = [], failed = [];
       const rAck = await accounts.getRulesAck(name).catch(() => null);
-      if (rAck) { const m = await emailRulesCopy(Object.assign({ name }, rAck)); if (m.sent) { rAck.emailedAt = new Date().toISOString(); await accounts.setRulesAck(name, rAck).catch(() => {}); sent.push("House Rules"); } else failed.push("House Rules: " + m.reason); }
-      for (const d of DOCS.list) {
-        const a = await accounts.getDocAck(d.id, name).catch(() => null);
-        if (!a) continue;
-        const m = await emailDocCopy(d, Object.assign({ name }, a));
-        if (m.sent) { a.emailedAt = new Date().toISOString(); await accounts.setDocAck(d.id, name, a).catch(() => {}); sent.push(d.short || d.title); } else failed.push((d.short || d.title) + ": " + m.reason);
+      if (rAck) { const m = await emailRulesCopy(Object.assign({ name }, rAck), false); if (m.sent) { rAck.emailedAt = new Date().toISOString(); await accounts.setRulesAck(name, rAck).catch(() => {}); sent.push("House Rules"); } else failed.push("House Rules: " + m.reason); }
+      // every other signed document in ONE email (to the person only; the owner already has the proof copies)
+      const signed = [];
+      for (const d of DOCS.list) { const a = await accounts.getDocAck(d.id, name).catch(() => null); if (a) signed.push({ d, a }); }
+      if (signed.length) {
+        const last = signed.map((x) => x.a).sort((p, q) => String(q.at).localeCompare(String(p.at)))[0];
+        const hashes = {}; signed.forEach((x) => { hashes[x.d.id] = x.a.hash; });
+        const m = await emailPacket(signed.map((x) => Object.assign({}, x.d, { version: x.a.version })), { name, fullName: last.fullName || null, email: last.email, at: last.at, ua: last.ua, hashes }, false);
+        if (m.sent) { const t = new Date().toISOString(); for (const x of signed) { x.a.emailedAt = t; await accounts.setDocAck(x.d.id, name, x.a).catch(() => {}); sent.push(x.d.short || x.d.title); } }
+        else failed.push("Documents: " + m.reason);
       }
       if (!sent.length && !failed.length) return send(res, 404, { error: "no_ack" });
       if (sent.length) await store.appendLog({ at: new Date().toISOString(), version: null, changes: [`Signed copies re-sent to ${name}${action === "myCopies" ? " (self-service)" : ""}: ${sent.join(", ")}`] }).catch(() => {});
@@ -254,7 +312,7 @@ module.exports = async (req, res) => {
       const ack = name ? await accounts.getRulesAck(name).catch(() => null) : null;
       if (!ack) return send(res, 404, { error: "no_ack" });
       if (!mail.enabled()) return send(res, 503, { error: "mail_not_configured" });
-      const mailed = await emailRulesCopy(Object.assign({ name }, ack));
+      const mailed = await emailRulesCopy(Object.assign({ name }, ack), false);
       if (mailed.sent) { ack.emailedAt = new Date().toISOString(); await accounts.setRulesAck(name, ack).catch(() => {}); await store.appendLog({ at: ack.emailedAt, version: null, changes: [`House Rules ${ack.version}: signed copy re-sent to ${name} (${ack.email})`] }).catch(() => {}); }
       return mailed.sent ? send(res, 200, { ok: true, email: ack.email }) : send(res, 502, { error: "mail_failed", detail: mailed.reason });
     }
