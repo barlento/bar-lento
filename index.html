@@ -2037,7 +2037,19 @@
   function startPolling(){
     clearInterval(state.pollTimer);
     state.pollTimer=setInterval(function(){ if(document.visibilityState==="visible"&&!anyModalOpen()){ load(true); loadToastToday(); } },45000);
-    document.addEventListener("visibilitychange",function(){ if(document.visibilityState==="visible"&&!anyModalOpen()) load(true); });
+    document.addEventListener("visibilitychange",function(){ if(document.visibilityState==="visible"&&!anyModalOpen()){ load(true); appUpdateCheck(); } });
+    appUpdateCheck(); setInterval(appUpdateCheck,5*60000);
+  }
+  // Silent auto-update: a page left open (home-screen app) keeps running old code after a deploy. Compare the ETag of "/"
+  // with the one we started with and reload as soon as nothing is open — never while someone is reading, signing or editing.
+  var appEtag=null;
+  function appUpdateCheck(){
+    if(document.visibilityState!=="visible") return;
+    fetch("/",{method:"HEAD",cache:"no-store"}).then(function(r){
+      var e=r.headers.get("etag"); if(!e) return;
+      if(appEtag===null){ appEtag=e; return; }
+      if(e!==appEtag&&!anyModalOpen()&&!state.editing&&!state.dayEditing&&!state.confirming) location.reload();
+    }).catch(function(){});
   }
 
   // ---------- personal access: name + PIN, remembered on this device ----------
