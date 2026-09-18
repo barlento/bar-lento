@@ -924,7 +924,7 @@
     <h2 id="docsTitle">📂 Documents</h2>
     <p class="lead" id="docsLead">The House Rules and the policies you read and sign once. Tap one to read it again or to sign it. Your signed copies are emailed to you.</p>
     <div class="docs-list" id="docsList"></div>
-    <div class="actions"><span class="spacer"></span><button class="btn" id="docsClose" type="button" data-t="close">Close</button></div>
+    <div class="actions"><button class="linkbtn" id="docsMail" type="button" style="display:none">✉ Email me my signed copies</button><span class="spacer"></span><button class="btn" id="docsClose" type="button" data-t="close">Close</button></div>
   </div>
 </div>
 
@@ -1057,7 +1057,7 @@
       m0:"Your stats will appear after your first clocked shift. Welcome aboard! 🍸", m1:"Keep going — after 3 scheduled shifts you'll see your punctuality too.", m90:"Amazing — you're almost always right on time. Thank you! ⭐", m80:"Great job — solid punctuality. Keep it up!", m60:"Good work. A few minutes earlier and you're in the green zone.", mLow:"Thanks for your hours! Aim to clock in within 5 minutes of your start — you've got this.",
       hi:"Hi {n} 👋", nextShift:"Next shift: {w} · ", onShiftNow:"On shift now · ", noUpcoming:"No upcoming shifts on the schedule.",
       histEntry:"{d} · {t} · v{v}",
-      docsBtn:"📂 Documents", docsTitle:"📂 Documents", docsLead:"The House Rules and the policies you read and sign once. Tap one to read it again or to sign it. Your signed copies are emailed to you.",
+      docsBtn:"📂 My documents", docsTitle:"📂 My documents", docsLead:"Everything Bar Lento has given you to read and sign, with the date you signed it. Tap a document to read it again or to print it.", docsMail:"✉ Email me my signed copies", docsMailed:"Your signed copies are on their way to {e}", docsMailNone:"Nothing signed yet", docOf:"document {i} of {n}",
       docSigned:"✓ Signed {d}", docToSign:"To sign · by {d}", docLate:"Overdue · please sign now", trainDone:"✓ Completed {d}", trainTodo:"To complete this year · by {d}", trainLate:"Overdue · please complete now", later:"Later",
       readLead:"Please read this document to the end, then confirm with your email: your signed copy is emailed to you and to the owner.", readLeadNoMail:"Please read this document to the end, then confirm with your email.", readLeadDone:"You acknowledged this document on {d}.", readLeadDoneTrain:"You completed this training on {d}.", readLeadTrain:"Watch the video (links at the end), then confirm with your email: your training record is emailed to you and to the owner.",
       agreeTrain:"✓ I completed the training", agree:"✓ I have read and agree", thanksDoc:"Thank you! Your signed copy is on its way to {e}", thanksDocNoMail:"Thank you! Document acknowledged ✓", thanksTrain:"Training recorded ✓ — confirmation on its way to {e}", thanksTrainNoMail:"Training recorded ✓",
@@ -1113,7 +1113,7 @@
       m0:"Le statistiche compaiono dopo il primo turno timbrato. Benvenuto/a a bordo! 🍸", m1:"Continua così — dopo 3 turni previsti vedrai anche la puntualità.", m90:"Fantastico — quasi sempre perfettamente in orario. Grazie! ⭐", m80:"Ottimo lavoro — puntualità solida. Continua così!", m60:"Bel lavoro. Qualche minuto prima e sei nella zona verde.", mLow:"Grazie per le tue ore! Prova a timbrare entro 5 minuti dall'inizio — ce la fai.",
       hi:"Ciao {n} 👋", nextShift:"Prossimo turno: {w} · ", onShiftNow:"In turno adesso · ", noUpcoming:"Nessun turno in programma.",
       histEntry:"{d} · {t} · v{v}",
-      docsBtn:"📂 Documenti", docsTitle:"📂 Documenti", docsLead:"Il regolamento e le politiche che ogni persona legge e firma una volta. Tocca un documento per rileggerlo o firmarlo. Le copie firmate arrivano via email.",
+      docsBtn:"📂 I miei documenti", docsTitle:"📂 I miei documenti", docsLead:"Tutto quello che Bar Lento ti ha consegnato da leggere e firmare, con la data della firma. Tocca un documento per rileggerlo o stamparlo.", docsMail:"✉ Rimandami le mie copie firmate", docsMailed:"Le tue copie firmate sono in arrivo a {e}", docsMailNone:"Nessun documento firmato ancora", docOf:"documento {i} di {n}",
       docSigned:"✓ Firmato {d}", docToSign:"Da firmare · entro {d}", docLate:"In ritardo · firma ora", trainDone:"✓ Completata {d}", trainTodo:"Da completare quest'anno · entro {d}", trainLate:"In ritardo · completa ora", later:"Più tardi",
       readLead:"Leggi il documento fino alla fine, poi conferma con la tua email: la copia firmata arriva a te e al titolare.", readLeadNoMail:"Leggi il documento fino alla fine, poi conferma con la tua email.", readLeadDone:"Hai firmato questo documento il {d}.", readLeadDoneTrain:"Hai completato questa formazione il {d}.", readLeadTrain:"Guarda il video (link in fondo), poi conferma con la tua email: l'attestato arriva a te e al titolare.",
       agreeTrain:"✓ Ho completato la formazione", agree:"✓ Ho letto e accetto", thanksDoc:"Grazie! La copia firmata è in arrivo a {e}", thanksDocNoMail:"Grazie! Documento firmato ✓", thanksTrain:"Formazione registrata ✓ — conferma in arrivo a {e}", thanksTrainNoMail:"Formazione registrata ✓",
@@ -1974,6 +1974,7 @@
   $("rulesLater").addEventListener("click",function(){ storageSet(DOCS_SNOOZE_KEY,toISO(new Date())); var o=$("rulesOverlay"); delete o.dataset.lock; o.classList.remove("show"); afterLoginFlow(); });
   $("rulesAgree").addEventListener("click",agreeRules);
   $("docsClose").addEventListener("click",function(){ $("docsOverlay").classList.remove("show"); });
+  $("docsMail").addEventListener("click",mailMyCopies);
   $("rulesEmail").addEventListener("input",rulesFormCheck);
   $("rulesCheck").addEventListener("change",rulesFormCheck);
   $("rulesBody").addEventListener("scroll",rulesScrolled);
@@ -2112,15 +2113,18 @@
     return st.ok?t("docSigned",{d:ackDate(st.ack.at)}):st.late?t("docLate"):t("docToSign",{d:ackDate(st.due.toISOString())});
   }
   function maybeRulesPopup(){ if(!rulesRequired()||mustIdentify()) return false; if($("rulesOverlay").classList.contains("show")) return true; openReader(rulesDoc(),{sign:true,lock:true,later:false}); return true; }
-  // After the rules: the first unsigned document. "Later" is allowed until its deadline (one reminder per device per day), then it blocks.
+  // After the rules: every unsigned policy, one after the other, blocking (first login = read and sign everything).
+  // Only the training (a 20-minute video) may wait: "Later" until its deadline, one reminder per device per day, then it blocks too.
   function maybeDocsPopup(){
     if(!state.me.name||mustIdentify()||rulesRequired()) return false;
     var pend=docsPending(); if(!pend.length) return false;
     if($("rulesOverlay").classList.contains("show")) return true;
-    var late=pend.filter(function(d){return docStatus(d).late;});
-    if(late.length){ openReader(late[0],{sign:true,lock:true,later:false}); return true; }
+    var policies=pend.filter(function(d){return d.kind!=="training";});
+    if(policies.length){ openReader(policies[0],{sign:true,lock:true,later:false}); return true; }
+    var tr=pend[0];
+    if(docStatus(tr).late){ openReader(tr,{sign:true,lock:true,later:false}); return true; }
     if(storageGet(DOCS_SNOOZE_KEY)===toISO(new Date())) return false;
-    openReader(pend[0],{sign:true,lock:true,later:true}); return true;
+    openReader(tr,{sign:true,lock:true,later:true}); return true;
   }
   function maybeReadingPopup(){ return maybeRulesPopup()||maybeDocsPopup(); }
   function renderLi(x){ return typeof x==="string"?'<li>'+h(x)+'</li>':'<li>'+h(x.t)+(x.sub&&x.sub.length?'<ul>'+x.sub.map(renderLi).join("")+'</ul>':'')+'</li>'; }
@@ -2138,6 +2142,7 @@
     b.innerHTML=html; b.scrollTop=0;
     $("rulesVer").textContent="Version "+doc.version; $("rulesAckText").textContent=doc.ack;
   }
+  function docsProgress(doc){ var all=[{id:"rules"}].concat(DOCS.list||[]); var i=all.findIndex(function(d){return d.id===doc.id;}); return i>=0?t("docOf",{i:i+1,n:all.length}):""; }
   // opts: sign (show the email + checkbox + agree button), lock (cannot be dismissed), later (show "Later")
   function openReader(doc,opts){
     if(!doc||!doc.version) return; opts=opts||{};
@@ -2153,6 +2158,7 @@
     if(opts.sign) $("rulesLead").textContent=isRules?(state.features.mail?"Please read the Bar Lento House Rules to the end, then confirm with your email: your signed copy is emailed to you and to the owner. You'll be asked again only when the rules change.":"Please read the Bar Lento House Rules to the end, then confirm with your email. You'll be asked again only when the rules change."):training?t("readLeadTrain"):(state.features.mail?t("readLead"):t("readLeadNoMail"));
     else $("rulesLead").textContent=isRules?("The Bar Lento House Rules you acknowledged"+(ack&&ack.at?" on "+ackDate(ack.at)+".":".")):ack&&ack.at?t(training?"readLeadDoneTrain":"readLeadDone",{d:ackDate(ack.at)}):(doc.subtitle||"");
     $("rulesSigning").textContent=state.me.name?"· signing as "+(state.me.fullName||state.me.name):""; $("rulesEmail").value=state.me.email||""; $("rulesCheck").checked=false; $("rulesCheck").disabled=true; $("rulesCheckRow").classList.add("dis"); $("rulesErr").textContent=""; $("rulesAgree").disabled=true;
+    if(opts.sign&&opts.lock&&(DOCS.list||[]).length) $("rulesVer").textContent="Version "+doc.version+" · "+docsProgress(doc);
     o.classList.add("show"); setTimeout(rulesScrolled,300);
   }
   function openRules(mandatory){ openReader(rulesDoc(),{sign:!!mandatory,lock:!!mandatory,later:false}); }
@@ -2188,6 +2194,15 @@
     el.innerHTML=rows.length?rows.map(function(r,i){ return '<button type="button" class="doc-row'+(r.ok?"":" todo")+'" data-i="'+i+'" style="animation-delay:'+(i*40)+'ms"><span class="ic">'+h(r.doc.icon||"📄")+'</span><span><span class="tt">'+h(r.doc.id==="rules"?"House Rules":r.doc.title)+'</span><span class="st '+(r.ok?"ok":r.late?"late":"")+'">'+h(r.txt)+'</span></span><span class="go">›</span></button>'; }).join(""):'<div class="empty-note">—</div>';
     el.querySelectorAll(".doc-row").forEach(function(b){ b.addEventListener("click",function(){ var r=rows[Number(b.getAttribute("data-i"))]; if(!r) return; $("docsOverlay").classList.remove("show"); rules.backToDocs=true; openReader(r.doc,{sign:!r.ok,lock:false,later:false}); }); });
     $("docsTitle").textContent=t("docsTitle"); $("docsLead").textContent=t("docsLead");
+    var anySigned=rows.some(function(r){return r.ok;}); var mb=$("docsMail"); mb.style.display=(anySigned&&state.features.mail)?"":"none"; mb.textContent=t("docsMail"); mb.disabled=false;
+  }
+  async function mailMyCopies(){
+    var b=$("docsMail"); b.disabled=true;
+    var r; try{ r=await api("/api/me",{method:"POST",body:{action:"myCopies"}}); }catch(e){ r={ok:false,status:0,json:{}}; }
+    if(r.ok) toast(t("docsMailed",{e:r.json.email||state.me.email||""}),4000);
+    else if(r.status===404) toast(t("docsMailNone"),3000);
+    else toast(t("copyFail",{r:(r.json&&(r.json.detail||r.json.error))||r.status}),4500);
+    setTimeout(function(){ b.disabled=false; },15000);
   }
   function openDocs(){ if(!state.me.name) return; renderDocs(); $("docsOverlay").classList.add("show"); }
   function docsButtonLabel(){ var n=docsPending().length+(rulesRequired()?1:0); return t("docsBtn")+(n?' <span class="badge-n">'+n+'</span>':""); }

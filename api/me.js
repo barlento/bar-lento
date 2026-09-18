@@ -225,11 +225,13 @@ module.exports = async (req, res) => {
       return send(res, 200, { ok: true, id: docDef.id, ack: { version, at, emailed: mailed.sent }, emailed: mailed.sent, emailError: mailed.sent ? null : mailed.reason });
     }
 
-    // Manager: (re)send every signed copy of a person (House Rules + documents), e.g. mail was configured later or an email got lost.
-    if (action === "sendCopies") {
-      if (!isAdmin) return send(res, 401, { error: "unauthorized" });
+    // (Re)send every signed copy of a person (House Rules + documents): the manager for anyone (`sendCopies`),
+    // or a signed-in person for themselves (`myCopies`, from 📂 My documents). Copies go only to the emails they signed with.
+    if (action === "sendCopies" || action === "myCopies") {
+      let name;
+      if (action === "sendCopies") { if (!isAdmin) return send(res, 401, { error: "unauthorized" }); name = String(body.name || "").trim().slice(0, 60); }
+      else { const doc0 = await store.getSchedule(); name = await accounts.whoIs(tokenFrom(req), doc0.data.staff); if (!name) return send(res, 401, { error: "unauthorized" }); }
       if (!mail.enabled()) return send(res, 503, { error: "mail_not_configured" });
-      const name = String(body.name || "").trim().slice(0, 60);
       if (!name) return send(res, 400, { error: "bad_request" });
       const sent = [], failed = [];
       const rAck = await accounts.getRulesAck(name).catch(() => null);
@@ -241,8 +243,8 @@ module.exports = async (req, res) => {
         if (m.sent) { a.emailedAt = new Date().toISOString(); await accounts.setDocAck(d.id, name, a).catch(() => {}); sent.push(d.short || d.title); } else failed.push((d.short || d.title) + ": " + m.reason);
       }
       if (!sent.length && !failed.length) return send(res, 404, { error: "no_ack" });
-      if (sent.length) await store.appendLog({ at: new Date().toISOString(), version: null, changes: [`Signed copies re-sent to ${name}: ${sent.join(", ")}`] }).catch(() => {});
-      return send(res, failed.length && !sent.length ? 502 : 200, { ok: sent.length > 0, sent, failed, email: (rAck && rAck.email) || null });
+      if (sent.length) await store.appendLog({ at: new Date().toISOString(), version: null, changes: [`Signed copies re-sent to ${name}${action === "myCopies" ? " (self-service)" : ""}: ${sent.join(", ")}`] }).catch(() => {});
+      return send(res, failed.length && !sent.length ? 502 : 200, { ok: sent.length > 0, sent, failed, email: (rAck && rAck.email) || (sent.length ? "your email" : null) });
     }
 
     // Manager: (re)send the signed copy of the House Rules to a person who already acknowledged (e.g. mail was configured later).
