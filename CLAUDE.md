@@ -15,6 +15,7 @@ Verify after ~90 s at https://bar-lento.vercel.app (add `?v=<n>` to bypass cache
 - Personal access is mandatory: the schedule is blurred behind "Who are you?" until a person enters their PIN (or the manager logs in). Each person can confirm ONLY their own shifts (server-checked), via a two-step popup (tap shift → tap Confirm).
 - Notifications: ONLY (a) "new week posted" and (b) one batched summary of changes that affect employees (shift added/removed/time changed, day closed/opened). Never spam. Quiet hours 11 PM–10 AM New York.
 - No public comparisons between employees (Marta's request): personal stats only for staff, rankings only in Manager mode. Exception decided by the owner: the **⏱ Time clock** (who punched in/out, times, past days) stays visible to every signed-in employee — it is operational info, not a ranking. Don't restrict it.
+- **Toast is read-only, always.** Clock-ins/outs happen ONLY on the real Toast POS terminal with the employee's own account. The site just mirrors them (history, confirmation, a nice extra to check from home). Never add a way to punch in/out, edit or create time entries from the site — for anyone, manager included.
 - Past weeks are a locked legal archive: never editable/deletable; removing a person deletes only their **upcoming** shifts.
 - Manager password lives only in Vercel env `admin_password` (any case). Never print secrets in chat, code or logs.
 
