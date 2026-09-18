@@ -20,8 +20,14 @@ async function toastIdentity(data, name) {
 async function emailRulesCopy(ack) {
   if (!mail.enabled()) return { sent: false, reason: "mail_not_configured" };
   try {
+    // Two separate emails: the person's signed copy, and the owner's proof ("X acknowledged…") — distinct subjects so
+    // mailboxes never merge them, even when the two addresses are the same.
     const m = mail.rulesCopy(ack);
-    await mail.send({ to: ack.email, cc: RULES.copyTo || undefined, subject: m.subject, html: m.html, text: m.text });
+    await mail.send({ to: ack.email, subject: m.subject, html: m.html, text: m.text });
+    if (RULES.copyTo) {
+      const o = mail.rulesCopy(ack, true);
+      await mail.send({ to: RULES.copyTo, subject: o.subject, html: o.html, text: o.text }).catch((e) => console.error("owner copy failed:", e && e.message));
+    }
     return { sent: true };
   } catch (e) { return { sent: false, reason: String(e && e.message || e).slice(0, 160) }; }
 }
