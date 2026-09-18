@@ -14,6 +14,7 @@ Verify after ~90 s at https://bar-lento.vercel.app (add `?v=<n>` to bypass cache
 - Light, readable theme; must look great on iPhone (installable PWA, home-screen app) and on PC. Playful "alive" effects: pulsing LEDs, rising cards, confetti — never at the cost of clarity.
 - Staff confirm a shift by typing `confirm` (or `remove`) in a popup — no accidental taps.
 - Notifications: ONLY (a) "new week posted" and (b) one batched summary of changes that affect employees (shift added/removed/time changed, day closed/opened). Never spam. Quiet hours 11 PM–10 AM New York.
+- No public comparisons between employees (Marta's request): personal stats only for staff, rankings only in Manager mode.
 - Past weeks are a locked legal archive: never editable/deletable; removing a person deletes only their **upcoming** shifts.
 - Manager password lives only in Vercel env `admin_password` (any case). Never print secrets in chat, code or logs.
 
@@ -29,14 +30,13 @@ Verify after ~90 s at https://bar-lento.vercel.app (add `?v=<n>` to bypass cache
 - Data model: `{staff[], birthdays{name:YYYY-MM-DD}, toastMap{name:guid}, weeks{<MondayISO>:{mon..sun:[{id,name,station,start,end}], notes:{day:{status:''|closed|holiday|half|event,text,open?,close?}}}}}`.
 
 ## Features already live (don't rebuild — extend)
-**My week (personal access)**: first visit → "Who are you?" name grid → create/enter 4-digit PIN on a big keypad → device remembered. Header button 👤 + strip "Hi Marco · Next shift…" + own shifts tagged YOU; sheet with week nav, tiles scheduled / worked (Toast) / difference, per-shift clock-ins, tap to confirm, "Not you? Switch", "Log out here". Manager roster: PIN status, **📅 view someone's week**, **🔑 Reset PIN** (double tap). No PIN → "Not now" snoozes the prompt 24 h.
 Weekly view with tabs; today hero with LED; typed confirmation; manager mode (add/edit/delete shifts, staff + birthdays with confetti popup, day closures with presets incl. half-day hours, US holidays auto-detected, one-tap **New week** (copy last / empty), delete current/future week with double confirm, change history, CSV export, Notify team, IT/EN); push notifications with bell button; new-week popup once per device; **⏱ Time clock** button for everyone (Toast clock-ins/outs, day navigation, live counter) and clock badges on today's shifts.
+**Personal access (name + PIN)**: first visit → "Who are you?" name grid → create/enter 4-digit PIN on a big keypad → device remembered (token). Header button 👤 + strip "Hi Marco · Next shift…" with two buttons, own shifts tagged YOU. **📅 My week**: week nav, tiles scheduled / worked (Toast) / difference, per-shift clock-ins, tap to confirm, "Not you? Switch", "Log out here". **⭐ My stats** (`/api/toast?action=mystats`, identity from the PIN token, or manager + `&name=`): ONLY own hours, on-time % (after 3 scheduled shifts), streak, badges, encouraging message, anonymous team totals — never other people's numbers or a rank. Manager roster: PIN status, **📅 view someone's week**, **🔑 Reset PIN** (double tap; also signs out their devices). "Not now" snoozes the prompt 24 h. **🏆 Team ranking** exists only in Manager mode (`?action=leaderboard`, password required; `lib/leaderboard.js`): Hours + On-time columns, podium, live re-ordering. The manager (Marta) explicitly asked that staff never see comparisons — keep it that way.
 
 ## Ideas the owner liked (next candidates)
-1. "My shifts" follow-ups: personal push + morning-of reminder, add-to-calendar (.ics). (Name+PIN login, personal view and hours are live.)
+1. Personal follow-ups: personal push + morning-of reminder, add-to-calendar (.ics). (Name+PIN login, My week, My stats are live.)
 2. Shift swap / unavailability requests approved by Marta.
-3. "My hours": scheduled vs worked (from Toast) per person per week.
-4. Punctuality streaks/badges.
+4. My stats extras: personal weekly recap push (opt-in), personal bests; manager ranking: monthly export.
 5. Weather on day cards (Open-Meteo, no key).
 6. Printable week + monthly hours summary for the owner.
 
