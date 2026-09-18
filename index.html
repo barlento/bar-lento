@@ -160,7 +160,7 @@
   .shift.mine{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
   .shift.mine .who::before{content:"you";display:inline-block;font-size:.62rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:6px;padding:1px 6px;margin-right:7px;vertical-align:middle}
 
-  .roster .person{grid-template-columns:1fr auto auto auto}
+  .roster .person{grid-template-columns:1fr auto auto auto auto}
   .roster .nm small{display:block;font-weight:500;font-size:.72rem;color:var(--ink-muted)}
   .roster .nm small.haspin{color:var(--good)}
   .roster .pinbtn{border:1px solid var(--border);background:var(--surface);border-radius:8px;padding:5px 8px;font-size:.78rem;font-weight:600;cursor:pointer;white-space:nowrap}
@@ -1028,7 +1028,7 @@
       m0:"Your stats will appear after your first clocked shift. Welcome aboard! 🍸", m1:"Keep going — after 3 scheduled shifts you'll see your punctuality too.", m90:"Amazing — you're almost always right on time. Thank you! ⭐", m80:"Great job — solid punctuality. Keep it up!", m60:"Good work. A few minutes earlier and you're in the green zone.", mLow:"Thanks for your hours! Aim to clock in within 5 minutes of your start — you've got this.",
       hi:"Hi {n} 👋", nextShift:"Next shift: {w} · ", onShiftNow:"On shift now · ", noUpcoming:"No upcoming shifts on the schedule.",
       histEntry:"{d} · {t} · v{v}",
-      rulesOk:"📜 Rules ✓ {d} · {e}", rulesNo:"📜 Rules not acknowledged yet", rulesLink:"📜 House Rules (print)",
+      rulesOk:"📜 Rules ✓ {d} · {e}", rulesNo:"📜 Rules not acknowledged yet", rulesLink:"📜 House Rules (print)", copyNotSent:"copy not emailed yet", sendCopy:"✉ Send signed copy by email", copySent:"Signed copy sent to {e}", copyFail:"Couldn't send the email ({r})", mailOff:"Email isn't configured yet on the server (Vercel settings).",
       pinSet:"PIN set", pinDevices:"{k} device{p}", pinNone:"No PIN yet", pinReset:"Reset PIN", pinResetSure:"Sure? Reset", pinResetDone:"PIN reset for {n} — they'll create a new one next time", pinResetFail:"Couldn't reset the PIN. Try again.", viewWeek:"View {n}'s week", staffLeadPin:" Each person creates a personal PIN to see their own shifts and hours; <b>Reset PIN</b> if they forget it (it also signs out all their devices).",
       toastPick:"— Toast employee —", toastLoading:"Loading Toast…", toastLinked:"{n} linked to Toast", toastUnlinked:"{n} unlinked from Toast", notified:"Team notified ✓ ({k} phone{p})", notifiedNone:"Changes noted — nobody has notifications turned on yet.", notifyFail:"Couldn't send the notification. It will go out automatically later.", markedClosed:"{h} ✓"
     },
@@ -1079,7 +1079,7 @@
       m0:"Le statistiche compaiono dopo il primo turno timbrato. Benvenuto/a a bordo! 🍸", m1:"Continua così — dopo 3 turni previsti vedrai anche la puntualità.", m90:"Fantastico — quasi sempre perfettamente in orario. Grazie! ⭐", m80:"Ottimo lavoro — puntualità solida. Continua così!", m60:"Bel lavoro. Qualche minuto prima e sei nella zona verde.", mLow:"Grazie per le tue ore! Prova a timbrare entro 5 minuti dall'inizio — ce la fai.",
       hi:"Ciao {n} 👋", nextShift:"Prossimo turno: {w} · ", onShiftNow:"In turno adesso · ", noUpcoming:"Nessun turno in programma.",
       histEntry:"{d} · {t} · v{v}",
-      rulesOk:"📜 Regolamento ✓ {d} · {e}", rulesNo:"📜 Regolamento non ancora firmato", rulesLink:"📜 Regolamento (stampa)",
+      rulesOk:"📜 Regolamento ✓ {d} · {e}", rulesNo:"📜 Regolamento non ancora firmato", rulesLink:"📜 Regolamento (stampa)", copyNotSent:"copia non ancora inviata", sendCopy:"✉ Invia copia firmata via email", copySent:"Copia firmata inviata a {e}", copyFail:"Invio email non riuscito ({r})", mailOff:"Email non ancora configurata sul server (impostazioni Vercel).",
       pinSet:"PIN creato", pinDevices:"{k} dispositiv{p}", pinNone:"Nessun PIN", pinReset:"Azzera PIN", pinResetSure:"Sicura? Azzera", pinResetDone:"PIN azzerato per {n} — ne creerà uno nuovo al prossimo accesso", pinResetFail:"Impossibile azzerare il PIN. Riprova.", viewWeek:"Vedi la settimana di {n}", staffLeadPin:" Ognuno crea un PIN personale per vedere i propri turni e le proprie ore; <b>Azzera PIN</b> se lo dimentica (scollega anche tutti i suoi dispositivi).",
       toastPick:"— dipendente Toast —", toastLoading:"Carico Toast…", toastLinked:"{n} collegato/a a Toast", toastUnlinked:"{n} scollegato/a da Toast", notified:"Ragazzi avvisati ✓ ({k} telefon{p})", notifiedNone:"Modifiche registrate — nessuno ha ancora attivato le notifiche.", notifyFail:"Invio non riuscito. Partirà automaticamente più tardi.", markedClosed:"{h} ✓"
     }
@@ -1110,7 +1110,7 @@
     admin:false, password:"", activeWeek:null, showArchive:false,
     saving:false, dirtyTimer:null, editing:null, dayEditing:null, confirming:null,
     pendingConfirm:{}, pollTimer:null, pendingNotify:0, idleTimer:null, toastToday:null, toastEmployees:null,
-    me:{name:null,token:null,rulesAck:undefined}, accounts:null
+    me:{name:null,token:null,rulesAck:undefined,email:"",fullName:""}, accounts:null, mailEnabled:false
   };
 
   // ---------- helpers ----------
@@ -1819,13 +1819,21 @@
     el.innerHTML=state.data.staff.length?state.data.staff.map(function(n,i){
       var b=state.data.birthdays[n]||""; var acc=(state.accounts||{})[n];
       var accTxt=acc&&acc.pin?t("pinSet")+(acc.devices?" · "+t("pinDevices",{k:acc.devices,p:lang==="it"?(acc.devices===1?"o":"i"):(acc.devices===1?"":"s")}):""):t("pinNone");
-      var rulesTxt=""; if(rulesActive()&&state.accounts){ var ra=acc&&acc.rules; rulesTxt=ra&&ra.version===RULES.version?'<small class="rules haspin">'+h(t("rulesOk",{d:ackDate(ra.at),e:ra.email||""}))+'</small>':'<small class="rules">'+h(t("rulesNo"))+'</small>'; }
+      var rulesTxt="", mailBtn=""; if(rulesActive()&&state.accounts){ var ra=acc&&acc.rules; var okR=ra&&ra.version===RULES.version; rulesTxt=okR?'<small class="rules haspin">'+h(t("rulesOk",{d:ackDate(ra.at),e:ra.email||""}))+(ra.emailedAt?"":" · "+h(t("copyNotSent")))+'</small>':'<small class="rules">'+h(t("rulesNo"))+'</small>'; if(okR&&state.mailEnabled) mailBtn='<button type="button" class="pinbtn mail" data-name="'+h(n)+'" title="'+h(t("sendCopy"))+'">✉</button>'; }
       return '<div class="person"><span class="nm">'+h(n)+'<small class="'+(acc&&acc.pin?"haspin":"")+'">'+(state.accounts?h(accTxt):"")+'</small>'+rulesTxt+'</span>'
         +'<label class="bday">🎂 <input type="date" data-name="'+h(n)+'" value="'+h(b)+'" aria-label="Birthday of '+h(n)+'"></label>'
-        +'<button type="button" class="pinbtn view" data-name="'+h(n)+'" title="'+h(t("viewWeek",{n:n}))+'" aria-label="'+h(t("viewWeek",{n:n}))+'">📅</button>'
+        +mailBtn+'<button type="button" class="pinbtn view" data-name="'+h(n)+'" title="'+h(t("viewWeek",{n:n}))+'" aria-label="'+h(t("viewWeek",{n:n}))+'">📅</button>'
         +'<button type="button" class="pinbtn reset" data-name="'+h(n)+'"'+(acc&&(acc.pin||acc.devices)?"":" disabled")+'>🔑 '+t("pinReset")+'</button>'
         +'<button type="button" class="x" data-i="'+i+'" aria-label="Remove '+h(n)+'">✕</button></div>';
     }).join(""):'<div class="empty-note">'+t("noNames")+'</div>';
+    el.querySelectorAll(".pinbtn.mail").forEach(function(b){b.addEventListener("click",async function(){
+      var n=b.getAttribute("data-name"); b.disabled=true;
+      var r=await api("/api/me",{method:"POST",auth:true,body:{action:"sendRulesCopy",name:n}});
+      b.disabled=false;
+      if(r.ok){ toast(t("copySent",{e:r.json.email}),3500); await loadAccounts(); renderRoster(); }
+      else if(r.status===503) toast(t("mailOff"),4000);
+      else toast(t("copyFail",{r:(r.json&&r.json.detail)||r.status}),4500);
+    });});
     el.querySelectorAll(".pinbtn.view").forEach(function(b){b.addEventListener("click",function(){ $("staffOverlay").classList.remove("show"); openMe(b.getAttribute("data-name")); });});
     el.querySelectorAll(".pinbtn.reset").forEach(function(b){b.addEventListener("click",async function(){
       var n=b.getAttribute("data-name");
@@ -1987,7 +1995,7 @@
   async function meWhoAmI(){
     if(!state.me.token) return;
     var r; try{ r=await api("/api/me?action=who"); }catch(e){ r={ok:false,status:0,json:{}}; }
-    if(r.ok&&r.json.name){ meSet(r.json.name,state.me.token); state.me.rulesAck=r.json.rulesAck||null; }
+    if(r.ok&&r.json.name){ meSet(r.json.name,state.me.token); state.me.rulesAck=r.json.rulesAck||null; state.me.email=r.json.email||""; state.me.fullName=r.json.fullName||""; }
     else if(r.status===401||r.status===404){ meSet(null,null); state.me.rulesAck=undefined; }
     else { state.me.rulesAck=undefined; } // server hiccup: unknown → never force the rules on a guess
     renderMe();
@@ -2057,8 +2065,8 @@
     var o=$("rulesOverlay"); if(mandatory) o.dataset.lock="1"; else delete o.dataset.lock;
     $("rulesAckForm").style.display=mandatory?"":"none"; $("rulesAgree").style.display=mandatory?"":"none"; $("rulesClose").style.display=mandatory?"none":"";
     $("rulesScrollHint").style.display=mandatory?"":"none";
-    $("rulesLead").textContent=mandatory?"Please read the Bar Lento House Rules to the end, then confirm with your email. You'll be asked again only when the rules change.":"The Bar Lento House Rules you acknowledged"+(state.me.rulesAck&&state.me.rulesAck.at?" on "+ackDate(state.me.rulesAck.at)+".":".");
-    $("rulesSigning").textContent=state.me.name?"· signing as "+state.me.name:""; $("rulesEmail").value=""; $("rulesCheck").checked=false; $("rulesCheck").disabled=true; $("rulesCheckRow").classList.add("dis"); $("rulesErr").textContent=""; $("rulesAgree").disabled=true;
+    $("rulesLead").textContent=mandatory?(state.features.mail?"Please read the Bar Lento House Rules to the end, then confirm with your email: your signed copy is emailed to you and to the owner. You'll be asked again only when the rules change.":"Please read the Bar Lento House Rules to the end, then confirm with your email. You'll be asked again only when the rules change."):"The Bar Lento House Rules you acknowledged"+(state.me.rulesAck&&state.me.rulesAck.at?" on "+ackDate(state.me.rulesAck.at)+".":".");
+    $("rulesSigning").textContent=state.me.name?"· signing as "+(state.me.fullName||state.me.name):""; $("rulesEmail").value=state.me.email||""; $("rulesCheck").checked=false; $("rulesCheck").disabled=true; $("rulesCheckRow").classList.add("dis"); $("rulesErr").textContent=""; $("rulesAgree").disabled=true;
     o.classList.add("show"); setTimeout(rulesScrolled,300);
   }
   function rulesScrolled(){
@@ -2072,7 +2080,7 @@
     if(!$("rulesCheck").checked){ $("rulesErr").textContent="Please tick the box to confirm."; return; }
     $("rulesAgree").disabled=true;
     var r; try{ r=await api("/api/me",{method:"POST",body:{action:"ackRules",email:$("rulesEmail").value.trim(),version:RULES.version}}); }catch(e){ r={ok:false,status:0,json:{}}; }
-    if(r.ok){ state.me.rulesAck=r.json.rulesAck||{version:RULES.version,at:new Date().toISOString()}; var o=$("rulesOverlay"); delete o.dataset.lock; o.classList.remove("show"); toast("Thank you! House Rules acknowledged ✓",3000); afterLoginFlow(); }
+    if(r.ok){ state.me.rulesAck=r.json.rulesAck||{version:RULES.version,at:new Date().toISOString()}; var o=$("rulesOverlay"); delete o.dataset.lock; o.classList.remove("show"); toast(r.json.emailed?"Thank you! Your signed copy is on its way to "+$("rulesEmail").value.trim():"Thank you! House Rules acknowledged ✓",3800); afterLoginFlow(); }
     else if(r.status===401){ $("rulesOverlay").classList.remove("show"); meSet(null,null); renderMe(); maybeWhoPopup(); }
     else if(r.status===400&&r.json&&r.json.error==="bad_version"){ $("rulesErr").textContent="The rules were just updated — please reload the page and read the new version."; }
     else { $("rulesErr").textContent="Couldn't save right now — check your connection and try again."; $("rulesAgree").disabled=false; }
@@ -2278,7 +2286,7 @@
   async function loadAccounts(){
     if(!state.admin) return;
     var r=await api("/api/me?action=list",{auth:true});
-    if(r.ok) state.accounts=r.json.accounts||{};
+    if(r.ok){ state.accounts=r.json.accounts||{}; state.mailEnabled=!!r.json.mail; }
   }
 
   // ---------- push notifications ----------

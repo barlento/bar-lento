@@ -4,6 +4,27 @@ const accounts = require("../lib/accounts");
 const toast = require("../lib/toast");
 const crypto = require("crypto");
 const RULES = require("../rules.js");
+const mail = require("../lib/mail");
+
+// The person's Toast record (full legal-ish name + email), when Toast is connected and the name is linked.
+async function toastIdentity(data, name) {
+  try {
+    if (!toast.enabled()) return null;
+    const emps = await toast.employees(true);
+    const guid = toast.autoMap(data.staff, data.toastMap, emps)[name];
+    const e = guid ? emps.find((x) => x.guid === guid) : null;
+    return e ? { fullName: e.name, email: e.email || "" } : null;
+  } catch (e) { return null; }
+}
+// Email the signed copy to the person and a copy to the owner. Never throws.
+async function emailRulesCopy(ack) {
+  if (!mail.enabled()) return { sent: false, reason: "mail_not_configured" };
+  try {
+    const m = mail.rulesCopy(ack);
+    await mail.send({ to: ack.email, cc: RULES.copyTo || undefined, subject: m.subject, html: m.html, text: m.text });
+    return { sent: true };
+  } catch (e) { return { sent: false, reason: String(e && e.message || e).slice(0, 160) }; }
+}
 
 function send(res, status, body) {
   res.setHeader("Cache-Control", "no-store");
@@ -77,17 +98,17 @@ module.exports = async (req, res) => {
       if (action === "list") {
         if (!isAdmin) return send(res, 401, { error: "unauthorized" });
         const [summary, acks, former] = await Promise.all([accounts.summary(), accounts.allRulesAck().catch(() => ({})), accounts.allRulesAckArchive().catch(() => ({}))]);
-        Object.keys(acks).forEach((n) => { summary[n] = summary[n] || { pin: false, devices: 0 }; summary[n].rules = { version: acks[n].version, at: acks[n].at, email: acks[n].email, history: acks[n].history || [] }; });
+        Object.keys(acks).forEach((n) => { summary[n] = summary[n] || { pin: false, devices: 0 }; summary[n].rules = { version: acks[n].version, at: acks[n].at, email: acks[n].email, fullName: acks[n].fullName || null, emailedAt: acks[n].emailedAt || null, history: acks[n].history || [] }; });
         // Acknowledgments of people no longer on staff (legal archive), for the manager's records.
         const formerAcks = Object.keys(former).map((k) => Object.assign({ key: k }, former[k]));
-        return send(res, 200, { accounts: summary, formerAcks, rulesVersion: RULES.version || null });
+        return send(res, 200, { accounts: summary, formerAcks, rulesVersion: RULES.version || null, mail: mail.enabled() });
       }
       // Who is on this device? (also used by "hours" below)
       let name = await accounts.whoIs(tokenFrom(req), doc.data.staff);
       if (action === "who") {
         if (!name) return send(res, 401, { error: "unauthorized" });
-        const ack = await accounts.getRulesAck(name).catch(() => null);
-        return send(res, 200, { name, rulesAck: ack ? { version: ack.version, at: ack.at } : null, rulesVersion: RULES.version || null });
+        const [ack, ident] = await Promise.all([accounts.getRulesAck(name).catch(() => null), toastIdentity(doc.data, name)]);
+        return send(res, 200, { name, rulesAck: ack ? { version: ack.version, at: ack.at, emailed: Boolean(ack.emailedAt) } : null, rulesVersion: RULES.version || null, fullName: ident ? ident.fullName : null, email: ident ? ident.email : null, mail: mail.enabled() });
       }
       if (action === "hours") {
         const asked = String(url.searchParams.get("name") || "");
@@ -137,10 +158,27 @@ module.exports = async (req, res) => {
       if (prev && prev.version === version) return send(res, 200, { ok: true, rulesAck: { version: prev.version, at: prev.at } });
       const at = new Date().toISOString();
       const hash = crypto.createHash("sha256").update(JSON.stringify(RULES)).digest("hex"); // fingerprint of the exact text acknowledged
-      const history = prev ? (prev.history || []).concat([{ version: prev.version, email: prev.email, at: prev.at, ua: prev.ua, hash: prev.hash || null }]) : [];
-      await accounts.setRulesAck(who, { version, email, at, ua: String(req.headers["user-agent"] || "").slice(0, 160), hash, history });
-      await store.appendLog({ at, version: null, changes: [`House Rules ${version} acknowledged by ${who} (${email})`] }).catch(() => {});
-      return send(res, 200, { ok: true, rulesAck: { version, at } });
+      const history = prev ? (prev.history || []).concat([{ version: prev.version, email: prev.email, at: prev.at, ua: prev.ua, hash: prev.hash || null, fullName: prev.fullName || null, emailedAt: prev.emailedAt || null }]) : [];
+      const ident = await toastIdentity(doc0.data, who);
+      const rec = { version, email, at, ua: String(req.headers["user-agent"] || "").slice(0, 160), hash, history, name: who, fullName: ident ? ident.fullName : null, emailedAt: null };
+      await accounts.setRulesAck(who, rec);
+      // Signed copy by email to the person, copy to the owner (the acknowledgment is valid even if the email fails).
+      const mailed = await emailRulesCopy(rec);
+      if (mailed.sent) { rec.emailedAt = new Date().toISOString(); await accounts.setRulesAck(who, rec).catch(() => {}); }
+      await store.appendLog({ at, version: null, changes: [`House Rules ${version} acknowledged by ${who}${rec.fullName ? ` (${rec.fullName})` : ""} — ${email}${mailed.sent ? " · signed copy emailed" : " · copy NOT emailed (" + mailed.reason + ")"}`] }).catch(() => {});
+      return send(res, 200, { ok: true, rulesAck: { version, at, emailed: mailed.sent }, emailed: mailed.sent, emailError: mailed.sent ? null : mailed.reason });
+    }
+
+    // Manager: (re)send the signed copy of the House Rules to a person who already acknowledged (e.g. mail was configured later).
+    if (action === "sendRulesCopy") {
+      if (!isAdmin) return send(res, 401, { error: "unauthorized" });
+      const name = String(body.name || "").trim().slice(0, 60);
+      const ack = name ? await accounts.getRulesAck(name).catch(() => null) : null;
+      if (!ack) return send(res, 404, { error: "no_ack" });
+      if (!mail.enabled()) return send(res, 503, { error: "mail_not_configured" });
+      const mailed = await emailRulesCopy(Object.assign({ name }, ack));
+      if (mailed.sent) { ack.emailedAt = new Date().toISOString(); await accounts.setRulesAck(name, ack).catch(() => {}); await store.appendLog({ at: ack.emailedAt, version: null, changes: [`House Rules ${ack.version}: signed copy re-sent to ${name} (${ack.email})`] }).catch(() => {}); }
+      return mailed.sent ? send(res, 200, { ok: true, email: ack.email }) : send(res, 502, { error: "mail_failed", detail: mailed.reason });
     }
 
     if (action === "reset") {

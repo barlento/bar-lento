@@ -8,11 +8,12 @@
 var RULES = {
   version: "2026-09-18",
   title: "Bar Lento — House Rules",
+  copyTo: "simoneviola@barlentony.com",
   subtitle: "Employee Code of Conduct · 158 8th Avenue, New York, NY",
   contacts: [
-    {"name":"Simone Viola (Owner)","email":"simone.viola@barlentony.com"},
-    {"name":"Chiara Tinazzi (Owner)","email":"chiara.tinazzi@barlentony.com"},
-    {"name":"Marta Nicita (Manager)","email":"marta.nicita@barlentony.com"}
+    {"name":"Simone Viola (Owner)","email":"simoneviola@barlentony.com"},
+    {"name":"Chiara Tinazzi (Owner)","email":"chiaratinazzi@barlentony.com"},
+    {"name":"Marta Nicita (Manager)","email":"martanicita@barlentony.com"}
   ],
   intro: "Welcome to the Bar Lento team. These House Rules explain how we work together so that guests, colleagues and the business are treated with respect. They apply to every team member. In these rules, \"the manager\" means the floor manager and \"the owners\" means the two owners, all listed in the contacts at the end; \"a manager\" means any one of them. Reading these rules is working time: if you read them outside a shift, tell the manager and the time is added to your paid hours. They are not an employment contract and do not change the at-will nature of your employment: you or Bar Lento may end the employment relationship at any time, with or without cause or notice, as permitted by law. Bar Lento may update these rules. When it does, you will be asked to read and acknowledge the new version. You can read or print these rules at any time from My week in the app, and if anything is unclear — or you would prefer it explained in Italian — ask an owner or the manager before you confirm. If anything here conflicts with New York State, New York City or federal law, the law prevails.",
   sections: [

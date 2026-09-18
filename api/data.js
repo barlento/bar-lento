@@ -24,7 +24,7 @@ module.exports = async (req, res) => {
         confirmations,
         announcement,
         pendingNotify: flushed && flushed.pending ? flushed.pending : 0,
-        features: { storage: store.hasStorage(), admin: auth.adminEnabled(), push: push.pushEnabled(), toast: toast.enabled() },
+        features: { storage: store.hasStorage(), admin: auth.adminEnabled(), push: push.pushEnabled(), toast: toast.enabled(), mail: require("../lib/mail").enabled() },
       });
     }
 

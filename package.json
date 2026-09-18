@@ -3,5 +3,5 @@
   "private": true,
   "version": "2.0.0",
   "description": "Bar Lento — weekly staff schedule (live site with manager mode)",
-  "dependencies": { "web-push": "^3.6.7" }
+  "dependencies": { "web-push": "^3.6.7", "nodemailer": "^6.9.14" }
 }
