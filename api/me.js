@@ -4,7 +4,14 @@ const accounts = require("../lib/accounts");
 const toast = require("../lib/toast");
 const crypto = require("crypto");
 const RULES = require("../rules.js");
+const DOCS = require("../documents.js");
 const mail = require("../lib/mail");
+
+const DOC_IDS = DOCS.list.map((d) => d.id);
+function docById(id) { return DOCS.list.find((d) => d.id === id) || null; }
+// What the client needs to know about a person's acknowledgment of a document (never the device or the hash).
+function ackView(a) { return a ? { version: a.version, at: a.at, emailed: Boolean(a.emailedAt) } : null; }
+function docVersions() { const v = {}; DOCS.list.forEach((d) => { v[d.id] = d.version; }); return v; }
 
 // The person's Toast record (full legal-ish name + email), when Toast is connected and the name is linked.
 async function toastIdentity(data, name) {
@@ -15,6 +22,20 @@ async function toastIdentity(data, name) {
     const e = guid ? emps.find((x) => x.guid === guid) : null;
     return e ? { fullName: e.name, email: e.email || "" } : null;
   } catch (e) { return null; }
+}
+// Email the signed copy of a document (documents.js) to the person and the owner's proof copy. Never throws.
+async function emailDocCopy(doc, ack) {
+  if (!mail.enabled()) return { sent: false, reason: "mail_not_configured" };
+  try {
+    const full = Object.assign({ contacts: DOCS.contacts, printUrl: "https://bar-lento.vercel.app/docs.html?id=" + encodeURIComponent(doc.id) }, doc);
+    const m = mail.docCopy(full, ack);
+    await mail.send({ to: ack.email, subject: m.subject, html: m.html, text: m.text });
+    if (DOCS.copyTo) {
+      const o = mail.docCopy(full, ack, true);
+      await mail.send({ to: DOCS.copyTo, subject: o.subject, html: o.html, text: o.text }).catch((e) => console.error("owner copy failed:", e && e.message));
+    }
+    return { sent: true };
+  } catch (e) { return { sent: false, reason: String(e && e.message || e).slice(0, 160) }; }
 }
 // Email the signed copy to the person and a copy to the owner. Never throws.
 async function emailRulesCopy(ack) {
@@ -103,18 +124,21 @@ module.exports = async (req, res) => {
       const doc = await store.getSchedule();
       if (action === "list") {
         if (!isAdmin) return send(res, 401, { error: "unauthorized" });
-        const [summary, acks, former] = await Promise.all([accounts.summary(), accounts.allRulesAck().catch(() => ({})), accounts.allRulesAckArchive().catch(() => ({}))]);
+        const [summary, acks, former, formerDocs, ...perDoc] = await Promise.all([accounts.summary(), accounts.allRulesAck().catch(() => ({})), accounts.allRulesAckArchive().catch(() => ({})), accounts.allDocAckArchive().catch(() => ({}))].concat(DOC_IDS.map((id) => accounts.allDocAck(id).catch(() => ({})))));
         Object.keys(acks).forEach((n) => { summary[n] = summary[n] || { pin: false, devices: 0 }; summary[n].rules = { version: acks[n].version, at: acks[n].at, email: acks[n].email, fullName: acks[n].fullName || null, emailedAt: acks[n].emailedAt || null, history: acks[n].history || [] }; });
+        DOC_IDS.forEach((id, i) => { Object.keys(perDoc[i]).forEach((n) => { const a = perDoc[i][n]; summary[n] = summary[n] || { pin: false, devices: 0 }; summary[n].docs = summary[n].docs || {}; summary[n].docs[id] = { version: a.version, at: a.at, email: a.email, emailedAt: a.emailedAt || null }; }); });
         // Acknowledgments of people no longer on staff (legal archive), for the manager's records.
         const formerAcks = Object.keys(former).map((k) => Object.assign({ key: k }, former[k]));
-        return send(res, 200, { accounts: summary, formerAcks, rulesVersion: RULES.version || null, mail: mail.enabled() });
+        const formerDocAcks = Object.keys(formerDocs).map((k) => Object.assign({ key: k }, formerDocs[k]));
+        return send(res, 200, { accounts: summary, formerAcks, formerDocAcks, rulesVersion: RULES.version || null, docsVersions: docVersions(), mail: mail.enabled() });
       }
       // Who is on this device? (also used by "hours" below)
       let name = await accounts.whoIs(tokenFrom(req), doc.data.staff);
       if (action === "who") {
         if (!name) return send(res, 401, { error: "unauthorized" });
-        const [ack, ident] = await Promise.all([accounts.getRulesAck(name).catch(() => null), toastIdentity(doc.data, name)]);
-        return send(res, 200, { name, rulesAck: ack ? { version: ack.version, at: ack.at, emailed: Boolean(ack.emailedAt) } : null, rulesVersion: RULES.version || null, fullName: ident ? ident.fullName : null, email: ident ? ident.email : null, mail: mail.enabled() });
+        const [ack, ident, docAcks, pinRec] = await Promise.all([accounts.getRulesAck(name).catch(() => null), toastIdentity(doc.data, name), accounts.docAcksFor(name, DOC_IDS).catch(() => null), accounts.getPinRecord(name).catch(() => null)]);
+        const docsOut = {}; if (docAcks) DOC_IDS.forEach((id) => { docsOut[id] = ackView(docAcks[id]); });
+        return send(res, 200, { name, rulesAck: ackView(ack), rulesVersion: RULES.version || null, docAcks: docAcks ? docsOut : undefined, docsVersions: docVersions(), since: pinRec && pinRec.createdAt || null, fullName: ident ? ident.fullName : null, email: ident ? ident.email : null, mail: mail.enabled() });
       }
       if (action === "hours") {
         const asked = String(url.searchParams.get("name") || "");
@@ -173,6 +197,52 @@ module.exports = async (req, res) => {
       if (mailed.sent) { rec.emailedAt = new Date().toISOString(); await accounts.setRulesAck(who, rec).catch(() => {}); }
       await store.appendLog({ at, version: null, changes: [`House Rules ${version} acknowledged by ${who}${rec.fullName ? ` (${rec.fullName})` : ""} — ${email}${mailed.sent ? " · signed copy emailed" : " · copy NOT emailed (" + mailed.reason + ")"}`] }).catch(() => {});
       return send(res, 200, { ok: true, rulesAck: { version, at, emailed: mailed.sent }, emailed: mailed.sent, emailError: mailed.sent ? null : mailed.reason });
+    }
+
+    // A document from documents.js (policy or annual training) read & acknowledged, once per version. Same guarantees as the House Rules.
+    if (action === "ackDoc") {
+      const doc0 = await store.getSchedule();
+      const who = await accounts.whoIs(tokenFrom(req), doc0.data.staff);
+      if (!who) return send(res, 401, { error: "unauthorized" });
+      const docDef = docById(String(body.id || ""));
+      if (!docDef) return send(res, 404, { error: "unknown_doc" });
+      const email = String(body.email || "").trim().toLowerCase().slice(0, 120);
+      const version = String(body.version || "").trim().slice(0, 20);
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return send(res, 400, { error: "bad_request" });
+      if (!docDef.version || version !== docDef.version) return send(res, 400, { error: "bad_version", current: docDef.version || null });
+      const prev = await accounts.getDocAck(docDef.id, who).catch(() => null);
+      if (prev && prev.version === version) return send(res, 200, { ok: true, id: docDef.id, ack: ackView(prev) });
+      const at = new Date().toISOString();
+      const hash = crypto.createHash("sha256").update(JSON.stringify(docDef)).digest("hex");
+      const history = prev ? (prev.history || []).concat([{ version: prev.version, email: prev.email, at: prev.at, ua: prev.ua, hash: prev.hash || null, fullName: prev.fullName || null, emailedAt: prev.emailedAt || null }]) : [];
+      const ident = await toastIdentity(doc0.data, who);
+      const rec = { version, email, at, ua: String(req.headers["user-agent"] || "").slice(0, 160), hash, history, name: who, doc: docDef.id, fullName: ident ? ident.fullName : null, emailedAt: null };
+      await accounts.setDocAck(docDef.id, who, rec);
+      const mailed = await emailDocCopy(docDef, rec);
+      if (mailed.sent) { rec.emailedAt = new Date().toISOString(); await accounts.setDocAck(docDef.id, who, rec).catch(() => {}); }
+      const verb = docDef.kind === "training" ? "completed" : "acknowledged";
+      await store.appendLog({ at, version: null, changes: [`${docDef.title} ${version} ${verb} by ${who}${rec.fullName ? ` (${rec.fullName})` : ""} — ${email}${mailed.sent ? " · signed copy emailed" : " · copy NOT emailed (" + mailed.reason + ")"}`] }).catch(() => {});
+      return send(res, 200, { ok: true, id: docDef.id, ack: { version, at, emailed: mailed.sent }, emailed: mailed.sent, emailError: mailed.sent ? null : mailed.reason });
+    }
+
+    // Manager: (re)send every signed copy of a person (House Rules + documents), e.g. mail was configured later or an email got lost.
+    if (action === "sendCopies") {
+      if (!isAdmin) return send(res, 401, { error: "unauthorized" });
+      if (!mail.enabled()) return send(res, 503, { error: "mail_not_configured" });
+      const name = String(body.name || "").trim().slice(0, 60);
+      if (!name) return send(res, 400, { error: "bad_request" });
+      const sent = [], failed = [];
+      const rAck = await accounts.getRulesAck(name).catch(() => null);
+      if (rAck) { const m = await emailRulesCopy(Object.assign({ name }, rAck)); if (m.sent) { rAck.emailedAt = new Date().toISOString(); await accounts.setRulesAck(name, rAck).catch(() => {}); sent.push("House Rules"); } else failed.push("House Rules: " + m.reason); }
+      for (const d of DOCS.list) {
+        const a = await accounts.getDocAck(d.id, name).catch(() => null);
+        if (!a) continue;
+        const m = await emailDocCopy(d, Object.assign({ name }, a));
+        if (m.sent) { a.emailedAt = new Date().toISOString(); await accounts.setDocAck(d.id, name, a).catch(() => {}); sent.push(d.short || d.title); } else failed.push((d.short || d.title) + ": " + m.reason);
+      }
+      if (!sent.length && !failed.length) return send(res, 404, { error: "no_ack" });
+      if (sent.length) await store.appendLog({ at: new Date().toISOString(), version: null, changes: [`Signed copies re-sent to ${name}: ${sent.join(", ")}`] }).catch(() => {});
+      return send(res, failed.length && !sent.length ? 502 : 200, { ok: sent.length > 0, sent, failed, email: (rAck && rAck.email) || null });
     }
 
     // Manager: (re)send the signed copy of the House Rules to a person who already acknowledged (e.g. mail was configured later).

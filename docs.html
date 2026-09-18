@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bar Lento — Documents</title>
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+<style>
+  body{margin:0;background:#F3EDE1;color:#1F150C;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.5}
+  .page{max-width:760px;margin:0 auto;padding:24px 20px 60px}
+  .card{background:#FFFCF6;border:1px solid #D6C6A6;border-radius:16px;padding:26px 28px}
+  h1{font-size:1.5rem;margin:0 0 4px}
+  .sub{color:#5A4A39;font-size:.9rem;margin:0 0 6px}
+  .ver{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;background:#F1DDBD;color:#3E2208;border-radius:999px;padding:3px 10px;margin:6px 0 18px}
+  p{font-size:.95rem;margin:8px 0}
+  h2{font-size:1.05rem;margin:22px 0 6px;color:#3E2208}
+  ul{margin:0;padding-left:20px}
+  li{margin:5px 0;font-size:.95rem}
+  .links,.contacts{margin-top:22px;padding:14px 16px;border-radius:12px;background:#ECE3D2;font-size:.92rem}
+  .links b,.contacts b{display:block;margin-bottom:6px}
+  .links a{display:block;margin:3px 0;word-break:break-word}
+  .ack{margin-top:22px;padding:14px 16px;border-left:4px solid #C9701E;background:#FFF7EA;font-size:.92rem;font-style:italic}
+  .tools{display:flex;gap:10px;justify-content:flex-end;margin-bottom:14px;flex-wrap:wrap}
+  .tools button,.tools a{border:1px solid #D6C6A6;background:#FFFCF6;color:#1F150C;border-radius:10px;padding:8px 14px;font-size:.88rem;font-weight:600;cursor:pointer;text-decoration:none}
+  .empty{text-align:center;color:#5A4A39;padding:40px 10px}
+  .index a{display:block;padding:12px 14px;margin:8px 0;border:1px solid #D6C6A6;border-radius:12px;background:#FFFCF6;color:#1F150C;text-decoration:none;font-weight:600}
+  .index a small{display:block;font-weight:400;color:#5A4A39;font-size:.84rem}
+  /* printable complaint form */
+  .form{page-break-before:always;margin-top:34px;padding-top:18px;border-top:2px solid #D6C6A6}
+  .form h2{font-size:1.2rem}
+  .form .f{margin:12px 0;font-size:.92rem}
+  .form .f b{display:block;margin-bottom:4px}
+  .form .line{border-bottom:1px solid #8a7a66;height:26px}
+  .form .box{border:1px solid #8a7a66;border-radius:6px;height:150px}
+  .form .chk span{display:inline-block;margin-right:14px}
+  .form .chk span::before{content:"☐ "}
+  @media print{body{background:#fff}.page{padding:0;max-width:none}.card{border:none;padding:0}.tools{display:none}}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="tools"><a href="/">← Back to the schedule</a><a href="/docs.html" id="allLink">📂 All documents</a><button type="button" onclick="window.print()">🖨 Print / Save as PDF</button></div>
+  <div class="card" id="doc"><div class="empty">Loading…</div></div>
+</div>
+<script src="/rules.js"></script>
+<script src="/documents.js"></script>
+<script>
+(function(){
+  var D=window.BL_DOCS||{list:[],contacts:[]}; var R=window.BL_RULES; var el=document.getElementById("doc");
+  function h(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+  function li(x){ return typeof x==="string"?'<li>'+h(x)+'</li>':'<li>'+h(x.t)+(x.sub&&x.sub.length?'<ul>'+x.sub.map(li).join("")+'</ul>':'')+'</li>'; }
+  var id=new URLSearchParams(location.search).get("id");
+  var doc=id?D.list.filter(function(d){return d.id===id;})[0]:null;
+  if(!id){
+    var html='<h1>📂 Bar Lento — Documents</h1><p class="sub">Everything staff read and sign in the schedule app. Printable copies.</p><div class="index">';
+    if(R&&R.version) html+='<a href="/rules.html">📜 '+h(R.title)+'<small>Version '+h(R.version)+'</small></a>';
+    D.list.forEach(function(d){ if(d.version) html+='<a href="/docs.html?id='+encodeURIComponent(d.id)+'">'+h(d.icon||"📄")+' '+h(d.title)+'<small>'+h(d.subtitle||"")+' · Version '+h(d.version)+'</small></a>'; });
+    el.innerHTML=html+'</div>'; return;
+  }
+  if(!doc||!doc.version){ el.innerHTML='<div class="empty">This document is not published.</div>'; return; }
+  document.title="Bar Lento — "+doc.title;
+  var html='<h1>'+h(doc.icon||"")+' '+h(doc.title)+'</h1><p class="sub">'+h(doc.subtitle||"")+'</p><span class="ver">Version '+h(doc.version)+'</span><p>'+h(doc.intro||"")+'</p>';
+  (doc.sections||[]).forEach(function(s){ html+='<h2>'+h(s.h)+'</h2>'; if(s.items) html+='<ul>'+s.items.map(li).join("")+'</ul>'; else (s.blocks||[]).forEach(function(b){ html+=typeof b==="string"?'<p>'+h(b)+'</p>':'<ul>'+b.map(li).join("")+'</ul>'; }); });
+  if(doc.links&&doc.links.length) html+='<div class="links"><b>Links</b>'+doc.links.map(function(l){return '<a href="'+h(l.url)+'" target="_blank" rel="noopener">'+h(l.label)+' — '+h(l.url)+'</a>';}).join("")+'</div>';
+  html+='<div class="contacts"><b>Contacts — write to all of them</b>'+(D.contacts||[]).map(function(c){return h(c.name)+' · <a href="mailto:'+h(c.email)+'">'+h(c.email)+'</a>';}).join("<br>")+'</div>';
+  html+='<div class="ack">'+h(doc.ack)+'</div>';
+  if(doc.id==="harassment"){
+    html+='<div class="form"><h2>Sexual Harassment Complaint Form — Bar Lento</h2>'
+      +'<p>You are encouraged, but not required, to complete this form and give it to one of the Owners (in person, on paper, or by email to simoneviola@barlentony.com or chiaratinazzi@barlentony.com). No employee will be retaliated against for filing a complaint. If you prefer to report verbally, Bar Lento completes this form for you and gives you a copy.</p>'
+      +'<div class="f"><b>Complainant information</b>Name <div class="line"></div>Job title <div class="line"></div>Work phone / Email <div class="line"></div><div class="chk">Preferred contact: <span>Email</span><span>Phone</span><span>In person</span></div></div>'
+      +'<div class="f"><b>Supervisory information</b>Immediate supervisor’s name and title <div class="line"></div></div>'
+      +'<div class="f"><b>Complaint information</b>Your complaint is about (name, title) <div class="line"></div><div class="chk">Relationship to you: <span>Supervisor</span><span>Supervisee</span><span>Co-worker</span><span>Guest</span><span>Other</span></div></div>'
+      +'<div class="f"><b>Please describe what happened, with as many details as possible</b> (use additional sheets if necessary; attach any relevant documents)<div class="box"></div></div>'
+      +'<div class="f">Date(s) the harassment occurred <div class="line"></div><div class="chk">Is it continuing? <span>Yes</span><span>No</span></div></div>'
+      +'<div class="f"><b>Witnesses</b> or people who may have information (optional) <div class="line"></div></div>'
+      +'<div class="f">Have you previously reported related incidents (verbal or written)? If yes, when and to whom? <div class="line"></div></div>'
+      +'<div class="f">Optional: your attorney’s contact information, if you would like us to work with them <div class="line"></div></div>'
+      +'<div class="f">Signature <div class="line"></div>Date <div class="line" style="width:40%"></div></div>'
+      +'<p style="font-size:.8rem;color:#5A4A39">Bar Lento — instructions for the Owners: follow the Sexual Harassment Prevention Policy. An investigation involves speaking with the employee, speaking with the alleged harasser, interviewing witnesses, and collecting and reviewing related documents. All allegations are investigated promptly and resolved as quickly as possible, kept confidential to the extent possible; findings, the basis for the decision and any corrective action are documented, and both parties are notified of the outcome.</p></div>';
+  }
+  el.innerHTML=html;
+})();
+</script>
+</body>
+</html>
