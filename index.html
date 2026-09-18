@@ -77,6 +77,12 @@
   .mestrip .btn{white-space:nowrap}
   @media (max-width:640px){.mestrip .mebtns{flex:1 1 100%}.mestrip .btn{flex:1;text-align:center;padding:11px}}
 
+  body.locked .wrap{filter:blur(7px);pointer-events:none;user-select:none}
+  body.locked .mestrip{display:none}
+  .recap-msgs{display:flex;flex-direction:column;gap:8px;text-align:left;margin-bottom:12px}
+  .recap-msgs div{padding:9px 12px;border-radius:12px;background:var(--good-soft);color:var(--good);font-weight:700;font-size:.86rem;animation:rise .45s cubic-bezier(.2,.8,.2,1) both}
+  .recap-msgs div.neutral{background:var(--surface-2);color:var(--ink)}
+  .recap-msgs div.gold{background:var(--gold-soft,#fbf3d6);color:#6b4e00}
   /* ---- who are you ---- */
   .who-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:56vh;overflow:auto;padding:2px;margin-bottom:12px}
   .who-name{display:flex;align-items:center;gap:10px;border:1px solid var(--border);background:var(--surface);border-radius:12px;padding:10px 12px;font-weight:700;font-size:.98rem;cursor:pointer;text-align:left;animation:rise .35s cubic-bezier(.2,.8,.2,1) both;transition:transform .12s,border-color .2s,background .2s}
@@ -630,7 +636,7 @@
   <div class="days" id="daysGrid"></div>
 
   <footer class="note">
-    <span id="footHint">Tap your shift to confirm you've seen it.</span>
+    <span id="footHint">Tap your shift to confirm you've seen it. Your shifts are marked YOU.</span>
     <div class="links">
       <button class="btn sm" id="copyBtn" type="button">Copy as text</button>
     </div>
@@ -667,10 +673,6 @@
     <h2 id="confirmTitle">Confirm your shift</h2>
     <div class="shiftcard"><div class="n" id="confirmName"></div><div class="d" id="confirmWhen"></div></div>
     <p class="lead" id="confirmLead"></p>
-    <div class="field">
-      <label for="confirmInput">Type the word</label>
-      <input id="confirmInput" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="confirm">
-    </div>
     <div class="err" id="confirmErr"></div>
     <div class="actions">
       <button class="btn" id="confirmCancel" type="button">Cancel</button>
@@ -855,13 +857,25 @@
   </div>
 </div>
 
+<!-- Week in review (personal, once per week, always encouraging) -->
+<div class="overlay" id="recapOverlay">
+  <div class="sheet bday-sheet" role="dialog" aria-modal="true" aria-labelledby="recapTitle">
+    <div class="cake" id="recapEmoji">🌟</div>
+    <h2 id="recapTitle">Your week in review</h2>
+    <div class="names" id="recapRange" style="color:var(--accent);font-size:1rem"></div>
+    <div class="tc-sum" id="recapSum" style="margin:12px 0"></div>
+    <div class="recap-msgs" id="recapMsgs"></div>
+    <div class="actions" style="justify-content:center"><button class="btn primary" id="recapClose" type="button">Nice! 🙌</button></div>
+  </div>
+</div>
+
 <!-- Who are you? (staff, once per device) -->
 <div class="overlay" id="whoOverlay">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="whoTitle">
     <h2 id="whoTitle">Who are you?</h2>
-    <p class="lead" id="whoLead">Tap your name to see your shifts and hours. The first time you'll create a 4-digit PIN — only you know it.</p>
+    <p class="lead" id="whoLead">Tap your name to open the schedule, your shifts and your hours. The first time you'll create a 4-digit PIN — only you know it.</p>
     <div class="who-grid" id="whoGrid"></div>
-    <div class="actions"><span class="spacer"></span><button class="btn" id="whoSkip" type="button">Not now</button></div>
+    <div class="actions"><button class="linkbtn" id="whoManager" type="button">🔑 Manager login</button><span class="spacer"></span><button class="btn" id="whoCancel" type="button" style="display:none">Cancel</button></div>
   </div>
 </div>
 
@@ -916,7 +930,7 @@
   var DAY_KEY_BY_JSDAY=["sun","mon","tue","wed","thu","fri","sat"];
   var STATUS_LABEL={closed:"Closed",holiday:"Holiday · closed",half:"Half day",event:"Private event"};
   function hoursFor(wk,day){ var n=dayNote(wk,day); if(n&&n.status==="half"&&n.open&&n.close) return {open:n.open,close:n.close}; return OPENING[day]; }
-  var PW_KEY="bl_admin_pw", ARCHIVE_KEY="bl_show_archive", LANG_KEY="bl_lang", ME_TOKEN_KEY="bl_me_token", ME_NAME_KEY="bl_me_name", ME_SKIP_KEY="bl_me_skip";
+  var PW_KEY="bl_admin_pw", ARCHIVE_KEY="bl_show_archive", LANG_KEY="bl_lang", ME_TOKEN_KEY="bl_me_token", ME_NAME_KEY="bl_me_name";
 
   // ---------- manager-mode language (staff always see English) ----------
   var I18N={
@@ -1074,20 +1088,22 @@
     requestAnimationFrame(frame);
   }
   function maybeWeekPopup(){
-    var a=state.announcement; if(!a||a.kind!=="newweek"||!a.weeks||!a.weeks.length) return;
-    if(state.admin) return; // the manager posted it — no need to tell her
-    var key="bl_week_seen_"+a.weeks.join("_"); if(storageGet(key)) return;
+    if(mustIdentify()) return false;
+    var a=state.announcement; if(!a||a.kind!=="newweek"||!a.weeks||!a.weeks.length) return false;
+    if(state.admin) return false; // the manager posted it — no need to tell her
+    var key="bl_week_seen_"+a.weeks.join("_"); if(storageGet(key)) return false;
     // only announce weeks that are still current/future and actually exist
-    var cur=currentMondayISO(); var wks=a.weeks.filter(function(w){return state.data.weeks[w]&&w>=cur;}); if(!wks.length) return;
+    var cur=currentMondayISO(); var wks=a.weeks.filter(function(w){return state.data.weeks[w]&&w>=cur;}); if(!wks.length) return false;
     $("weekNames").textContent=wks.map(function(w){return weekLabel(w).range;}).join(" & ");
     $("weekOverlay").classList.add("show"); storageSet(key,"1");
-    state.activeWeek=wks[0]; renderTabs(); renderDays(); renderAdminUI();
+    state.activeWeek=wks[0]; renderTabs(); renderDays(); renderAdminUI(); return true;
   }
   function maybeBirthdayPopup(){
-    var today=new Date(), names=birthdaysOn(today); if(!names.length) return;
-    var key="bl_bday_"+toISO(today); if(storageGet(key)) return;
+    if(mustIdentify()) return false;
+    var today=new Date(), names=birthdaysOn(today); if(!names.length) return false;
+    var key="bl_bday_"+toISO(today); if(storageGet(key)) return false;
     $("bdayNames").textContent=names.join(" & ")+"!";
-    $("bdayOverlay").classList.add("show"); confetti(6000); storageSet(key,"1");
+    $("bdayOverlay").classList.add("show"); confetti(6000); storageSet(key,"1"); return true;
   }
 
   function weekLabel(startISO){
@@ -1459,7 +1475,7 @@
     if(typeof renderLbBtn==="function") renderLbBtn();
     $("managerLink").textContent=state.admin?t("exitMode"):"🔑 Manager login";
     renderNotifyBtn();
-    $("footHint").textContent=state.admin?t("footAdmin"):"Tap your shift to confirm you've seen it.";
+    $("footHint").textContent=state.admin?t("footAdmin"):"Tap your shift to confirm you've seen it. Your shifts are marked YOU.";
     if(state.admin){
       var wk=state.activeWeek, cur=currentMondayISO();
       var nShifts=wk?DAY_KEYS.reduce(function(a,d){return a+((state.data.weeks[wk][d]||[]).length);},0):0;
@@ -1471,28 +1487,28 @@
     }
   }
 
-  // ---------- staff tap → typed confirmation ----------
+  // ---------- staff tap → confirm your own shift (identity = PIN login) ----------
   function onShiftTap(wk,day,id){
     if(state.admin){openShiftEditor(wk,day,id);return;}
     if(!state.features.storage){toast("Confirmations turn on once the database is connected (Vercel → Storage). Preview mode for now.",4500);return;}
     var list=(state.data.weeks[wk]||{})[day]||[]; var s=list.filter(function(x){return x.id===id;})[0]; if(!s) return;
+    if(!state.me.name){ openWho(false); return; }
+    if(s.name!==state.me.name){ toast("This is "+possessive(s.name)+" shift — only "+s.name.split(/\s+/)[0]+" can confirm it.",3200); return; }
     var key=shiftKey(wk,day,id); var on=!state.confirmations[key];
-    state.confirming={week:wk,day:day,id:id,on:on,word:on?"confirm":"remove"};
+    state.confirming={week:wk,day:day,id:id,on:on};
     var date=addDays(fromISO(wk),DAY_KEYS.indexOf(day));
     $("confirmTitle").textContent=on?"Confirm your shift":"Remove confirmation";
     $("confirmName").textContent=s.name+(s.station?" · "+s.station:"");
     $("confirmWhen").textContent=DAY_NAMES[day]+", "+dateShort(date)+" · "+range12(s.start,s.end);
     $("confirmLead").innerHTML=on
-      ? 'Only confirm if this is <b>your</b> shift and you\'ve read the time. Type <span class="bigword">confirm</span> to continue.'
-      : 'This shift is already confirmed. Type <span class="bigword">remove</span> to undo the confirmation.';
-    $("confirmInput").value=""; $("confirmInput").placeholder=state.confirming.word; $("confirmErr").textContent="";
-    $("confirmGo").textContent=on?"Confirm shift":"Remove confirmation"; $("confirmGo").className="btn "+(on?"good":"danger"); $("confirmGo").disabled=true;
-    $("confirmOverlay").classList.add("show"); setTimeout(function(){$("confirmInput").focus();},60);
+      ? 'Tap <b>Confirm shift</b> to let Marta know you\'ve seen the day and the time.'
+      : 'You already confirmed this shift. Remove the confirmation?';
+    $("confirmErr").textContent="";
+    $("confirmGo").textContent=on?"✓ Confirm shift":"Remove confirmation"; $("confirmGo").className="btn "+(on?"good":"danger"); $("confirmGo").disabled=false;
+    $("confirmOverlay").classList.add("show");
   }
-  function confirmWordOk(){ var c=state.confirming; return !!c && $("confirmInput").value.trim().toLowerCase()===c.word; }
   async function doConfirm(){
     var c=state.confirming; if(!c) return;
-    if(!confirmWordOk()){$("confirmErr").textContent='Please type "'+c.word+'" exactly.';return;}
     var key=shiftKey(c.week,c.day,c.id); if(state.pendingConfirm[key]) return;
     $("confirmOverlay").classList.remove("show"); state.confirming=null;
     if(c.on) state.confirmations[key]=new Date().toISOString(); else delete state.confirmations[key];
@@ -1500,7 +1516,10 @@
     var r=await api("/api/confirm",{method:"POST",body:{week:c.week,day:c.day,id:c.id,on:c.on}});
     delete state.pendingConfirm[key];
     if(r.ok){state.confirmations=r.json.confirmations||state.confirmations;renderDays();toast(c.on?"Shift confirmed ✓ Thank you!":"Confirmation removed");}
-    else{ if(c.on) delete state.confirmations[key]; else state.confirmations[key]="1"; renderDays(); toast(r.status===404?"This shift was just changed — please reload.":"Couldn't save your confirmation. Please try again."); }
+    else{ if(c.on) delete state.confirmations[key]; else state.confirmations[key]="1"; renderDays();
+      if(r.status===401){ meSet(null,null); renderMe(); toast("Please sign in again to confirm."); maybeWhoPopup(); }
+      else if(r.status===403) toast("Only the person on this shift can confirm it.");
+      else toast(r.status===404?"This shift was just changed — please reload.":"Couldn't save your confirmation. Please try again."); }
   }
 
   // ---------- login ----------
@@ -1522,14 +1541,14 @@
     $("loginGo").disabled=true; $("loginErr").textContent="";
     var r=await api("/api/login",{method:"POST",body:{password:pw}});
     $("loginGo").disabled=false;
-    if(r.ok){ state.password=pw; state.admin=true; storageSet(PW_KEY,pw); $("loginOverlay").classList.remove("show"); ensureActiveWeek(); renderAll(); $("saveStatus").textContent=t("statusReady"); toast(t("welcome"));
+    if(r.ok){ state.password=pw; state.admin=true; storageSet(PW_KEY,pw); $("loginOverlay").classList.remove("show"); $("whoOverlay").classList.remove("show"); ensureActiveWeek(); renderAll(); $("saveStatus").textContent=t("statusReady"); toast(t("welcome"));
       if(!state.features.storage) toast(t("noDb"),5000); }
     else if(r.status===401){$("loginErr").textContent="Wrong password.";}
     else {$("loginErr").textContent="Couldn't verify the password. Please try again.";}
   }
   async function logout(silent){
     if(!silent && state.pendingNotify>0 && state.password){ await sendNotifyNow(true); }
-    clearTimeout(state.idleTimer); state.admin=false; state.password=""; storageSet(PW_KEY,null); ensureActiveWeek(); renderAll(); if(!silent) toast(t("loggedOut"));
+    clearTimeout(state.idleTimer); state.admin=false; state.password=""; storageSet(PW_KEY,null); ensureActiveWeek(); renderAll(); if(!silent) toast(t("loggedOut")); maybeWhoPopup();
   }
 
   // ---------- team notification (one summary push for all pending changes) ----------
@@ -1769,7 +1788,6 @@
   $("loginOverlay").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();doLogin();}});
   $("confirmCancel").addEventListener("click",function(){$("confirmOverlay").classList.remove("show");state.confirming=null;});
   $("confirmGo").addEventListener("click",doConfirm);
-  $("confirmInput").addEventListener("input",function(){$("confirmGo").disabled=!confirmWordOk();$("confirmErr").textContent="";});
   $("confirmOverlay").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();doConfirm();}});
   $("shiftCancel").addEventListener("click",closeShiftEditor);
   $("shiftSave").addEventListener("click",saveShiftFromEditor);
@@ -1781,9 +1799,12 @@
   $("bellBtn").addEventListener("click",togglePush);
   $("meBtn").addEventListener("click",function(){ if(state.me.name) openMe(null); else openWho(false); });
   $("meOpenBtn").addEventListener("click",function(){ openMe(null); });
-  $("whoSkip").addEventListener("click",function(){ $("whoOverlay").classList.remove("show"); storageSet(ME_SKIP_KEY,String(Date.now())); });
+  $("whoCancel").addEventListener("click",function(){ $("whoOverlay").classList.remove("show"); $("whoOverlay").dataset.manual=""; });
+  $("whoManager").addEventListener("click",function(){ $("whoOverlay").classList.remove("show"); openLogin(); });
+  $("loginCancel").addEventListener("click",function(){ maybeWhoPopup(); });
   $("pinBack").addEventListener("click",function(){ $("pinOverlay").classList.remove("show"); pin.name=null; openWho(false); });
   $("meClose").addEventListener("click",function(){ $("meOverlay").classList.remove("show"); });
+  $("recapClose").addEventListener("click",function(){ $("recapOverlay").classList.remove("show"); });
   $("meSwitch").addEventListener("click",function(){ $("meOverlay").classList.remove("show"); openWho(false); });
   $("meLogout").addEventListener("click",meLogout);
   $("mePrev").addEventListener("click",function(){ meShiftWeek(-1); });
@@ -1806,7 +1827,7 @@
   $("tcRefresh").addEventListener("click",function(){ loadClock(false); });
   $("notifyBtn").addEventListener("click",function(){sendNotifyNow(false);});
   $("langBtn").addEventListener("click",function(){setLang(lang==="en"?"it":"en");});
-  $("weekClose").addEventListener("click",function(){$("weekOverlay").classList.remove("show");maybeWhoPopup();});
+  $("weekClose").addEventListener("click",function(){$("weekOverlay").classList.remove("show");maybeRecapPopup();});
   document.addEventListener("visibilitychange",function(){ if(document.visibilityState==="hidden"&&state.admin&&state.pendingNotify&&state.password&&!state.dirtyTimer&&!state.saving){ try{ fetch("/api/notify",{method:"POST",headers:{"x-admin-password":state.password,"Content-Type":"application/json"},keepalive:true}); state.pendingNotify=0; }catch(e){} } });
   $("staffBtn").addEventListener("click",function(){renderRoster();$("staffOverlay").classList.add("show");loadAccounts().then(renderRoster);});
   $("staffClose").addEventListener("click",function(){$("staffOverlay").classList.remove("show");});
@@ -1817,7 +1838,7 @@
   $("exportBtn").addEventListener("click",exportCSV);
   $("newWeekBtn").addEventListener("click",openNewWeek);
   $("nwCancel").addEventListener("click",function(){$("newWeekOverlay").classList.remove("show");});
-  $("bdayClose").addEventListener("click",function(){$("bdayOverlay").classList.remove("show");maybeWhoPopup();});
+  $("bdayClose").addEventListener("click",function(){$("bdayOverlay").classList.remove("show");if(!maybeWeekPopup()) maybeRecapPopup();});
   $("deleteWeekBtn").addEventListener("click",deleteWeek);
   $("copyBtn").addEventListener("click",copyText);
   $("archiveToggle").addEventListener("click",function(){state.showArchive=!state.showArchive;storageSet(ARCHIVE_KEY,state.showArchive?"1":null);ensureActiveWeek();renderTabs();renderDays();renderAdminUI();});
@@ -1830,7 +1851,7 @@
     var mo=new MutationObserver(function(){ if(document.querySelector(".overlay.show")) lock(); else unlock(); });
     document.querySelectorAll(".overlay").forEach(function(o){ mo.observe(o,{attributes:true,attributeFilter:["class"]}); });
   })();
-  function closeAllModals(){document.querySelectorAll(".overlay.show").forEach(function(o){o.classList.remove("show");});state.editing=null;state.dayEditing=null;state.confirming=null;}
+  function closeAllModals(){document.querySelectorAll(".overlay.show").forEach(function(o){o.classList.remove("show");});state.editing=null;state.dayEditing=null;state.confirming=null;maybeWhoPopup();}
   document.addEventListener("keydown",function(e){if(e.key==="Escape") closeAllModals();});
 
   function anyModalOpen(){return !!document.querySelector(".overlay.show");}
@@ -1849,11 +1870,13 @@
     else if(r.status===401||r.status===404){ meSet(null,null); }
     renderMe();
   }
+  // The schedule opens only for a known person (or the manager): no anonymous browsing.
+  function mustIdentify(){ return !state.me.name&&!state.admin&&state.features.storage&&state.data.staff.length>0; }
   function maybeWhoPopup(){
-    if(state.me.name||state.admin||!state.features.storage||!state.data.staff.length) return;
-    if(anyModalOpen()) return;
-    var skip=Number(storageGet(ME_SKIP_KEY)||0); if(skip&&Date.now()-skip<24*3600*1000) return;
-    openWho(true);
+    var lock=mustIdentify(); document.body.classList.toggle("locked",lock);
+    if(!lock){ if($("whoOverlay").classList.contains("show")&&!$("whoOverlay").dataset.manual) $("whoOverlay").classList.remove("show"); return; }
+    if($("pinOverlay").classList.contains("show")||$("loginOverlay").classList.contains("show")) return;
+    if(!$("whoOverlay").classList.contains("show")) openWho(true);
   }
   // next shift of a person: today's shift if it hasn't ended, otherwise the first upcoming one
   function nextShiftOf(name){
@@ -1871,9 +1894,10 @@
   }
   function renderMe(){
     var b=$("meBtn"), strip=$("meStrip");
+    document.body.classList.toggle("locked",mustIdentify());
     if(!state.features.storage||(!state.data.staff.length&&!state.me.name)){ b.style.display="none"; strip.classList.remove("show"); return; }
     b.style.display="";
-    if(state.me.name&&state.data.staff.indexOf(state.me.name)===-1){ meSet(null,null); toast("Your access was removed. Ask Marta if that's a mistake.",5000); }
+    if(state.me.name&&state.data.staff.indexOf(state.me.name)===-1){ meSet(null,null); toast("Your access was removed. Ask Marta if that's a mistake.",5000); document.body.classList.toggle("locked",mustIdentify()); setTimeout(maybeWhoPopup,50); }
     if(!state.me.name){ b.className="mebtn"; b.innerHTML="👤 Who are you?"; strip.classList.remove("show"); return; }
     var n=state.me.name, col=avColor(n), ini=h(initials(n));
     b.className="mebtn on"; b.innerHTML='<span class="mav" style="background:'+col+'">'+ini+'</span>'+h(n.split(/\s+/)[0]);
@@ -1891,12 +1915,49 @@
     strip.classList.add("show");
   }
 
+  // -- week in review (last completed week vs the one before) --
+  function maybeRecapPopup(){
+    if(mustIdentify()||state.admin||!state.me.name||!state.features.toast) return false;
+    var lastWeek=toISO(addDays(fromISO(currentMondayISO()),-7));
+    if(!state.data.weeks[lastWeek]) return false;
+    var key="bl_recap_"+state.me.name+"_"+lastWeek; if(storageGet(key)) return false;
+    if(anyModalOpen()) return false;
+    loadRecap(lastWeek,key); return true;
+  }
+  async function loadRecap(week,key){
+    var r=await api("/api/me?action=recap&week="+week);
+    if(!r.ok||!r.json||!r.json.cur){ if(r.status===401){ meSet(null,null); renderMe(); maybeWhoPopup(); } return; }
+    var d=r.json, c=d.cur, p=d.prev;
+    if(!c.scheduledShifts&&!c.clockedShifts){ storageSet(key,"1"); return; } // nothing to review
+    if(anyModalOpen()) return;
+    storageSet(key,"1");
+    var l=weekLabel(week); $("recapRange").textContent=l.range;
+    var devTxt=c.avgDev==null?"—":c.avgDev<0?Math.abs(c.avgDev)+" min early":c.avgDev===0?"on the dot":c.avgDev+" min after";
+    $("recapSum").innerHTML='<div class="tile on"><b>'+durText((d.linked?c.workedMin:c.scheduledMin)*60000)+'</b><span>'+(d.linked?"hours worked":"hours scheduled")+'</span></div>'
+      +'<div class="tile'+(c.onTimePct!=null&&c.onTimePct>=80?" on":"")+'"><b>'+(c.onTimePct==null?"—":c.onTimePct+"%")+'</b><span>on time</span></div>'
+      +'<div class="tile'+(c.avgDev!=null&&c.avgDev<=0?" on":"")+'"><b>'+devTxt+'</b><span>clock-in</span></div>';
+    var msgs=[], party=false;
+    if(!d.linked) msgs.push({t:"⏱ Your Toast hours will show here once Marta links your name.",c:"neutral"});
+    if(d.linked&&p.clockedShifts>0&&c.workedMin>=p.workedMin+30){ msgs.push({t:"💪 You worked "+durText(c.workedMin*60000)+" — more than the week before ("+durText(p.workedMin*60000)+")."}); party=true; }
+    if(c.matched>=2&&c.onTimePct===100){ msgs.push({t:"⭐ On time for every single shift. Fantastic!",c:"gold"}); party=true; }
+    else if(p.onTimePct!=null&&c.onTimePct!=null&&c.onTimePct>p.onTimePct){ msgs.push({t:"📈 Punctuality up from "+p.onTimePct+"% to "+c.onTimePct+"%. Keep it going!"}); party=true; }
+    if(c.avgDev!=null&&c.avgDev<=-3) msgs.push({t:"🙌 You clock in about "+Math.abs(c.avgDev)+" minutes early on average — the team notices."});
+    else if(c.matched>=2&&c.early>=Math.ceil(c.matched*0.75)) msgs.push({t:"🌅 Early bird: in before your start on "+c.early+" of "+c.matched+" shifts."});
+    if(c.matched>=2&&c.onTimePct!=null&&c.onTimePct<50) msgs.push({t:"💛 This week, try clocking in a few minutes before your start — you've got this!",c:"neutral"});
+    else if(c.matched>=2&&c.onTimePct!=null&&c.onTimePct<80) msgs.push({t:"🎯 Almost there — a couple of minutes earlier and you're in the green zone.",c:"neutral"});
+    if(!msgs.length) msgs.push({t:"🍸 Thanks for your work last week — see you on the floor!"});
+    $("recapEmoji").textContent=party?"🎉":"🌟";
+    $("recapMsgs").innerHTML=msgs.slice(0,3).map(function(m,i){ return '<div class="'+(m.c||"")+'" style="animation-delay:'+(i*90)+'ms">'+h(m.t)+'</div>'; }).join("");
+    $("recapOverlay").classList.add("show"); if(party) confetti(3500);
+  }
+
   // -- who are you --
   function openWho(auto){
     var names=state.data.staff.slice().sort(function(a,b){return a.localeCompare(b);});
     $("whoGrid").innerHTML=names.map(function(n,i){ return '<button type="button" class="who-name" data-name="'+h(n)+'" style="animation-delay:'+Math.min(i*35,350)+'ms"><span class="av" style="background:'+avColor(n)+'">'+h(initials(n))+'</span><span class="nm">'+h(n)+'</span></button>'; }).join("");
     $("whoGrid").querySelectorAll(".who-name").forEach(function(b){ b.addEventListener("click",function(){ beginPin(b.getAttribute("data-name")); }); });
-    $("whoSkip").textContent=state.me.name?"Cancel":"Not now";
+    var manual=!auto&&!!state.me.name; $("whoOverlay").dataset.manual=manual?"1":"";
+    $("whoCancel").style.display=manual?"":"none";
     $("whoOverlay").classList.add("show");
   }
 
@@ -1961,15 +2022,16 @@
     if(state.me.token&&state.me.token!==j.token) api("/api/me",{method:"POST",body:{action:"logout"}}); // this device was someone else's — close that access
     meSet(j.name,j.token); pin.name=null;
     setTimeout(function(){
-      $("pinOverlay").classList.remove("show"); renderMe(); renderDays();
+      $("pinOverlay").classList.remove("show"); $("whoOverlay").classList.remove("show"); renderMe(); renderDays();
       toast(created?"PIN saved ✓ Welcome, "+j.name.split(/\s+/)[0]+"!":"Welcome back, "+j.name.split(/\s+/)[0]+" 👋");
-      openMe(null);
+      var shown=maybeBirthdayPopup()||maybeWeekPopup()||maybeRecapPopup();
+      if(!shown) openMe(null);
     },350);
   }
   async function meLogout(){
     var tok=state.me.token; $("meOverlay").classList.remove("show");
     if(tok) api("/api/me",{method:"POST",body:{action:"logout"}});
-    meSet(null,null); renderMe(); renderDays(); toast("Logged out on this device.");
+    meSet(null,null); renderMe(); renderDays(); toast("Logged out on this device."); maybeWhoPopup();
   }
 
   // -- my week --
@@ -2098,7 +2160,7 @@
     lang=storageGet(LANG_KEY)==="it"?"it":"en"; applyLang();
     state.me.token=storageGet(ME_TOKEN_KEY)||null; state.me.name=state.me.token?(storageGet(ME_NAME_KEY)||null):null;
     await load(false);
-    maybeBirthdayPopup(); maybeWeekPopup(); renderBell(); renderClockBtn(); renderLbBtn(); loadToastToday();
+    renderBell(); renderClockBtn(); renderLbBtn(); loadToastToday();
     var saved=storageGet(PW_KEY);
     if(saved&&state.features.admin){
       var r=await api("/api/login",{method:"POST",body:{password:saved}});
@@ -2107,6 +2169,7 @@
     }
     await meWhoAmI();
     maybeWhoPopup();
+    if(!maybeBirthdayPopup()&&!maybeWeekPopup()) maybeRecapPopup();
     startPolling();
   })();
 })();

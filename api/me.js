@@ -12,6 +12,41 @@ function tokenFrom(req) {
   const h = req.headers["x-staff-token"];
   return typeof h === "string" ? h : "";
 }
+const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+function mins(t) { const p = String(t || "0:0").split(":").map(Number); return p[0] * 60 + (p[1] || 0); }
+// NY minutes-of-day for an instant (punches after midnight count past 24h so 1 AM after a 4 PM start is "late", not "early").
+function nyMinutes(iso) {
+  const parts = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", hour: "2-digit", minute: "2-digit", hour12: false }).formatToParts(new Date(iso));
+  const g = (t) => Number((parts.find((p) => p.type === t) || {}).value);
+  const h = g("hour") % 24; return (h < 6 ? h + 24 : h) * 60 + g("minute");
+}
+// One person's week: scheduled minutes, worked minutes, and per-shift clock-in deviation vs scheduled start.
+async function weekSummary(data, name, guid, weekISO) {
+  const w = data.weeks[weekISO];
+  const out = { week: weekISO, exists: Boolean(w), scheduledMin: 0, scheduledShifts: 0, workedMin: 0, clockedShifts: 0, matched: 0, onTime: 0, early: 0, devSum: 0, avgDev: null, onTimePct: null };
+  if (!w) return out;
+  const startByDay = {};
+  DAYS.forEach((d) => {
+    const note = w.notes && w.notes[d]; if (note && (note.status === "closed" || note.status === "holiday")) return;
+    (w[d] || []).filter((s) => s.name === name).forEach((s) => { out.scheduledShifts++; out.scheduledMin += Math.max(0, mins(s.end) - mins(s.start)); if (startByDay[d] == null || mins(s.start) < startByDay[d]) startByDay[d] = mins(s.start); });
+  });
+  if (!guid) return out;
+  const entries = await toast.weekEntriesFor(guid, weekISO);
+  const firstInByDay = {};
+  entries.forEach((e) => {
+    out.workedMin += Math.max(0, (Date.parse(e.out || new Date().toISOString()) - Date.parse(e.in)) / 60000);
+    const m = nyMinutes(e.in); if (firstInByDay[e.day] == null || m < firstInByDay[e.day]) firstInByDay[e.day] = m;
+  });
+  out.workedMin = Math.round(out.workedMin);
+  out.clockedShifts = Object.keys(firstInByDay).length;
+  Object.keys(firstInByDay).forEach((d) => {
+    if (startByDay[d] == null) return;
+    const dev = firstInByDay[d] - startByDay[d]; // negative = early
+    out.matched++; out.devSum += dev; if (dev <= 5) out.onTime++; if (dev < 0) out.early++;
+  });
+  if (out.matched) { out.avgDev = Math.round(out.devSum / out.matched); out.onTimePct = Math.round(out.onTime / out.matched * 100); }
+  return out;
+}
 function sumMinutes(list) {
   return list.reduce((a, s) => a + Math.max(0, (Date.parse(s.out || new Date().toISOString()) - Date.parse(s.in)) / 60000), 0);
 }
@@ -23,6 +58,7 @@ function sumMinutes(list) {
 //   POST {action:"logout"}  (x-staff-token)
 //   GET  ?action=who                      (x-staff-token) → {name}
 //   GET  ?action=hours&week=YYYY-MM-DD    (x-staff-token, or manager + &name=) → Toast clock-ins of that week
+//   GET  ?action=recap&week=YYYY-MM-DD    (x-staff-token) → that week vs the week before (for the encouraging weekly review)
 //   GET  ?action=list                     (manager) → who has a PIN / how many devices
 //   POST {action:"reset", name}           (manager) → clear PIN + sign out everywhere
 module.exports = async (req, res) => {
@@ -58,6 +94,18 @@ module.exports = async (req, res) => {
         if (!guid) return send(res, 200, { name, week, toast: true, linked: false, entries: [] });
         const entries = await toast.weekEntriesFor(guid, week);
         return send(res, 200, { name, week, toast: true, linked: true, entries, workedMinutes: Math.round(sumMinutes(entries)), fetchedAt: new Date().toISOString() });
+      }
+      // Personal week in review: last completed week vs the one before (hours, punctuality, early/late minutes).
+      if (action === "recap") {
+        if (!name) return send(res, 401, { error: "unauthorized" });
+        const week = String(url.searchParams.get("week") || "");
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(week)) return send(res, 400, { error: "bad_week" });
+        const [wy, wm, wd] = week.split("-").map(Number);
+        const prevISO = new Date(Date.UTC(wy, wm - 1, wd - 7)).toISOString().slice(0, 10);
+        let guid = null;
+        if (toast.enabled()) { const emps = await toast.employees(true); guid = toast.autoMap(doc.data.staff, doc.data.toastMap, emps)[name] || null; }
+        const [cur, prev] = await Promise.all([weekSummary(doc.data, name, guid, week), weekSummary(doc.data, name, guid, prevISO)]);
+        return send(res, 200, { name, week, prevWeek: prevISO, linked: Boolean(guid), cur, prev });
       }
       return send(res, 400, { error: "bad_action" });
     }

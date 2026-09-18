@@ -1,4 +1,5 @@
 const store = require("../lib/store");
+const accounts = require("../lib/accounts");
 
 function send(res, status, body) {
   res.setHeader("Cache-Control", "no-store");
@@ -27,7 +28,12 @@ module.exports = async (req, res) => {
     // Only allow confirming shifts that actually exist.
     const doc = await store.getSchedule();
     const list = (doc.data.weeks[week] || {})[day] || [];
-    if (!list.some((s) => s.id === id)) return send(res, 404, { error: "shift_not_found" });
+    const shift = list.find((s) => s.id === id);
+    if (!shift) return send(res, 404, { error: "shift_not_found" });
+    // Who is tapping? Only the person on the shift can confirm it (identity = PIN login on this device).
+    const who = await accounts.whoIs(req.headers["x-staff-token"], doc.data.staff);
+    if (!who) return send(res, 401, { error: "unauthorized" });
+    if (who !== shift.name) return send(res, 403, { error: "not_your_shift" });
 
     await store.setConfirmation(`${week}:${day}:${id}`, Boolean(body.on));
     const confirmations = await store.getConfirmations();
