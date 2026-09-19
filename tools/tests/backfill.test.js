@@ -22,8 +22,12 @@ const hdr = { "Content-Type": "application/json", "x-admin-password": PW };
   const kayla = flat(r.j.data.weeks["2026-08-31"] || {}).filter((s) => s.name === "Kayla"); console.log("4 Kayla (former) clock-in in week 08-31:", kayla.length);
   if (!kayla.length) errors.push("former person's clock-in not imported");
   // this week untouched
-  const cur = flat(r.j.data.weeks["2026-09-14"] || {}); console.log("5 current week has plan shifts:", cur.length, "toast:", cur.filter((s) => s.src === "toast").length);
-  if (cur.some((s) => s.src === "toast")) errors.push("current week rewritten");
+  const cur = flat(r.j.data.weeks["2026-09-14"] || {}); const todayNY = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" }).format(new Date());
+  const DI = { mon: 0, tue: 1, wed: 2, thu: 3, fri: 4, sat: 5, sun: 6 }; const dateOf = (s) => { const d = new Date("2026-09-14T12:00:00Z"); d.setUTCDate(d.getUTCDate() + DI[s.day]); return d.toISOString().slice(0, 10); };
+  const pastDays = cur.filter((s) => dateOf(s) < todayNY), future = cur.filter((s) => dateOf(s) >= todayNY);
+  console.log("5 current week: past days", pastDays.length, "all clock-ins:", pastDays.every((s) => s.src), "| today+future", future.length, "all plan:", future.every((s) => !s.src));
+  if (pastDays.some((s) => !s.src)) errors.push("a planned shift survived in a past day of the current week");
+  if (future.some((s) => s.src)) errors.push("today or a future day was rewritten");
   // 2. manager button: idempotent, informative
   r = await j("/api/data", { method: "POST", headers: hdr, body: JSON.stringify({ action: "backfillToast" }) });
   console.log("6 button:", r.s, { clockIns: r.j.clockIns, replaced: r.j.replaced, changed: r.j.changed, seen: r.j.seen, from: r.j.from, to: r.j.to, firstIn: r.j.firstIn, lastIn: r.j.lastIn });

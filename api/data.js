@@ -15,6 +15,21 @@ function send(res, status, body) {
   res.status(status).send(JSON.stringify(body));
 }
 
+// One-time data fixes decided by the owner, applied on the next visit and never again (flag key per migration).
+async function migrations(doc) {
+  if (!store.hasStorage()) return doc;
+  const FLAG = "barlento:migr:2026-09-19-marta-app";
+  if (await store._redis("GET", FLAG).catch(() => null)) return doc;
+  await store._redis("SET", FLAG, new Date().toISOString()).catch(() => {});
+  const data = doc.data; const list = Array.isArray(data.appClock) ? data.appClock.slice() : [];
+  if (!(data.staff || []).includes("Marta") || list.includes("Marta")) return doc;
+  list.push("Marta"); // Marta is salaried and clocks in from the app, never on the Toast terminal (owner's decision 2026-09-19)
+  const next = { version: (doc.version || 0) + 1, data: store.normalizeData(Object.assign({}, data, { appClock: list })), updatedAt: doc.updatedAt };
+  await store.saveSchedule(next);
+  await store.appendLog({ at: new Date().toISOString(), version: next.version, changes: ["Marta now clocks in from the app (salaried, owner's decision)"] }).catch(() => {});
+  return next;
+}
+
 module.exports = async (req, res) => {
   try {
     if (req.method === "GET") {
@@ -22,7 +37,8 @@ module.exports = async (req, res) => {
       const flushed = store.hasStorage() ? await push.flushPending(false).catch(() => null) : null;
       const [doc0, confirmations, announcement] = await Promise.all([store.getSchedule(), store.getConfirmations(), store.getAnnouncement().catch(() => null)]);
       // New Toast employees appear in Staff by themselves (never throws, never while the manager is editing).
-      const doc = await staffsync.syncFromToast(doc0).then((r) => r.doc).catch(() => doc0);
+      const docS = await staffsync.syncFromToast(doc0).then((r) => r.doc).catch(() => doc0);
+      const doc = await migrations(docS).catch(() => docS);
       // Past weeks follow Toast by themselves (real clock-ins replace the plan; last 8 weeks, every 6 h).
       const doc1 = await backfill.auto(doc, doc0.updatedAt).catch(() => doc);
       return send(res, 200, {
