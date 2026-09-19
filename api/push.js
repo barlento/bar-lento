@@ -1,5 +1,6 @@
 const store = require("../lib/store");
 const push = require("../lib/push");
+const accounts = require("../lib/accounts");
 
 function send(res, status, body) {
   res.setHeader("Cache-Control", "no-store");
@@ -20,8 +21,11 @@ module.exports = async (req, res) => {
       if (!sub || typeof sub.endpoint !== "string" || !/^https:\/\//.test(sub.endpoint) || !sub.keys || !sub.keys.p256dh || !sub.keys.auth) {
         return send(res, 400, { error: "bad_subscription" });
       }
-      await store.savePushSubscription({ endpoint: sub.endpoint, expirationTime: sub.expirationTime || null, keys: { p256dh: String(sub.keys.p256dh), auth: String(sub.keys.auth) } });
-      return send(res, 200, { ok: true });
+      // Whose phone is this? Personal changes go only to the phones signed in as that person (re-sent at every sign-in).
+      let name = null;
+      try { const tok = String(req.headers["x-staff-token"] || ""); if (tok) { const doc = await store.getSchedule(); name = await accounts.whoIs(tok, doc.data.staff); } } catch (e) { name = null; }
+      await store.savePushSubscription({ endpoint: sub.endpoint, expirationTime: sub.expirationTime || null, keys: { p256dh: String(sub.keys.p256dh), auth: String(sub.keys.auth) }, name: name || null, at: new Date().toISOString() });
+      return send(res, 200, { ok: true, name: name || null });
     }
     if (req.method === "DELETE") {
       const endpoint = req.body && req.body.endpoint;

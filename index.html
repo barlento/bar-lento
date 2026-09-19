@@ -761,7 +761,6 @@
     <div class="who"><span class="dot"></span> <span data-t="adminMode">Manager mode</span></div>
     <div class="status" id="saveStatus"></div>
     <div class="actions">
-      <button class="abtn notify" id="notifyBtn" type="button" style="display:none">Notify team</button>
       <button class="abtn" id="lbBtn" type="button" style="display:none" data-t="lbBtn">Team ranking</button>
       <button class="abtn" id="staffBtn" type="button" data-t="staffBtn">Staff</button>
       <button class="abtn" id="historyBtn" type="button" data-t="historyBtn">History</button>
@@ -1160,7 +1159,7 @@
   // ---------- manager-mode language (staff always see English) ----------
   var I18N={
     en:{
-      adminMode:"Manager mode", lbBtn:"Team ranking", staffBtn:"Staff", historyBtn:"History", exportBtn:"Export PDF", logoutBtn:"Log out", notifyBtn:"Notify team",
+      adminMode:"Manager mode", lbBtn:"Team ranking", staffBtn:"Staff", historyBtn:"History", exportBtn:"Export PDF", logoutBtn:"Log out",
       newWeekBtn:"＋ New week", deleteWeekBtn:"Delete week", nwTitle:"New week", nwLead:"Create the week of {r}", nwCopy:"Copy last week's shifts ({k} shifts)", nwCopySub:"Same people and times as {r}; adjust as needed", nwEmpty:"Start empty", nwEmptySub:"Add every shift by hand",
       copyConfirm:"Tap again to replace the current shifts", deleteWeekConfirm:"Tap again to delete", deleteWeekConfirmN:"Tap again: deletes {k} shifts", deleteWeekLocked:"Past week · archived", pastLocked:"Past weeks are archived and can't be deleted", onlyEmpty:"Only an empty week can be deleted",
       footAdmin:"Tap a shift to edit it. Changes save automatically.", exitMode:"Log out", addShift:"＋ Add shift", daySettings:"Day settings",
@@ -1219,7 +1218,7 @@
       toastPick:"— Toast employee —", toastLoading:"Loading Toast…", toastLinked:"{n} linked to Toast", toastUnlinked:"{n} unlinked from Toast", notified:"Team notified ({k} phone{p})", notifiedNone:"Changes noted — nobody has notifications turned on yet.", notifyFail:"Couldn't send the notification. It will go out automatically later.", markedClosed:"{h} ✓"
     },
     it:{
-      adminMode:"Modalità manager", lbBtn:"Classifica team", staffBtn:"Staff", historyBtn:"Cronologia", exportBtn:"Esporta PDF", logoutBtn:"Esci", notifyBtn:"Avvisa il team",
+      adminMode:"Modalità manager", lbBtn:"Classifica team", staffBtn:"Staff", historyBtn:"Cronologia", exportBtn:"Esporta PDF", logoutBtn:"Esci",
       newWeekBtn:"＋ Nuova settimana", deleteWeekBtn:"Elimina settimana", nwTitle:"Nuova settimana", nwLead:"Crea la settimana {r}", nwCopy:"Copia i turni della settimana scorsa ({k} turni)", nwCopySub:"Stesse persone e orari di {r}; poi modifica ciò che cambia", nwEmpty:"Parti da zero", nwEmptySub:"Aggiungi ogni turno a mano",
       copyConfirm:"Tocca di nuovo per sostituire i turni", deleteWeekConfirm:"Tocca di nuovo per eliminare", deleteWeekConfirmN:"Tocca di nuovo: elimina {k} turni", deleteWeekLocked:"Settimana passata · archivio", pastLocked:"Le settimane passate sono in archivio e non si eliminano", onlyEmpty:"Si può eliminare solo una settimana vuota",
       footAdmin:"Tocca un turno per modificarlo. Le modifiche si salvano da sole.", exitMode:"Esci", addShift:"＋ Aggiungi turno", daySettings:"Impostazioni giorno",
@@ -1303,7 +1302,7 @@
     features:{storage:false,admin:false},
     admin:false, password:"", activeWeek:null, showArchive:false,
     saving:false, dirtyTimer:null, editing:null, dayEditing:null, confirming:null,
-    pendingConfirm:{}, pollTimer:null, pendingNotify:0, idleTimer:null, toastToday:null, toastEmployees:null,
+    pendingConfirm:{}, pollTimer:null, toastToday:null, toastEmployees:null,
     me:{name:null,token:null,rulesAck:undefined,docAcks:undefined,since:null,email:"",fullName:""}, accounts:null, mailEnabled:false
   };
 
@@ -1451,7 +1450,7 @@
     state.version=j.version; state.updatedAt=j.updatedAt; state.data=j.data||{staff:[],weeks:{}};
     if(newStaff.length||goneStaff.length){ setTimeout(function(){ if(newStaff.length) toast(t("fromToast",{n:newStaff.join(", ")}),5000); if(goneStaff.length) toast(t("goneToast",{n:goneStaff.join(", ")}),5000); },800); if($("staffOverlay").classList.contains("show")) renderRoster(); if(person.name&&goneStaff.indexOf(person.name)!==-1){ $("personOverlay").classList.remove("show"); person.name=null; } }
     if(changedRemotely){ setTimeout(function(){ var u=$("updatedNote"); u.classList.remove("flashnew"); void u.offsetWidth; u.classList.add("flashnew"); toast(t("scheduleUpdated")); },50); }
-    state.confirmations=j.confirmations||{}; state.features=j.features||state.features; state.pendingNotify=j.pendingNotify||0; state.announcement=j.announcement||null;
+    state.confirmations=j.confirmations||{}; state.features=j.features||state.features; state.announcement=j.announcement||null;
     ensureActiveWeek(); renderAll(); return true;
   }
 
@@ -1476,7 +1475,6 @@
     finally{ state.saving=false; }
     if(r.ok){
       state.version=r.json.version; state.updatedAt=r.json.updatedAt; state.data=r.json.data; state.confirmations=r.json.confirmations||state.confirmations;
-      state.pendingNotify=r.json.pendingNotify||0; renderNotifyBtn(); armIdleNotify();
       $("saveStatus").textContent=t("statusSaved"); renderUpdated(); renderDays();
     } else if(r.status===409){
       state.version=r.json.version; state.data=r.json.data; state.updatedAt=r.json.updatedAt;
@@ -1798,7 +1796,6 @@
     if(typeof renderLbBtn==="function") renderLbBtn();
     $("managerLink").textContent=state.admin?t("exitMode"):t("mgrLogin");
     $("managerLink").style.display=(state.admin||!state.me.name)?"":"none";
-    renderNotifyBtn();
     $("footHint").textContent=state.admin?t("footAdmin"):t("footStaff");
     if(state.admin){
       var wk=state.activeWeek, cur=currentMondayISO();
@@ -1895,26 +1892,10 @@
     else {$("loginErr").textContent="Couldn't verify the password. Please try again.";}
   }
   async function logout(silent){
-    if(!silent && state.pendingNotify>0 && state.password){ await sendNotifyNow(true); }
-    clearTimeout(state.idleTimer); state.admin=false; state.password=""; storageSet(PW_KEY,null); ensureActiveWeek(); applyLang(); if(!silent) toast(t("loggedOut")); maybeWhoPopup();
+    state.admin=false; state.password=""; storageSet(PW_KEY,null); ensureActiveWeek(); applyLang(); if(!silent) toast(t("loggedOut")); maybeWhoPopup();
   }
 
-  // ---------- team notification (one summary push for all pending changes) ----------
-  function renderNotifyBtn(){
-    var b=$("notifyBtn"); if(!state.admin||!state.features.push||!state.pendingNotify){ b.style.display="none"; return; }
-    b.style.display=""; b.textContent=t("notifyBtn")+" ("+state.pendingNotify+")";
-  }
-  function armIdleNotify(){
-    clearTimeout(state.idleTimer);
-    if(!state.admin||!state.pendingNotify) return;
-    state.idleTimer=setTimeout(function(){ if(state.admin&&state.pendingNotify&&!state.saving&&!state.dirtyTimer) sendNotifyNow(false); }, 2*60*1000);
-  }
-  async function sendNotifyNow(quiet){
-    if(!state.password||!state.pendingNotify) return;
-    var r=await api("/api/notify",{method:"POST",auth:true});
-    if(r.ok){ state.pendingNotify=0; renderNotifyBtn(); if(!quiet) toast(r.json.sent?t("notified",{k:r.json.sent,p:lang==="it"?(r.json.sent===1?"o":"i"):(r.json.sent===1?"":"s")}):t("notifiedNone")); }
-    else if(!quiet) toast(t("notifyFail"));
-  }
+  // Notifications are automatic: each person gets one push about their own changes once the manager is done (server side).
 
   // ---------- shift editor ----------
   function timeOptions(sel,value){
@@ -2331,10 +2312,8 @@
   $("tcPrev").addEventListener("click",function(){ tcShift(-1); });
   $("tcNext").addEventListener("click",function(){ tcShift(1); });
   $("tcRefresh").addEventListener("click",function(){ loadClock(false); });
-  $("notifyBtn").addEventListener("click",function(){sendNotifyNow(false);});
   $("langBtn").addEventListener("click",function(){setLang(lang==="en"?"it":"en"); toast(lang==="it"?"Italiano attivo solo su questo dispositivo, in modalità manager.":"English restored on this device.",2600);});
   $("weekClose").addEventListener("click",function(){$("weekOverlay").classList.remove("show");maybeRecapPopup();});
-  document.addEventListener("visibilitychange",function(){ if(document.visibilityState==="hidden"&&state.admin&&state.pendingNotify&&state.password&&!state.dirtyTimer&&!state.saving){ try{ fetch("/api/notify",{method:"POST",headers:{"x-admin-password":state.password,"Content-Type":"application/json"},keepalive:true}); state.pendingNotify=0; }catch(e){} } });
   var staffTimer=null;
   $("staffBtn").addEventListener("click",function(){renderRoster();$("staffRulesLink").style.display=(rulesActive()||(DOCS.list||[]).length)?"":"none";$("staffOverlay").classList.add("show");loadAccounts().then(renderRoster);
     clearInterval(staffTimer); staffTimer=setInterval(function(){ if(!$("staffOverlay").classList.contains("show")){ clearInterval(staffTimer); return; } if(document.visibilityState==="visible"&&!state.saving&&!state.dirtyTimer) loadAccounts().then(renderRoster); },30000); // live dots
@@ -2386,7 +2365,9 @@
   }
 
   // ---------- personal access: name + PIN, remembered on this device ----------
-  function meSet(name,token){ state.me.name=name||null; state.me.token=token||null; if(!name){ state.me.rulesAck=undefined; state.me.docAcks=undefined; state.me.since=null; } storageSet(ME_NAME_KEY,name||null); storageSet(ME_TOKEN_KEY,token||null); }
+  function meSet(name,token){ state.me.name=name||null; state.me.token=token||null; if(!name){ state.me.rulesAck=undefined; state.me.docAcks=undefined; state.me.since=null; } storageSet(ME_NAME_KEY,name||null); storageSet(ME_TOKEN_KEY,token||null); syncPushName(); }
+  // Personal pushes go only to the phones signed in as that person: re-register this phone's subscription with the current token.
+  async function syncPushName(){ try{ if(!("serviceWorker" in navigator)||!("PushManager" in window)) return; var reg=await navigator.serviceWorker.ready; var sub=await reg.pushManager.getSubscription(); if(sub) await api("/api/push",{method:"POST",body:{subscription:sub.toJSON()}}); }catch(e){} }
   async function meWhoAmI(){
     if(!state.me.token) return;
     var r; try{ r=await api("/api/me?action=who"); }catch(e){ r={ok:false,status:0,json:{}}; }

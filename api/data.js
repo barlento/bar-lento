@@ -34,8 +34,8 @@ async function migrations(doc) {
 module.exports = async (req, res) => {
   try {
     if (req.method === "GET") {
-      // Lazy delivery: if the manager closed the app without notifying, the next visitor triggers the summary push.
-      const flushed = store.hasStorage() ? await push.flushPending(false).catch(() => null) : null;
+      // Automatic delivery: any visit checks whether pending changes have waited long enough and sends them.
+      if (store.hasStorage()) await push.flushPending(false).catch(() => null);
       const [doc0, confirmations, announcement] = await Promise.all([store.getSchedule(), store.getConfirmations(), store.getAnnouncement().catch(() => null)]);
       // New Toast employees appear in Staff by themselves (never throws, never while the manager is editing).
       const docS = await staffsync.syncFromToast(doc0).then((r) => r.doc).catch(() => doc0);
@@ -50,7 +50,6 @@ module.exports = async (req, res) => {
         data: doc1.data,
         confirmations,
         announcement,
-        pendingNotify: flushed && flushed.pending ? flushed.pending : 0,
         features: { storage: store.hasStorage(), admin: auth.adminEnabled(), push: push.pushEnabled(), toast: toast.enabled(), mail: require("../lib/mail").enabled() },
       });
     }
@@ -92,13 +91,13 @@ module.exports = async (req, res) => {
       }
       if (changes.length) {
         await store.appendLog({ at: doc.updatedAt, version: doc.version, changes: changes.slice(0, 200) }).catch(() => {});
-        // Only what matters to employees accumulates for ONE summary push later
-        // (manager idle/logout, "Notify team", or automatically on the next visit after 10 min, never at night).
-        const items = newWeeks.map((wk) => `NEWWEEK:${wk}`).concat(notable);
+        // Only what matters to each employee accumulates; delivered by itself, one push per person about their own
+        // changes, once the manager has been quiet for 10 minutes (lib/push.flushPending, never at night).
+        const items = newWeeks.map((wk) => ({ kind: "newweek", week: wk })).concat(notable.map((c) => ({ kind: "update", text: c.text, names: c.names || [] })));
         if (items.length) await store.appendPending(items).catch(() => {});
       }
-      const [confirmations, pending] = await Promise.all([store.getConfirmations(), store.getPending().catch(() => ({ changes: [] }))]);
-      return send(res, 200, { version: doc.version, updatedAt: doc.updatedAt, data: doc.data, confirmations, changes: changes.length, pendingNotify: pending.changes.length });
+      const confirmations = await store.getConfirmations();
+      return send(res, 200, { version: doc.version, updatedAt: doc.updatedAt, data: doc.data, confirmations, changes: changes.length });
     }
 
     res.setHeader("Allow", "GET, POST");
