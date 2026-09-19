@@ -44,5 +44,7 @@ const j=async(u,o)=>{const r=await fetch(B+u,o); let x=null; try{x=await r.json(
   console.log("17 manager Staff:",mg); if(mg.chefCard==="none"||!/Chef login is on/.test(mg.state)) errors.push("manager chef card wrong");
   // switch the chef login off from the UI
   await p.fill("#chefPw",""); await p.click("#chefPwSave"); await p.waitForTimeout(700); r=await j("/api/data"); console.log("18 chef off:",r.j.features.chef===false); if(r.j.features.chef) errors.push("chef login not switched off");
+  // the button stays visible and explains what to do when no password is set
+  const p2=await (await b.newContext({viewport:{width:1200,height:900}})).newPage(); await p2.goto(B+"/?v=ch2"); await p2.waitForSelector("#whoOverlay.show"); const vis=await p2.isVisible("#whoChef"); await p2.click("#whoChef"); await p2.waitForTimeout(400); const msg=await p2.evaluate(()=>[...document.querySelectorAll(".toast")].map(x=>x.textContent).join(" | ")); console.log("19 button without password:",vis,"|",msg.slice(0,60)); if(!vis||!/not set up yet/.test(msg)) errors.push("chef button hidden or silent without a password");
   await b.close(); console.log("ERRORS:",errors.length?errors:"none"); process.exit(errors.length?1:0);
 })().catch(e=>{console.log("ERR",e.message.split("\n")[0]);process.exit(1)});

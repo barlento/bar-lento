@@ -1167,7 +1167,7 @@
   var I18N={
     en:{
       myBday:"My birthday", myBdayNone:"Not set yet. Add it and the team celebrates you.", myBdayIs:"My birthday: {d}", bdaySavedMe:"Birthday saved. See you on {d}.", save:"Save",
-      chefMode:"Chef mode · kitchen only", chefLogin:"Chef login", chefPwTitle:"Chef login", chefPwLead:"The chef signs in with this password and sees only the kitchen: kitchen shifts, kitchen people, kitchen ranking.", chefPwOn:"Chef login is on. Type a new password to change it, or leave it empty and save to switch it off.", chefPwOff:"Chef login is off. Set a password to switch it on.", chefPwBtn:"Save", chefPwSaved:"Chef password saved.", chefPwCleared:"Chef login switched off.", chefPwShort:"At least 6 characters.", chefForbidden:"Kitchen only: this change is for the manager.", appClockSalary:"Clocks in from the app (salaried in Toast)",
+      chefMode:"Chef mode · kitchen only", chefLogin:"Chef login", chefPwTitle:"Chef login", chefPwLead:"The chef signs in with this password and sees only the kitchen: kitchen shifts, kitchen people, kitchen ranking.", chefPwOn:"Chef login is on. Type a new password to change it, or leave it empty and save to switch it off.", chefPwOff:"Chef login is off. Set a password to switch it on.", chefPwBtn:"Save", chefPwSaved:"Chef password saved.", chefPwCleared:"Chef login switched off.", chefPwShort:"At least 6 characters.", chefForbidden:"Kitchen only: this change is for the manager.", chefNotSet:"Chef login is not set up yet. Manager: Staff, then the Chef login box, choose a password and Save.", appClockSalary:"Clocks in from the app (salaried in Toast)",
       adminMode:"Manager mode", lbBtn:"Team ranking", staffBtn:"Staff", historyBtn:"History", exportBtn:"Export PDF", logoutBtn:"Log out",
       newWeekBtn:"＋ New week", deleteWeekBtn:"Delete week", nwTitle:"New week", nwLead:"Create the week of {r}", nwCopy:"Copy last week's shifts ({k} shifts)", nwCopySub:"Same people and times as {r}; adjust as needed", nwEmpty:"Start empty", nwEmptySub:"Add every shift by hand",
       copyConfirm:"Tap again to replace the current shifts", deleteWeekConfirm:"Tap again to delete", deleteWeekConfirmN:"Tap again: deletes {k} shifts", deleteWeekLocked:"Past week · archived", pastLocked:"Past weeks are archived and can't be deleted", onlyEmpty:"Only an empty week can be deleted",
@@ -1228,7 +1228,7 @@
     },
     it:{
       myBday:"Il mio compleanno", myBdayNone:"Non ancora inserito. Aggiungilo e il team ti festeggia.", myBdayIs:"Il mio compleanno: {d}", bdaySavedMe:"Compleanno salvato. Ci vediamo il {d}.", save:"Salva",
-      chefMode:"Modalità chef · solo cucina", chefLogin:"Accesso chef", chefPwTitle:"Accesso chef", chefPwLead:"Lo chef entra con questa password e vede solo la cucina: turni, persone e classifica della cucina.", chefPwOn:"Accesso chef attivo. Scrivi una nuova password per cambiarla, oppure lascia vuoto e salva per disattivarlo.", chefPwOff:"Accesso chef spento. Imposta una password per attivarlo.", chefPwBtn:"Salva", chefPwSaved:"Password dello chef salvata.", chefPwCleared:"Accesso chef disattivato.", chefPwShort:"Almeno 6 caratteri.", chefForbidden:"Solo cucina: questa modifica spetta alla manager.", appClockSalary:"Timbra dall'app (a stipendio su Toast)",
+      chefMode:"Modalità chef · solo cucina", chefLogin:"Accesso chef", chefPwTitle:"Accesso chef", chefPwLead:"Lo chef entra con questa password e vede solo la cucina: turni, persone e classifica della cucina.", chefPwOn:"Accesso chef attivo. Scrivi una nuova password per cambiarla, oppure lascia vuoto e salva per disattivarlo.", chefPwOff:"Accesso chef spento. Imposta una password per attivarlo.", chefPwBtn:"Salva", chefPwSaved:"Password dello chef salvata.", chefPwCleared:"Accesso chef disattivato.", chefPwShort:"Almeno 6 caratteri.", chefForbidden:"Solo cucina: questa modifica spetta alla manager.", chefNotSet:"Accesso chef non ancora attivo. Manager: Staff, riquadro Chef login, scegli una password e Salva.", appClockSalary:"Timbra dall'app (a stipendio su Toast)",
       adminMode:"Modalità manager", lbBtn:"Classifica team", staffBtn:"Staff", historyBtn:"Cronologia", exportBtn:"Esporta PDF", logoutBtn:"Esci",
       newWeekBtn:"＋ Nuova settimana", deleteWeekBtn:"Elimina settimana", nwTitle:"Nuova settimana", nwLead:"Crea la settimana {r}", nwCopy:"Copia i turni della settimana scorsa ({k} turni)", nwCopySub:"Stesse persone e orari di {r}; poi modifica ciò che cambia", nwEmpty:"Parti da zero", nwEmptySub:"Aggiungi ogni turno a mano",
       copyConfirm:"Tocca di nuovo per sostituire i turni", deleteWeekConfirm:"Tocca di nuovo per eliminare", deleteWeekConfirmN:"Tocca di nuovo: elimina {k} turni", deleteWeekLocked:"Settimana passata · archivio", pastLocked:"Le settimane passate sono in archivio e non si eliminano", onlyEmpty:"Si può eliminare solo una settimana vuota",
@@ -1808,7 +1808,7 @@
   function renderAdminUI(){
     document.body.classList.toggle("admin",state.admin); document.body.classList.toggle("chef",isChef());
     var modeEl=$("adminBar").querySelector("[data-t=adminMode]"); if(modeEl) modeEl.textContent=t(isChef()?"chefMode":"adminMode");
-    $("whoChef").style.display=(state.features.chef&&!state.admin)?"":"none";
+    $("whoChef").style.display=(state.features.admin&&!state.admin)?"":"none";
     $("adminBar").classList.toggle("show",state.admin);
     $("weekTools").classList.toggle("show",state.admin);
     if(typeof renderLbBtn==="function") renderLbBtn();
@@ -2297,7 +2297,7 @@
   $("meOpenBtn").addEventListener("click",function(){ openMe(null); });
   $("whoCancel").addEventListener("click",function(){ $("whoOverlay").classList.remove("show"); $("whoOverlay").dataset.manual=""; });
   $("whoManager").addEventListener("click",function(){ $("whoOverlay").classList.remove("show"); $("loginTitle").textContent=t("mgrLogin"); openLogin(); });
-  $("whoChef").addEventListener("click",function(){ $("whoOverlay").classList.remove("show"); $("loginTitle").textContent=t("chefLogin"); openLogin(); });
+  $("whoChef").addEventListener("click",function(){ if(!state.features.chef){ toast(t("chefNotSet"),6000); return; } $("whoOverlay").classList.remove("show"); $("loginTitle").textContent=t("chefLogin"); openLogin(); });
   $("loginCancel").addEventListener("click",function(){ maybeWhoPopup(); });
   $("pinBack").addEventListener("click",function(){ $("pinOverlay").classList.remove("show"); pin.name=null; openWho(false); });
   $("meClose").addEventListener("click",function(){ $("meOverlay").classList.remove("show"); });
