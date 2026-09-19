@@ -186,7 +186,7 @@ async function collectPerson(name, doc, confirmations, fromISO, toISO) {
   punches.forEach((e) => {
     const date = toast.shiftDate(e.in); if (date < fromISO || date > toISO) return;
     const ms = e.out ? Date.parse(e.out) - Date.parse(e.in) : 0; const mm = M(date); mm.worked += ms / 3600000; mm.clockins++;
-    clock.push({ date, weekday: weekdayOf(date), source: "Bar Lento app (phone)", in: nyParts(e.in).time, out: e.out ? nyParts(e.out).time : "", hours: e.out ? round2(ms / 3600000) : null, note: e.auto ? "clock-out auto-closed after 20 h" : (e.out ? "" : "still clocked in"), recorded: nyParts(e.in).stamp, ref: `app entry ${e.id}` });
+    clock.push({ date, weekday: weekdayOf(date), source: e.manual ? "Entered by the owner" : "Bar Lento app (phone)", in: nyParts(e.in).time, out: e.out ? nyParts(e.out).time : "", hours: e.out ? round2(ms / 3600000) : null, note: e.manual ? (e.note || "entered by the owner") : e.auto ? "clock-out auto-closed after 20 h" : (e.out ? "" : "still clocked in"), recorded: nyParts(e.in).stamp, ref: `app entry ${e.id}` });
   });
   clock.sort((a, b) => (a.date + a.recorded).localeCompare(b.date + b.recorded));
   // signed documents: current + archive, every version incl. history

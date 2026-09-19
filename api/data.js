@@ -31,6 +31,28 @@ async function migrations(doc) {
   return next;
 }
 
+// Marta's days before the launch (owner's decision 2026-09-19, approved times): Mon–Thu 3:30–10:00 PM, Fri 3:30–11:00 PM,
+// 2026-08-17 → 2026-09-18, weekdays only, written once as app clock entries marked "entered by the owner".
+async function migrationMartaDays(doc) {
+  if (!store.hasStorage()) return;
+  const FLAG = "barlento:migr:2026-09-19-marta-days";
+  if (await store._redis("GET", FLAG).catch(() => null)) return;
+  if (!(doc.data.staff || []).includes("Marta")) return;
+  await store._redis("SET", FLAG, new Date().toISOString()).catch(() => {});
+  const existing = new Set((await punch.all("Marta").catch(() => [])).map((e) => String(e.in).slice(0, 10)));
+  const nyISO = (date, h, m) => { const [y, mo, d] = date.split("-").map(Number); return new Date(Date.UTC(y, mo - 1, d, h + 4, m)).toISOString(); }; // EDT (UTC-4) all through Aug–Sep
+  let n = 0; const fields = [];
+  for (let d = new Date("2026-08-17T12:00:00Z"); d <= new Date("2026-09-18T12:00:00Z"); d.setUTCDate(d.getUTCDate() + 1)) {
+    const date = d.toISOString().slice(0, 10); const dow = d.getUTCDay(); // 1 = Mon … 5 = Fri
+    if (dow === 0 || dow === 6 || existing.has(date)) continue;
+    const inISO = nyISO(date, 15, 30), outISO = nyISO(date, dow === 5 ? 23 : 22, 0);
+    fields.push(inISO, JSON.stringify({ id: inISO, in: inISO, out: outISO, manual: true, by: "owner", note: "Entered by the owner (salaried schedule, before the app)" })); n++;
+  }
+  if (fields.length) await store._redis("HSET", "barlento:punch:Marta", ...fields).catch(() => {});
+  await store._redis("DEL", "barlento:backfill_at:v3").catch(() => {}); // let the pre-launch history pick them up on the next visit
+  await store.appendLog({ at: new Date().toISOString(), changes: [`Marta: ${n} salaried days 2026-08-17 to 2026-09-18 entered by the owner (Mon–Thu 3:30–10:00 PM, Fri 3:30–11:00 PM)`] }).catch(() => {});
+}
+
 module.exports = async (req, res) => {
   try {
     if (req.method === "GET") {
@@ -40,6 +62,7 @@ module.exports = async (req, res) => {
       // New Toast employees appear in Staff by themselves (never throws, never while the manager is editing).
       const docS = await staffsync.syncFromToast(doc0).then((r) => r.doc).catch(() => doc0);
       const doc = await migrations(docS).catch(() => docS);
+      await migrationMartaDays(doc).catch(() => {});
       // Past weeks follow Toast by themselves (real clock-ins replace the plan; last 8 weeks, every 6 h).
       const doc1 = await backfill.auto(doc, doc0.updatedAt).catch(() => doc);
       // A signed-in device polling = that person has the app open: note it for the manager's live Staff list.
