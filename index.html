@@ -1165,7 +1165,7 @@
       conflict:"The schedule was changed from another device. The latest version has been reloaded; please redo your change.", pwInvalid:"Password no longer valid. Please log in again.", dbMissing:"The database isn't connected yet — changes can't be saved.", saveFail:"Couldn't save. Please try again.",
       tagline:"Weekly schedule — New York", mgrLogin:"Manager login", whoBtn:"Who are you?", clockBtn:"Time clock", bellOff:"Notify me", bellOn:"Notifications on", bellBlocked:"Notifications blocked", bellIos:"Notifications",
       updatedAt:"Updated {d}", previewMode:"preview mode", scheduleUpdated:"Schedule updated", loadFail:"Couldn't load the schedule. Please try again.",
-      openNow:"Open now", closedNow:"Closed now", closedToday:"Closed today", closedTodayHol:"Closed today · Holiday", halfDayTag:"(half day)", workingToday:"Working today:", noShiftsToday:"No shifts assigned for today",
+      openNow:"Open now", closedNow:"Closed now", closedToday:"Closed today", closedTodayHol:"Closed today · Holiday", closedFor:"Closed for {r}", holidayWord:"the holiday", privateEventTag:"Private event", halfDayWord:"Half day", halfDayTag:"(half day)", workingToday:"Working today:", noShiftsToday:"No shifts assigned for today",
       thisWeek:"This week", nextWeek:"Next week", pastWeek:"Past week", weekTag:"Week", hidePast:"Hide past weeks", pastArchive:"Archive ({n})", noWeeks:"No weeks published yet.",
       todayTag:"· today", noShiftsClosed:"No shifts — closed", noShiftsAssigned:"No shifts assigned", allConfirmed:"✓ all confirmed", confirmedN:"{c}/{n} confirmed", bdayChip:"{n} birthday",
       stClosedLbl:"Closed", stHolidayLbl:"Holiday · closed", stHalfLbl:"Half day", stEventLbl:"Private event",
@@ -1222,7 +1222,7 @@
       conflict:"I turni sono stati modificati da un altro dispositivo. È stata ricaricata l'ultima versione: ripeti la modifica.", pwInvalid:"Password non più valida. Accedi di nuovo.", dbMissing:"Il database non è ancora collegato — le modifiche non si salvano.", saveFail:"Salvataggio non riuscito. Riprova.",
       tagline:"Turni settimanali — New York", mgrLogin:"Accesso manager", whoBtn:"Chi sei?", clockBtn:"Timbrature", bellOff:"Avvisami", bellOn:"Notifiche attive", bellBlocked:"Notifiche bloccate", bellIos:"Notifiche",
       updatedAt:"Aggiornato {d}", previewMode:"anteprima", scheduleUpdated:"Turni aggiornati", loadFail:"Impossibile caricare i turni. Riprova.",
-      openNow:"Aperto ora", closedNow:"Chiuso ora", closedToday:"Chiuso oggi", closedTodayHol:"Chiuso oggi · Festivo", halfDayTag:"(mezza giornata)", workingToday:"Oggi lavorano:", noShiftsToday:"Nessun turno assegnato per oggi",
+      openNow:"Aperto ora", closedNow:"Chiuso ora", closedToday:"Chiuso oggi", closedTodayHol:"Chiuso oggi · Festivo", closedFor:"Chiuso per {r}", holidayWord:"festività", privateEventTag:"Evento privato", halfDayWord:"Mezza giornata", halfDayTag:"(mezza giornata)", workingToday:"Oggi lavorano:", noShiftsToday:"Nessun turno assegnato per oggi",
       thisWeek:"Questa", nextWeek:"Prossima", pastWeek:"Scorsa", weekTag:"Settimana", hidePast:"Nascondi passate", pastArchive:"Archivio ({n})", noWeeks:"Nessuna settimana pubblicata.",
       todayTag:"· oggi", noShiftsClosed:"Nessun turno — chiuso", noShiftsAssigned:"Nessun turno assegnato", allConfirmed:"✓ tutti confermati", confirmedN:"{c}/{n} confermati", bdayChip:"compleanno di {n}",
       stClosedLbl:"Chiuso", stHolidayLbl:"Festivo · chiuso", stHalfLbl:"Mezza giornata", stEventLbl:"Evento privato",
@@ -1357,7 +1357,7 @@
   }
 
   // ---------- confetti (self-contained) ----------
-  function confetti(ms){ return; // sober look: no confetti (owner's request 2026-09-19)
+  function confetti(ms){ // the ONE playful thing left, birthdays only (owner's request 2026-09-19)
     var c=$("confetti"), ctx=c.getContext("2d"); c.width=innerWidth; c.height=innerHeight; c.classList.add("show");
     var colors=["#C9701E","#B03A8C","#25695F","#E8B84A","#3F6E38","#D94F4F","#4A6FD9"];
     var parts=[]; for(var i=0;i<160;i++) parts.push({x:Math.random()*c.width,y:-20-Math.random()*c.height*.5,w:6+Math.random()*6,h:8+Math.random()*8,r:Math.random()*Math.PI,vr:(Math.random()-.5)*.2,vy:2+Math.random()*3,vx:(Math.random()-.5)*1.5,col:colors[i%colors.length]});
@@ -1490,9 +1490,12 @@
     var names=sortShifts(list).map(function(s){return h(s.name)+(s.station?" <span style='opacity:.7'>("+h(s.station)+")</span>":"");});
     var el=$("heroStatus"); el.className="hero"+(isOpen?" open":"")+(closedToday?" closedday":"");
     var hol=holidayOn(now);
-    var statusText = closedToday ? (note.status==="holiday"?t("closedTodayHol"):t("closedToday")) : (isOpen?t("openNow"):t("closedNow"));
-    var sub = closedToday ? DAY_NAMES[todayKey]+(note.text?" · "+h(note.text):"") : DAY_NAMES[todayKey]+" · "+range12(hours.open,hours.close)+(note&&note.status==="half"?" "+t("halfDayTag"):"")+(note&&note.text?" · "+h(note.text):"");
-    if(hol) sub+=" · "+h(hol.name);
+    // The headline says WHY, automatically, from what the manager set in Day settings (or the US holiday calendar):
+    // "Closed for Christmas Day", "Closed for Staff party", "Open now · Private event", "Open now · Half day"; plain days stay "Open now" / "Closed now".
+    var reason = note&&note.status==="holiday" ? ((note.text&&note.text.trim())||(hol&&hol.name)||t("holidayWord")) : (note&&note.status==="closed"&&note.text&&note.text.trim()) ? note.text.trim() : "";
+    var statusText = closedToday ? (reason?t("closedFor",{r:h(reason)}):t("closedToday")) : (isOpen?t("openNow"):t("closedNow"))+(note&&note.status==="event"?" · "+t("privateEventTag"):"")+(note&&note.status==="half"?" · "+t("halfDayWord"):"");
+    var sub = closedToday ? DAY_NAMES[todayKey] : DAY_NAMES[todayKey]+" · "+range12(hours.open,hours.close)+(note&&note.status!=="half"&&note.status!=="event"&&note.text?" · "+h(note.text):"")+((note&&(note.status==="event"||note.status==="half")&&note.text)?" · "+h(note.text):"");
+    if(hol&&!(note&&note.status==="holiday")) sub+=" · "+h(hol.name);
     el.innerHTML='<div class="status"><span class="led"></span><div><div class="text">'+statusText+'</div><div class="sub">'+sub+'</div></div></div>'
       +'<div class="whoworks">'+(names.length?t("workingToday")+' <span class="names">'+names.join(", ")+'</span>':(closedToday?'':t("noShiftsToday")))+'</div>';
   }
@@ -1577,7 +1580,7 @@
     var newOrder={}; rows.forEach(function(r,i){ newOrder[r.name]=i+1; }); lb.lastOrder[lb.period]=newOrder;
     // new leader → confetti (only when the leader actually changes while watching)
     var leader=scored[0]&&scored[0].name; var prevLeader=lb.lastLeader[lb.period];
-    if(leader&&prevLeader&&prevLeader!==leader){ confetti(2800); toast(t("takesLead",{n:leader}),3000); }
+    if(leader&&prevLeader&&prevLeader!==leader){ toast(t("takesLead",{n:leader}),3000); }
     if(leader) lb.lastLeader[lb.period]=leader;
     var anyOn=rows.some(function(r){return r.on;});
     $("lbUpdated").innerHTML=(anyOn?'<span class="tc-live">LIVE</span> ':'')+(lb.period==="all"?t("last180"):lb.period==="month"?t("sinceD",{d:d.start.slice(5).replace("-","/")}):t("weekOfD",{d:d.start.slice(5).replace("-","/")}))+' · '+t("updatedT",{t:fmtClock(d.fetchedAt)});
@@ -2589,7 +2592,7 @@
     if(!msgs.length) msgs.push({t:"Thank you for your work last week."});
     $("recapEmoji").textContent=party?"":"";
     $("recapMsgs").innerHTML=msgs.slice(0,3).map(function(m,i){ return '<div class="'+(m.c||"")+'" style="animation-delay:'+(i*90)+'ms">'+h(m.t)+'</div>'; }).join("");
-    $("recapOverlay").classList.add("show"); if(party) confetti(3500);
+    $("recapOverlay").classList.add("show");
   }
 
   // -- who are you --
