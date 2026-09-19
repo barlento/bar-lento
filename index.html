@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#F3EDE1">
+<meta name="theme-color" content="#F5F4EF">
 <title>Bar Lento — Schedule</title>
 <meta name="description" content="Bar Lento weekly staff schedule — New York">
 <link rel="manifest" href="/manifest.webmanifest">
@@ -15,15 +15,16 @@
 <meta name="apple-mobile-web-app-title" content="Bar Lento">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Karla:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   /* Always light: easy to read on every phone, regardless of the phone's dark mode. */
   :root{
-    --bg:#F3EDE1; --surface:#FFFCF6; --surface-2:#ECE3D2; --ink:#1F150C; --ink-muted:#5A4A39;
-    --border:#D6C6A6; --accent:#C9701E; --accent-ink:#3E2208; --accent-soft:#F1DDBD;
-    --teal:#25695F; --teal-soft:#DCEDE9; --good:#3F6E38; --good-soft:#E1EBDC; --danger:#A3402C; --danger-soft:#F2DAD3;
-    --party:#B03A8C; --party-soft:#F6DDEE;
-    --shadow:0 1px 2px rgba(36,26,18,.06), 0 8px 24px -12px rgba(36,26,18,.25);
+    /* Calm, light palette in the spirit of the Claude app: cream page, white cards, one terracotta accent, warm greys. */
+    --bg:#F5F4EF; --surface:#FFFFFF; --surface-2:#F1EFE8; --ink:#1F1E1B; --ink-muted:#6B6861;
+    --border:#E6E3DA; --accent:#D97757; --accent-ink:#8A3F25; --accent-soft:#F8E9E1;
+    --teal:#4D7C79; --teal-soft:#E3EEED; --good:#4F8A5B; --good-soft:#E4F0E6; --danger:#B94A3A; --danger-soft:#F6E1DC;
+    --party:#9A5BA8; --party-soft:#F1E6F4;
+    --shadow:0 1px 2px rgba(30,28,24,.04), 0 10px 30px -18px rgba(30,28,24,.18);
     color-scheme:light only;
   }
 
@@ -31,8 +32,8 @@
   html{-webkit-text-size-adjust:100%}
   @media (max-width:640px){html{font-size:16px}}
   html,body{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Karla',ui-sans-serif,system-ui,sans-serif;-webkit-font-smoothing:antialiased;padding-bottom:env(safe-area-inset-bottom)}
-  h1,h2,h3,.display{font-family:'Bricolage Grotesque',ui-sans-serif,system-ui,sans-serif;text-wrap:balance}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',ui-sans-serif,system-ui,sans-serif;-webkit-font-smoothing:antialiased;padding-bottom:env(safe-area-inset-bottom)}
+  h1,h2,h3,.display{font-family:'Newsreader',Georgia,'Times New Roman',serif;font-weight:500;letter-spacing:-.012em;text-wrap:balance}
   .mono{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
   button{font-family:inherit;color:inherit}
   button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -162,7 +163,7 @@
   .me-row .dy small{display:block;font-weight:500;color:var(--ink-muted);font-size:.72rem;margin-top:2px}
   .me-row .mid{display:flex;flex-direction:column;gap:3px;min-width:0}
   .me-row .mid .tm{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:.95rem}
-  .me-row .mid .tm .st{font-family:'Karla',sans-serif;font-weight:600;color:var(--ink-muted);font-size:.8rem;margin-left:6px}
+  .me-row .mid .tm .st{font-family:'Inter',sans-serif;font-weight:600;color:var(--ink-muted);font-size:.8rem;margin-left:6px}
   .me-row .mid .sub{font-size:.76rem;color:var(--ink-muted)}
   .me-row .ok{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border);display:grid;place-items:center;font-size:.9rem;color:transparent;flex:none}
   .me-row.confirmed .ok{background:var(--good);border-color:var(--good);color:#fff}
@@ -627,6 +628,44 @@
 
   @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none !important;transition:none !important}}
   @media print{.adminbar,.weektools,.addrow2,footer,.toast,.archiverow,.mestrip,.hdr-actions{display:none !important}}
+
+  /* ---- Lightness pass: hairline borders, softer shapes, white surfaces, one accent, quieter type ---- */
+  header.top{border-radius:20px;padding:18px 20px}
+  .brand h1{font-size:1.75rem;font-weight:500}
+  .brand .tag{font-size:.86rem}
+  .loginbtn,.bellbtn,.clockbtn,.mebtn,.lbbtn{border-width:1px;font-weight:600;border-radius:12px;box-shadow:none}
+  .loginbtn{border-color:var(--accent)}
+  .lbbtn{background:var(--surface);border:1px solid var(--border);color:var(--ink)}
+  .adminbar{background:var(--surface);color:var(--ink);border:1px solid var(--border);box-shadow:var(--shadow)}
+  .abtn{border:1px solid var(--border);background:var(--surface-2);color:var(--ink);font-weight:600}
+  .abtn:hover{border-color:var(--accent);background:var(--accent-soft)}
+  .hero{background:var(--surface);color:var(--ink);border:1px solid var(--border)}
+  .hero.open{background:var(--surface);border-color:color-mix(in srgb,var(--good) 40%,var(--border))}
+  .hero.closedday{background:var(--surface-2)}
+  .hero .text{font-family:'Newsreader',Georgia,serif;font-weight:500;font-size:1.3rem;letter-spacing:-.01em}
+  .hero .sub{opacity:1;color:var(--ink-muted)}
+  .tab{border-radius:999px;font-weight:600;min-width:120px}
+  .tab.active{background:var(--ink);border-color:var(--ink);color:#fff}
+  .day-card{border-radius:20px;padding:16px;box-shadow:var(--shadow)}
+  .shift{border-radius:14px;background:var(--surface-2)}
+  .btn{border-radius:12px;font-weight:600}
+  .btn.primary{color:#fff}
+  .tab.active,.btn.primary,.loginbtn{letter-spacing:0}
+  .overlay{background:rgba(31,30,27,.28);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+  .sheet{border-radius:24px;padding:22px 20px;box-shadow:0 20px 60px -30px rgba(30,28,24,.35)}
+  .sheet h2{font-size:1.4rem}
+  .sheet .lead{font-size:.88rem;line-height:1.5}
+  .toast{background:var(--ink);color:#fff;border-radius:14px;font-weight:500}
+  .field select,.field input,.addrow input,.roster .bday input{background:var(--surface);border-radius:12px}
+  .field label{letter-spacing:.06em;font-size:.72rem}
+  .bdaychip{background:var(--accent-soft);color:var(--accent-ink)}
+  .tc-sum .tile{background:var(--surface);border-radius:16px}
+  .who-name,.preset,.doc-row,.me-row,.tc-row,.roster .person,.pcard{border-radius:16px}
+  .pin-pad button{border-radius:16px;font-weight:500}
+  .rules-body{background:var(--surface-2);border-radius:16px}
+  .rules-body h3{font-family:'Newsreader',Georgia,serif;font-weight:600;font-size:1rem;color:var(--ink)}
+  .rules-body h2.pk{font-family:'Newsreader',Georgia,serif;font-weight:600}
+  .updated{font-weight:500}
 </style>
 </head>
 <body>

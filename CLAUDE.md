@@ -11,6 +11,7 @@ Verify after ~90 s at https://bar-lento.vercel.app (add `?v=<n>` to bypass cache
 
 ## Golden rules from the owner
 - **Simplicity first** ("più semplice e veloce"). One obvious button beats three clever ones. Marta must never need Claude.
+- **Look (owner's request 2026-09-19, "like the Claude app")**: cream page `#F5F4EF`, white cards, hairline borders `#E6E3DA`, ONE terracotta accent `#D97757`, warm greys, serif titles (Newsreader) + Inter body + IBM Plex Mono for times, soft shadows, blurred backdrop behind sheets, light manager bar (no dark bars). Tokens live in `:root`; a "Lightness pass" override block sits at the end of the `<style>`. Keep new UI inside this palette.
 - Light, readable theme; must look great on iPhone (installable PWA, home-screen app) and on PC. Playful "alive" effects: pulsing LEDs, rising cards, confetti — never at the cost of clarity.
 - Personal access is mandatory: the schedule is blurred behind "Who are you?" until a person enters their PIN (or the manager logs in). Each person can confirm ONLY their own shifts (server-checked), via a two-step popup (tap shift → tap Confirm).
 - Notifications: ONLY (a) "new week posted" and (b) one batched summary of changes that affect employees (shift added/removed/time changed, day closed/opened). Never spam. Quiet hours 11 PM–10 AM New York.
