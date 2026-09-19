@@ -741,7 +741,7 @@
   </div>
 
   <div class="mestrip" id="meStrip" role="region" aria-label="Your shifts">
-    <div class="hi"><span class="av" id="meAv">?</span><div class="txt"><b id="meHi">Hi!</b><span id="meNext"></span></div></div>
+    <div class="hi"><span class="av" id="meAv">?</span><div class="txt"><b id="meHi">Hi!</b><span id="meNextShift"></span></div></div>
     <div class="mebtns"><button class="btn primary" id="meOpenBtn" type="button" data-t="myWeek">My week</button><button class="btn" id="meStatsBtn" type="button" data-t="myStats">My stats</button></div>
   </div>
 
@@ -754,7 +754,7 @@
     <button class="linkbtn" id="archiveToggle" type="button"></button>
     <div class="weektools" id="weekTools">
       <button class="btn primary" id="newWeekBtn" type="button" data-t="newWeekBtn">＋ New week</button>
-      <button class="linkbtn danger" id="deleteWeekBtn" type="button" data-t="deleteWeekBtn">Delete this week</button>
+      <button class="linkbtn danger" id="deleteWeekBtn" type="button" data-t="deleteWeekBtn">Delete week</button>
     </div>
   </div>
 
@@ -774,10 +774,10 @@
 <div class="overlay" id="weekOverlay">
   <div class="sheet bday-sheet" role="dialog" aria-modal="true" aria-labelledby="weekTitle">
     <div class="cake" style="animation:none"></div>
-    <h2 id="weekTitle">New work week posted!</h2>
+    <h2 id="weekTitle">New week posted</h2>
     <div class="names" id="weekNames" style="color:var(--accent)"></div>
     <p class="lead">Check your shifts and tap each one to confirm you've seen it.</p>
-    <div class="actions" style="justify-content:center"><button class="btn primary" id="weekClose" type="button">Show me my shifts</button></div>
+    <div class="actions" style="justify-content:center"><button class="btn primary" id="weekClose" type="button">View my shifts</button></div>
   </div>
 </div>
 
@@ -787,7 +787,7 @@
     <div class="cake"></div>
     <h2 id="bdayTitle">Happy Birthday!</h2>
     <div class="names" id="bdayNames"></div>
-    <p class="lead" id="bdayLead">From everyone at Bar Lento </p>
+    <p class="lead" id="bdayLead">From everyone at Bar Lento.</p>
     <div class="actions" style="justify-content:center"><button class="btn primary" id="bdayClose" type="button">Got it</button></div>
   </div>
 </div>
@@ -801,7 +801,7 @@
     <div class="err" id="confirmErr"></div>
     <div class="actions">
       <button class="btn" id="confirmCancel" type="button">Cancel</button>
-      <button class="btn good" id="confirmGo" type="button" disabled>Confirm</button>
+      <button class="btn good" id="confirmGo" type="button" disabled>Confirm shift</button>
     </div>
   </div>
 </div>
@@ -925,7 +925,7 @@
     <p class="lead" id="statsLead">Your hours and punctuality, from Toast. Only you see this.</p>
     <div id="statsBody">
       <div class="lb-tabs" role="tablist">
-        <button type="button" class="active" data-period="week" data-t="thisWeek">This week</button>
+        <button type="button" class="active" data-period="week" data-t="periodWeek">This week</button>
         <button type="button" data-period="month" data-t="thisMonth">This month</button>
         <button type="button" data-period="all" data-t="allTime">All time</button>
       </div>
@@ -953,7 +953,7 @@
     <div class="podium" id="lbPodium"></div>
     <div class="lb-head"><span>#</span><span></span><span data-t="colName">Name</span><span data-t="colHours">Hours</span><span data-t="colOnTime">On time</span></div>
     <div class="lb-list" id="lbList"><div class="tc-empty">Loading…</div></div>
-    <details class="lb-rules"><summary data-t="lbRulesSum">How the ranking works</summary><p data-t="lbRules">Hours are your clocked time from Toast. “On time” is the share of your scheduled shifts where you clocked in within 5 minutes of the start (shown after 3 clocked shifts). The order combines both: hours first, with a boost for punctuality and for your current on-time streak . Only clocked shifts count, and closed days never count against anyone.</p></details>
+    <details class="lb-rules"><summary data-t="lbRulesSum">How the ranking works</summary><p data-t="lbRules">Hours are your clocked time from Toast. “On time” is the share of your scheduled shifts where you clocked in within 5 minutes of the start (shown after 3 clocked shifts). The order combines both: hours first, with a boost for punctuality and for your current on-time streak. Only clocked shifts count, and closed days never count against anyone.</p></details>
     <div class="tc-foot"><span id="lbUpdated"></span><button class="refresh" id="lbRefresh" type="button" data-t="refresh">↻ Refresh</button></div>
     <div class="actions"><button class="btn" id="lbClose" type="button" data-t="close">Close</button></div>
   </div>
@@ -1003,7 +1003,7 @@
       <span class="spacer"></span>
       <button class="btn" id="rulesLater" type="button" style="display:none">Later</button>
       <button class="btn" id="rulesClose" type="button" style="display:none">Close</button>
-      <button class="btn primary" id="rulesAgree" type="button" disabled>✓ I agree</button>
+      <button class="btn primary" id="rulesAgree" type="button" disabled>I agree</button>
     </div>
   </div>
 </div>
@@ -1012,7 +1012,7 @@
 <div class="overlay" id="docsOverlay">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="docsTitle">
     <h2 id="docsTitle">Documents</h2>
-    <p class="lead" id="docsLead">The House Rules and the policies you read and sign once. Tap one to read it again or to sign it. Your signed copies are emailed to you.</p>
+    <p class="lead" id="docsLead">Everything Bar Lento has given you to read and sign, with the date you signed it. Tap a document to read it again or to print it.</p>
     <div class="docs-list" id="docsList"></div>
     <div class="actions"><button class="linkbtn" id="docsMail" type="button" style="display:none">Email my copies</button><span class="spacer"></span><button class="btn" id="docsClose" type="button" data-t="close">Close</button></div>
   </div>
@@ -1049,7 +1049,7 @@
     <div class="pin-dots" id="pinDots" aria-live="polite"><span></span><span></span><span></span><span></span></div>
     <div class="pin-err" id="pinErr"></div>
     <div class="pin-pad" id="pinPad"></div>
-    <p class="pin-hint" id="pinHint">Numbers only. Forgot it? Ask Marta to reset it.</p>
+    <p class="pin-hint" id="pinHint">Digits only. If you forget it, ask the manager to reset it.</p>
     <div class="actions" style="justify-content:center"><button class="btn" id="pinBack" type="button">← Back</button></div>
   </div>
 </div>
@@ -1058,7 +1058,7 @@
 <div class="overlay" id="meOverlay">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="meTitle">
     <h2 id="meTitle">My week</h2>
-    <p class="lead" id="meLead">Your shifts, and your hours from the Toast time clock.</p>
+    <p class="lead" id="meLead">Your shifts and your hours from the Toast time clock.</p>
     <div class="me-tabs">
       <button class="navbtn" id="mePrev" type="button" aria-label="Previous week">‹</button>
       <div class="lbl"><b id="meWeekLbl"></b><span id="meWeekSub"></span></div>
@@ -1109,117 +1109,117 @@
   var I18N={
     en:{
       adminMode:"Manager mode", lbBtn:"Team ranking", staffBtn:"Staff", historyBtn:"History", exportBtn:"Export CSV", logoutBtn:"Log out", notifyBtn:"Notify team",
-      newWeekBtn:"＋ New week", deleteWeekBtn:"Delete week", nwTitle:"New week", nwLead:"Create the week of {r}", nwCopy:"Copy last week's shifts ({k} shifts)", nwCopySub:"Same people and times as {r} — then adjust what changes", nwEmpty:"Start empty", nwEmptySub:"Add every shift by hand",
-      copyConfirm:"Sure? This replaces the current shifts", deleteWeekConfirm:"Sure? Delete week", deleteWeekConfirmN:"Sure? Delete week and {k} shifts", deleteWeekLocked:"Past week · archived", pastLocked:"Past weeks are archived and can't be deleted", onlyEmpty:"Only an empty week can be deleted",
+      newWeekBtn:"＋ New week", deleteWeekBtn:"Delete week", nwTitle:"New week", nwLead:"Create the week of {r}", nwCopy:"Copy last week's shifts ({k} shifts)", nwCopySub:"Same people and times as {r}; adjust as needed", nwEmpty:"Start empty", nwEmptySub:"Add every shift by hand",
+      copyConfirm:"Tap again to replace the current shifts", deleteWeekConfirm:"Tap again to delete", deleteWeekConfirmN:"Tap again: deletes {k} shifts", deleteWeekLocked:"Past week · archived", pastLocked:"Past weeks are archived and can't be deleted", onlyEmpty:"Only an empty week can be deleted",
       footAdmin:"Tap a shift to edit it. Changes save automatically.", exitMode:"Log out", addShift:"＋ Add shift", daySettings:"Day settings",
       statusPending:"Pending…", statusSaving:"Saving…", statusSaved:"Saved ✓", statusReloaded:"Reloaded", statusLoggedOut:"Logged out", statusNotSaved:"Not saved", statusError:"Error", statusReady:"Ready",
-      editShift:"Edit shift", newShift:"New shift", hours:"hours", who:"Who", namePh:"Name", otherName:"Other name…", station:"Station", stationOpt:"(optional: BAR, S1, R…)", start:"Start", end:"End",
-      delete:"Delete", deleteSure:"Sure? Delete", cancel:"Cancel", save:"Save", close:"Close", add:"Add",
+      editShift:"Edit shift", newShift:"New shift", hours:"hours", openHours:"Opening hours", who:"Who", namePh:"Name", otherName:"Other name…", station:"Station", stationOpt:"(optional: BAR, S1, R…)", start:"Start", end:"End",
+      delete:"Delete", deleteSure:"Tap again to delete", cancel:"Cancel", save:"Save", close:"Close", add:"Add",
       errName:"Pick or type a name.", errEnd:"End time must be after start time.", shiftDeleted:"Shift deleted",
       dayTitle:"Day settings", quickChoice:"Quick choice", status:"Status", stOpen:"Open (regular hours)", stHalf:"Half day (custom hours)", stClosed:"Closed", stHoliday:"Closed for holiday", stEvent:"Private event",
       opens:"Opens", closes:"Closes", reason:"Reason / note", reasonOpt:"(shown to everyone)", reasonPh:"e.g. Closed for Christmas Day · Private party · Staff training", regularHours:"regular hours", usually:"usually", reasonPhHalf:"optional note, e.g. Early close for a private dinner",
-      holidayNote:"This day is <b>{h}</b> — open or closed is your call.",
-      pOpen:"Open · regular hours", pClosedFor:"Closed for {h}", pFullDay:"Full day", pHalfFor:"Half day for {h}", pHalf:"Half day", pHalfSub:"Choose the hours below", pEvent:"Private event", pEventSub:"Bar reserved · shifts still shown", pOther:"Closed — other reason", pOtherSub:"Type the reason below so the team knows",
-      reasonPh2:"Reason, e.g. Renovation · Staff training · Bad weather", errReason:"Please type the reason — the team will see it.", errClose:"Closing time must be after opening time.", dayOpenSet:"Day set to open",
+      holidayNote:"This day is <b>{h}</b>. You decide whether to open or close.",
+      pOpen:"Open · regular hours", pClosedFor:"Closed for {h}", pFullDay:"Full day", pHalfFor:"Half day for {h}", pHalf:"Half day", pHalfSub:"Choose the hours below", pEvent:"Private event", pEventSub:"Bar reserved · shifts still shown", pOther:"Closed — other reason", pOtherSub:"Enter the reason below; the team will see it",
+      reasonPh2:"Reason, e.g. Renovation · Staff training · Bad weather", errReason:"Please enter the reason; the team will see it.", errClose:"Closing time must be after opening time.", dayOpenSet:"Day set to open",
       staffTitle:"Staff", staffLead:"Tap a name for birthday, PIN and documents. Removing a name never deletes past weeks.",
       newNamePh:"New name", noNames:"No names yet.", nameExists:"That name is already on the list", removeQ:"Remove?", bdaySaved:"Birthday saved for {n}", bdayRemoved:"Birthday removed",
       removeTap:"Tap again to remove {n}{s}. Past weeks are kept.", upcoming1:" and 1 upcoming shift", upcomingN:" and {k} upcoming shifts", removed:"{n} removed{s}. Past shifts kept in the archive.", deleted1:" · 1 upcoming shift deleted", deletedN:" · {k} upcoming shifts deleted",
-      historyTitle:"Change history", historyLead:"Every edit made from manager mode, newest first. Confirmation times are included in the CSV archive.", loading:"Loading…", historyFail:"Couldn't load the history.", noChanges:"No changes recorded yet.", historyNeedsDb:"History is available once the database is connected.",
-      exporting:"Preparing the archive…", exportNeedsDb:"Export is available once the database is connected.", exportFail:"Couldn't export.",
-      weekCreated:"Week of {r} created", weekCopied:"Week of {r} created with {k} shifts copied — adjust names and times", weekNoPrev:"Week created (no previous week to copy from)", noPrev:"There's no previous week to copy.", copied:"Shifts copied from the previous week", weekDeleted:"Week deleted",
-      welcome:"Welcome! You're in manager mode.", noDb:"Heads up: the database isn't connected, so changes won't be saved.", loggedOut:"Logged out of manager mode.",
-      conflict:"Someone else changed the schedule from another device. I reloaded the latest version — please redo your change.", pwInvalid:"Password no longer valid. Please log in again.", dbMissing:"The database isn't connected yet — changes can't be saved.", saveFail:"Couldn't save. Please try again.",
+      historyTitle:"Change history", historyLead:"Every edit made from manager mode, newest first. Confirmation times are included in the CSV export.", loading:"Loading…", historyFail:"Couldn't load the history.", noChanges:"No changes recorded yet.", historyNeedsDb:"History is available once the database is connected.",
+      exporting:"Preparing the CSV export…", exportNeedsDb:"Export is available once the database is connected.", exportFail:"Couldn't export.",
+      weekCreated:"Week of {r} created", weekCopied:"Week of {r} created with {k} shifts copied — adjust names and times", weekNoPrev:"Week created (no previous week to copy from)", noPrev:"There's no previous week to copy.", weekDeleted:"Week deleted",
+      welcome:"Manager mode is on.", noDb:"Note: the database is not connected; changes will not be saved.", loggedOut:"Logged out of manager mode.",
+      conflict:"The schedule was changed from another device. The latest version has been reloaded; please redo your change.", pwInvalid:"Password no longer valid. Please log in again.", dbMissing:"The database isn't connected yet — changes can't be saved.", saveFail:"Couldn't save. Please try again.",
       tagline:"Weekly schedule — New York", mgrLogin:"Manager login", whoBtn:"Who are you?", clockBtn:"Time clock", bellOff:"Notify me", bellOn:"Notifications on", bellBlocked:"Notifications blocked", bellIos:"Notifications",
-      updatedAt:"Updated {d}", previewMode:"preview mode", scheduleUpdated:"Schedule updated ", loadFail:"Couldn't load the schedule. Please try again.",
+      updatedAt:"Updated {d}", previewMode:"preview mode", scheduleUpdated:"Schedule updated", loadFail:"Couldn't load the schedule. Please try again.",
       openNow:"Open now", closedNow:"Closed now", closedToday:"Closed today", closedTodayHol:"Closed today · Holiday", halfDayTag:"(half day)", workingToday:"Working today:", noShiftsToday:"No shifts assigned for today",
       thisWeek:"This week", nextWeek:"Next week", pastWeek:"Past week", weekTag:"Week", hidePast:"Hide past weeks", pastArchive:"Archive ({n})", noWeeks:"No weeks published yet.",
       todayTag:"· today", noShiftsClosed:"No shifts — closed", noShiftsAssigned:"No shifts assigned", allConfirmed:"✓ all confirmed", confirmedN:"{c}/{n} confirmed", bdayChip:"{n} birthday",
       stClosedLbl:"Closed", stHolidayLbl:"Holiday · closed", stHalfLbl:"Half day", stEventLbl:"Private event",
       notClockedIn:"not clocked in", clockedIn:"clocked in {t}", lateBy:" · {t} late",
-      footStaff:"Tap your shift to confirm you've seen it. Your shifts are marked YOU.", copyBtn:"Copy as text", copied:"Copied! Paste it in WhatsApp.", nothingToCopy:"Nothing to copy", copyFail:"Copy failed",
+      footStaff:"Tap your shift to confirm you've seen it. Your shifts are marked YOU.", copyBtn:"Copy as text", copied:"Copied to clipboard.", nothingToCopy:"Nothing to copy", copyFail:"Copy failed",
       tcTitle:"Time clock", tcLead:"Clock-ins and clock-outs from Toast, live.", today:"Today", yesterday:"Yesterday", tomorrow:"Tomorrow", onTheClock:"on the clock", people:"people", person:"person", totalHours:"total hours",
-      nobodyPast:"Nobody clocked in on this day.", nobodyYet:"Nobody has clocked in yet today.", tcOff:"Time clock is not connected.", onClockNow:"on the clock now", shiftDone:"shift done", nowWord:"now", updatedFromToast:"Updated {t} · from Toast", refresh:"↻ Refresh", toastDown:"Toast isn't answering right now — try again in a moment.",
-      lbTitle:"Team ranking", managersOnly:"Managers only", lbLead:"Hours worked + punctuality, straight from Toast. Staff don't see this — each person only sees their own stats.", thisMonth:"This month", allTime:"All time",
+      nobodyPast:"Nobody clocked in on this day.", nobodyYet:"Nobody has clocked in yet today.", tcOff:"Time clock is not connected.", onClockNow:"on the clock now", shiftDone:"clocked out", nowWord:"now", updatedFromToast:"Updated {t} · from Toast", refresh:"↻ Refresh", toastDown:"Toast is not responding. Try again in a moment.",
+      lbTitle:"Team ranking", managersOnly:"Manager only", lbLead:"Hours worked and punctuality, from Toast. Staff do not see this ranking; each person sees only their own statistics.", thisMonth:"This month", allTime:"All time", periodWeek:"This week", adminOff:"Manager mode is not enabled on the server.", rulesShort:"House Rules", pinNoneShort:"No PIN",
       colName:"Name", colHours:"Hours", colOnTime:"On time", lbRulesSum:"How the ranking works", lbRules:"Hours are your clocked time from Toast. “On time” is the share of your scheduled shifts where you clocked in within 5 minutes of the start (shown after 3 clocked shifts). The order combines both: hours first, with a boost for punctuality and for your current on-time streak . Only clocked shifts count, and closed days never count against anyone.",
-      addPeople:"Add people in Staff to start the leaderboard.", shift1:"shift", shiftN:"shifts", inARow:"{n} in a row", noClockedYet:"no clocked shifts yet", onTimePct:"{p}% on time", avgLate:"avg +{n} min", neverLate:"never late", newTag:"new", takesLead:"{n} takes the lead!", last180:"Last 180 days", sinceD:"Since {d}", weekOfD:"Week of {d}", updatedT:"updated {t}", place1:"1st", place2:"2nd", place3:"3rd", ofThree:"{n}/3 shifts",
-      myWeek:"My week", myStats:"My stats", weekOfName:"{n} week", myWeekTitle:"My week", weekLeadMine:"Your shifts, and hours from the Toast time clock.", weekLeadOf:"{n} shifts, and hours from the Toast time clock.",
+      addPeople:"Add people in Staff to start the leaderboard.", shift1:"shift", shiftN:"shifts", inARow:"{n} in a row", noClockedYet:"no clocked shifts yet", onTimePct:"{p}% on time", avgLate:"avg +{n} min", neverLate:"never late", newTag:"new", takesLead:"{n} moves to first place.", last180:"Last 180 days", sinceD:"Since {d}", weekOfD:"Week of {d}", updatedT:"updated {t}", place1:"1st", place2:"2nd", place3:"3rd", ofThree:"{n}/3 shifts",
+      myWeek:"My week", myStats:"My stats", weekOfName:"{n} week", myWeekTitle:"My week", weekLeadMine:"Your shifts and your hours from the Toast time clock.", weekLeadOf:"{n} shifts, and hours from the Toast time clock.",
       scheduled:"scheduled", worked:"worked", soFar:" so far", difference:"difference", noShiftsMine:"No shifts for you this week.", noShiftsPerson:"No shifts this week.", noWeeksYet:"No weeks yet", nothingPublished:"Nothing published yet.",
-      hoursFromToast:"Hours from Toast · updated {t}", notLinked:"Toast doesn't recognise this name yet — link it in Staff.", loadingHours:"Loading hours from Toast…", hoursNeedToast:"Worked hours appear when the Toast time clock is connected.", toastDownShort:"Toast isn't answering right now — scheduled shifts are still shown.",
+      hoursFromToast:"Hours from Toast · updated {t}", notLinked:"Toast does not recognize this name yet. Link it in Staff.", loadingHours:"Loading hours from Toast…", hoursNeedToast:"Worked hours appear when the Toast time clock is connected.", toastDownShort:"Toast is not responding; scheduled shifts are still shown.",
       noClockIn:"No clock-in recorded", notClockedYet:"Not clocked in yet", notOnSchedule:"not on the schedule", dayMarked:"Day marked {s}", confirmChip:"confirm",
       statsTitle:"My stats", statsOf:"{n} stats", statsLeadMine:"Your hours and punctuality, from Toast. Only you see this.", statsLeadOf:"{n} hours and punctuality, from Toast.",
       hoursTile:"hours", onTimeTile:"on time", streakTile:"in a row", onClockSince:"On the clock now · since {t}", shiftsClocked:"{n} clocked", noClockedShifts:"No clocked shifts yet", loadingWord:"Loading…",
-      teamHours:"Team hours {p}", teamOnTime:"Team on time", teamShifts:"Shifts worked by the team", teamOnNow:"On the clock right now", pThisWeek:"this week", pThisMonth:"this month", p180:"(180 days)",
+      teamHours:"Team hours {p}", teamOnTime:"Team on time", teamShifts:"Shifts worked by the team", teamOnNow:"On the clock now", pThisWeek:"this week", pThisMonth:"this month", p180:"(180 days)",
       statsRulesSum:"How this is calculated", statsRules:"Hours are your clocked time from Toast. “On time” is the share of your scheduled shifts where you clocked in within 5 minutes of the start (shown after 3 clocked shifts). Only clocked shifts count, and closed days never count against you. Nobody else can see your numbers.",
       bStreak:"{n} on-time shifts in a row", bPerfect:"Perfect punctuality", b30:"30+ hours", b20:"20+ hours", bShifts:"{n} shifts",
-      m0:"Your stats will appear after your first clocked shift. Welcome aboard! ", m1:"Keep going — after 3 scheduled shifts you'll see your punctuality too.", m90:"Amazing — you're almost always right on time. Thank you! ", m80:"Great job — solid punctuality. Keep it up!", m60:"Good work. A few minutes earlier and you're in the green zone.", mLow:"Thanks for your hours! Aim to clock in within 5 minutes of your start — you've got this.",
+      m0:"Your statistics will appear after your first clocked shift.", m1:"Your punctuality will appear after 3 scheduled shifts.", m90:"Excellent punctuality: you are almost always on time.", m80:"Good punctuality. Keep it up.", m60:"A few minutes earlier at clock-in would bring you above 80% on time.", mLow:"Please aim to clock in within 5 minutes of your scheduled start.",
       hi:"Hi {n}", nextShift:"Next shift: {w} · ", onShiftNow:"On shift now · ", noUpcoming:"No upcoming shifts on the schedule.",
       histEntry:"{d} · {t} · v{v}",
       packetTitle:"Your documents", packetLead:"New York law requires Bar Lento to give you these documents. Read them to the end (about 15 minutes, paid working time), then confirm once with your email: one signed copy with everything is emailed to you and to the owner.", packetPill:"{n} documents · one signature", packetAck:"I confirm that I have received and read all the documents above: {list}.",
-      docsBtn:"Documents", docsTitle:"My documents", docsLead:"Everything Bar Lento has given you to read and sign, with the date you signed it. Tap a document to read it again or to print it.", docsMail:"Email my copies", docsMailed:"Your signed copies are on their way to {e}", docsMailNone:"Nothing signed yet", docOf:"document {i} of {n}",
+      docsBtn:"Documents", docsTitle:"Documents", docsLead:"Everything Bar Lento has given you to read and sign, with the date you signed it. Tap a document to read it again or to print it.", docsMail:"Email my copies", docsMailed:"Your signed copies have been sent to {e}.", docsMailSoon:"Already sent a few minutes ago. Check your inbox (and spam).", docsMailNone:"Nothing signed yet", docOf:"document {i} of {n}",
       docSigned:"✓ Signed {d}", docToSign:"To sign · by {d}", docLate:"Overdue · please sign now", trainDone:"✓ Completed {d}", trainTodo:"To complete this year · by {d}", trainLate:"Overdue · please complete now", later:"Later",
       readLead:"Please read this document to the end, then confirm with your email: your signed copy is emailed to you and to the owner.", readLeadNoMail:"Please read this document to the end, then confirm with your email.", readLeadDone:"You acknowledged this document on {d}.", readLeadDoneTrain:"You completed this training on {d}.", readLeadTrain:"Watch the video (links at the end), then confirm with your email: your training record is emailed to you and to the owner.",
-      agreeTrain:"✓ Done", agree:"✓ I agree", thanksDoc:"Thank you! Your signed copy is on its way to {e}", thanksDocNoMail:"Thank you! Document acknowledged ✓", thanksTrain:"Training recorded ✓ — confirmation on its way to {e}", thanksTrainNoMail:"Training recorded ✓",
-      rosterDocs:"Documents {k}/{n}", copiesSent:"Signed copies sent to {e}: {k}", sendCopies:"Re-send copies", linksHead:"Links", contactsHead:"Contacts — write to all of them",
-      rulesOk:"Rules ✓ {d} · {e}", rulesNo:"Rules not acknowledged yet", rulesLink:"Print documents", stNotIn:"Hasn't signed in yet", stLine:"PIN ✓ · Rules {r} · Docs {k}/{n}", stLineNoDocs:"PIN ✓ · Rules {r}", phBirthday:"Birthday", phAccess:"Access", phDocs:"Documents", phWeek:"Shifts and hours", viewWeekBtn:"View week", removeName:"Remove {n}", noBirthday:"not set", devicesShort:"{k} device{p}", personLead:"Birthday, personal PIN and signed documents.", trainingRow:"Training {y}", copyNotSent:"copy not emailed yet", sendCopy:"Send signed copy by email", copySent:"Signed copy sent to {e}", copyFail:"Couldn't send the email ({r})", mailOff:"Email isn't configured yet on the server (Vercel settings).",
-      pinSet:"PIN set", pinDevices:"{k} device{p}", pinNone:"No PIN yet", pinReset:"Reset PIN", pinResetSure:"Sure? Reset", pinResetDone:"PIN reset for {n} — they'll create a new one next time", pinResetFail:"Couldn't reset the PIN. Try again.", viewWeek:"View {n}'s week", staffLeadPin:" Each person creates a personal PIN to see their own shifts and hours; <b>Reset PIN</b> if they forget it (it also signs out all their devices).",
-      toastPick:"— Toast employee —", toastLoading:"Loading Toast…", toastLinked:"{n} linked to Toast", toastUnlinked:"{n} unlinked from Toast", notified:"Team notified ✓ ({k} phone{p})", notifiedNone:"Changes noted — nobody has notifications turned on yet.", notifyFail:"Couldn't send the notification. It will go out automatically later.", markedClosed:"{h} ✓"
+      agreeTrain:"Done", agree:"I agree", thanksDoc:"Documents acknowledged. A signed copy has been sent to {e}.", thanksDocNoMail:"Documents acknowledged.", thanksTrain:"Training recorded. A confirmation has been sent to {e}.", thanksTrainNoMail:"Training recorded.",
+      rosterDocs:"Documents {k}/{n}", copiesSent:"Signed copies sent to {e}: {k}", sendCopies:"Re-send copies", linksHead:"Links", contactsHead:"Contacts (write to all)",
+      rulesOk:"Rules ✓ {d} · {e}", rulesNo:"Rules not acknowledged yet", rulesLink:"Print documents", stNotIn:"Hasn't signed in yet", stLine:"PIN ✓ · Rules {r} · Docs {k}/{n}", stLineNoDocs:"PIN ✓ · Rules {r}", phBirthday:"Birthday", phAccess:"Access", phDocs:"Documents", phWeek:"Shifts and hours", viewWeekBtn:"View week", removeName:"Remove {n}", noBirthday:"not set", devicesShort:"{k} device{p}", personLead:"Birthday, personal PIN and signed documents.", trainingRow:"Training {y}", copyNotSent:"copy not emailed yet", sendCopy:"Send signed copy by email", copySent:"Signed copy sent to {e}", mailFail:"Could not send the email ({r})", mailOff:"Email isn't configured yet on the server (Vercel settings).",
+      pinSet:"PIN set", pinDevices:"{k} device{p}", pinNone:"No PIN yet", pinReset:"Reset PIN", pinResetSure:"Tap again to reset", pinResetDone:"PIN reset for {n} — they'll create a new one next time", pinResetFail:"Couldn't reset the PIN. Try again.", viewWeek:"View {n}'s week",
+      toastPick:"— Toast employee —", toastLoading:"Loading Toast…", toastLinked:"{n} linked to Toast", toastUnlinked:"{n} unlinked from Toast", notified:"Team notified ({k} phone{p})", notifiedNone:"Changes noted — nobody has notifications turned on yet.", notifyFail:"Couldn't send the notification. It will go out automatically later.", markedClosed:"{h} ✓"
     },
     it:{
-      adminMode:"Modalità manager", lbBtn:"Classifica team", staffBtn:"Staff", historyBtn:"Cronologia", exportBtn:"Esporta CSV", logoutBtn:"Esci", notifyBtn:"Avvisa i ragazzi",
-      newWeekBtn:"＋ Nuova settimana", deleteWeekBtn:"Elimina settimana", nwTitle:"Nuova settimana", nwLead:"Crea la settimana {r}", nwCopy:"Copia i turni della settimana scorsa ({k} turni)", nwCopySub:"Stesse persone e orari di {r} — poi sistemi quello che cambia", nwEmpty:"Parti da zero", nwEmptySub:"Aggiungi ogni turno a mano",
-      copyConfirm:"Sicura? Sostituisce i turni attuali", deleteWeekConfirm:"Sicura? Elimina settimana", deleteWeekConfirmN:"Sicura? Elimina settimana e {k} turni", deleteWeekLocked:"Settimana passata · archivio", pastLocked:"Le settimane passate sono in archivio e non si eliminano", onlyEmpty:"Si può eliminare solo una settimana vuota",
+      adminMode:"Modalità manager", lbBtn:"Classifica team", staffBtn:"Staff", historyBtn:"Cronologia", exportBtn:"Esporta CSV", logoutBtn:"Esci", notifyBtn:"Avvisa il team",
+      newWeekBtn:"＋ Nuova settimana", deleteWeekBtn:"Elimina settimana", nwTitle:"Nuova settimana", nwLead:"Crea la settimana {r}", nwCopy:"Copia i turni della settimana scorsa ({k} turni)", nwCopySub:"Stesse persone e orari di {r}; poi modifica ciò che cambia", nwEmpty:"Parti da zero", nwEmptySub:"Aggiungi ogni turno a mano",
+      copyConfirm:"Tocca di nuovo per sostituire i turni", deleteWeekConfirm:"Tocca di nuovo per eliminare", deleteWeekConfirmN:"Tocca di nuovo: elimina {k} turni", deleteWeekLocked:"Settimana passata · archivio", pastLocked:"Le settimane passate sono in archivio e non si eliminano", onlyEmpty:"Si può eliminare solo una settimana vuota",
       footAdmin:"Tocca un turno per modificarlo. Le modifiche si salvano da sole.", exitMode:"Esci", addShift:"＋ Aggiungi turno", daySettings:"Impostazioni giorno",
-      statusPending:"In attesa…", statusSaving:"Salvataggio…", statusSaved:"Salvato ✓", statusReloaded:"Ricaricato", statusLoggedOut:"Disconnessa", statusNotSaved:"Non salvato", statusError:"Errore", statusReady:"Pronto",
-      editShift:"Modifica turno", newShift:"Nuovo turno", hours:"orario", who:"Chi", namePh:"Nome", otherName:"Altro nome…", station:"Postazione", stationOpt:"(facoltativa: BAR, S1, R…)", start:"Inizio", end:"Fine",
-      delete:"Elimina", deleteSure:"Sicura? Elimina", cancel:"Annulla", save:"Salva", close:"Chiudi", add:"Aggiungi",
+      statusPending:"In attesa…", statusSaving:"Salvataggio…", statusSaved:"Salvato ✓", statusReloaded:"Ricaricato", statusLoggedOut:"Uscita effettuata", statusNotSaved:"Non salvato", statusError:"Errore", statusReady:"Pronto",
+      editShift:"Modifica turno", newShift:"Nuovo turno", hours:"ore", openHours:"Orario di apertura", who:"Chi", namePh:"Nome", otherName:"Altro nome…", station:"Postazione", stationOpt:"(facoltativa: BAR, S1, R…)", start:"Inizio", end:"Fine",
+      delete:"Elimina", deleteSure:"Tocca di nuovo per eliminare", cancel:"Annulla", save:"Salva", close:"Chiudi", add:"Aggiungi",
       errName:"Scegli o scrivi un nome.", errEnd:"L'orario di fine deve essere dopo l'inizio.", shiftDeleted:"Turno eliminato",
       dayTitle:"Impostazioni giorno", quickChoice:"Scelta rapida", status:"Stato", stOpen:"Aperto (orario normale)", stHalf:"Mezza giornata (orario ridotto)", stClosed:"Chiuso", stHoliday:"Chiuso per festività", stEvent:"Evento privato",
       opens:"Apre", closes:"Chiude", reason:"Motivo / nota", reasonOpt:"(la vedono tutti)", reasonPh:"es. Chiuso per Natale · Festa privata · Formazione staff", regularHours:"orario normale", usually:"di solito", reasonPhHalf:"nota facoltativa, es. Chiusura anticipata per cena privata",
-      holidayNote:"Questo giorno è <b>{h}</b> — aprire o chiudere lo decidi tu.",
-      pOpen:"Aperto · orario normale", pClosedFor:"Chiuso per {h}", pFullDay:"Tutto il giorno", pHalfFor:"Mezza giornata per {h}", pHalf:"Mezza giornata", pHalfSub:"Scegli gli orari qui sotto", pEvent:"Evento privato", pEventSub:"Locale riservato · i turni restano visibili", pOther:"Chiuso — altro motivo", pOtherSub:"Scrivi il motivo qui sotto così i ragazzi lo sanno",
-      reasonPh2:"Motivo, es. Lavori · Formazione · Maltempo", errReason:"Scrivi il motivo — i ragazzi lo vedranno.", errClose:"L'orario di chiusura deve essere dopo l'apertura.", dayOpenSet:"Giorno impostato su aperto",
+      holidayNote:"Questo giorno è <b>{h}</b>. Decidi tu se aprire o chiudere.",
+      pOpen:"Aperto · orario normale", pClosedFor:"Chiuso per {h}", pFullDay:"Tutto il giorno", pHalfFor:"Mezza giornata per {h}", pHalf:"Mezza giornata", pHalfSub:"Scegli gli orari qui sotto", pEvent:"Evento privato", pEventSub:"Locale riservato · i turni restano visibili", pOther:"Chiuso — altro motivo", pOtherSub:"Scrivi il motivo qui sotto: il team lo vedrà",
+      reasonPh2:"Motivo, es. Lavori · Formazione · Maltempo", errReason:"Scrivi il motivo: il team lo vedrà.", errClose:"L'orario di chiusura deve essere dopo l'apertura.", dayOpenSet:"Giorno impostato su aperto",
       staffTitle:"Staff", staffLead:"Tocca un nome per compleanno, PIN e documenti. Togliere un nome non cancella mai le settimane passate.",
       newNamePh:"Nuovo nome", noNames:"Nessun nome ancora.", nameExists:"Nome già presente", removeQ:"Rimuovi?", bdaySaved:"Compleanno salvato per {n}", bdayRemoved:"Compleanno rimosso",
       removeTap:"Tocca di nuovo per rimuovere {n}{s}. Le settimane passate restano.", upcoming1:" e 1 turno futuro", upcomingN:" e {k} turni futuri", removed:"{n} rimosso/a{s}. I turni passati restano in archivio.", deleted1:" · 1 turno futuro cancellato", deletedN:" · {k} turni futuri cancellati",
-      historyTitle:"Cronologia modifiche", historyLead:"Ogni modifica fatta dalla modalità manager, dalla più recente. Le ore di conferma sono nell'archivio CSV.", loading:"Caricamento…", historyFail:"Impossibile caricare la cronologia.", noChanges:"Nessuna modifica registrata.", historyNeedsDb:"La cronologia è disponibile quando il database è collegato.",
-      exporting:"Preparo l'archivio…", exportNeedsDb:"L'esportazione è disponibile quando il database è collegato.", exportFail:"Esportazione non riuscita.",
-      weekCreated:"Settimana {r} creata", weekCopied:"Settimana {r} creata con {k} turni copiati — sistema nomi e orari", weekNoPrev:"Settimana creata (nessuna precedente da copiare)", noPrev:"Non c'è una settimana precedente da copiare.", copied:"Turni copiati dalla settimana precedente", weekDeleted:"Settimana eliminata",
-      welcome:"Ciao! Sei in modalità manager.", noDb:"Attenzione: database non collegato, le modifiche non verranno salvate.", loggedOut:"Uscita dalla modalità manager.",
-      conflict:"Qualcun altro ha modificato i turni da un altro dispositivo. Ho ricaricato l'ultima versione — ripeti la modifica.", pwInvalid:"Password non più valida. Accedi di nuovo.", dbMissing:"Il database non è ancora collegato — le modifiche non si salvano.", saveFail:"Salvataggio non riuscito. Riprova.",
-      tagline:"Turni settimanali — New York", mgrLogin:"Manager", whoBtn:"Chi sei?", clockBtn:"Timbrature", bellOff:"Avvisami", bellOn:"Notifiche attive", bellBlocked:"Notifiche bloccate", bellIos:"Notifiche",
-      updatedAt:"Aggiornato {d}", previewMode:"anteprima", scheduleUpdated:"Turni aggiornati ", loadFail:"Impossibile caricare i turni. Riprova.",
+      historyTitle:"Cronologia modifiche", historyLead:"Ogni modifica fatta dalla modalità manager, dalla più recente. Le ore di conferma sono nell'esportazione CSV.", loading:"Caricamento…", historyFail:"Impossibile caricare la cronologia.", noChanges:"Nessuna modifica registrata.", historyNeedsDb:"La cronologia è disponibile quando il database è collegato.",
+      exporting:"Preparo il file CSV…", exportNeedsDb:"L'esportazione è disponibile quando il database è collegato.", exportFail:"Esportazione non riuscita.",
+      weekCreated:"Settimana {r} creata", weekCopied:"Settimana {r} creata con {k} turni copiati — sistema nomi e orari", weekNoPrev:"Settimana creata (nessuna precedente da copiare)", noPrev:"Non c'è una settimana precedente da copiare.", weekDeleted:"Settimana eliminata",
+      welcome:"Modalità manager attiva.", noDb:"Attenzione: database non collegato, le modifiche non verranno salvate.", loggedOut:"Uscita dalla modalità manager.",
+      conflict:"I turni sono stati modificati da un altro dispositivo. È stata ricaricata l'ultima versione: ripeti la modifica.", pwInvalid:"Password non più valida. Accedi di nuovo.", dbMissing:"Il database non è ancora collegato — le modifiche non si salvano.", saveFail:"Salvataggio non riuscito. Riprova.",
+      tagline:"Turni settimanali — New York", mgrLogin:"Accesso manager", whoBtn:"Chi sei?", clockBtn:"Timbrature", bellOff:"Avvisami", bellOn:"Notifiche attive", bellBlocked:"Notifiche bloccate", bellIos:"Notifiche",
+      updatedAt:"Aggiornato {d}", previewMode:"anteprima", scheduleUpdated:"Turni aggiornati", loadFail:"Impossibile caricare i turni. Riprova.",
       openNow:"Aperto ora", closedNow:"Chiuso ora", closedToday:"Chiuso oggi", closedTodayHol:"Chiuso oggi · Festivo", halfDayTag:"(mezza giornata)", workingToday:"Oggi lavorano:", noShiftsToday:"Nessun turno assegnato per oggi",
       thisWeek:"Questa", nextWeek:"Prossima", pastWeek:"Scorsa", weekTag:"Settimana", hidePast:"Nascondi passate", pastArchive:"Archivio ({n})", noWeeks:"Nessuna settimana pubblicata.",
       todayTag:"· oggi", noShiftsClosed:"Nessun turno — chiuso", noShiftsAssigned:"Nessun turno assegnato", allConfirmed:"✓ tutti confermati", confirmedN:"{c}/{n} confermati", bdayChip:"compleanno di {n}",
       stClosedLbl:"Chiuso", stHolidayLbl:"Festivo · chiuso", stHalfLbl:"Mezza giornata", stEventLbl:"Evento privato",
       notClockedIn:"non ha timbrato", clockedIn:"timbrato {t}", lateBy:" · {t} di ritardo",
-      footStaff:"Tocca il tuo turno per confermare di averlo visto. I tuoi turni sono segnati YOU.", copyBtn:"Copia come testo", copied:"Copiato! Incollalo su WhatsApp.", nothingToCopy:"Niente da copiare", copyFail:"Copia non riuscita",
+      footStaff:"Tocca il tuo turno per confermare di averlo visto. I tuoi turni sono segnati YOU.", copyBtn:"Copia come testo", copied:"Copiato negli appunti.", nothingToCopy:"Niente da copiare", copyFail:"Copia non riuscita",
       tcTitle:"Timbrature", tcLead:"Entrate e uscite da Toast, in tempo reale.", today:"Oggi", yesterday:"Ieri", tomorrow:"Domani", onTheClock:"al lavoro", people:"persone", person:"persona", totalHours:"ore totali",
-      nobodyPast:"Nessuno ha timbrato questo giorno.", nobodyYet:"Nessuno ha ancora timbrato oggi.", tcOff:"Timbrature non collegate.", onClockNow:"al lavoro adesso", shiftDone:"turno finito", nowWord:"adesso", updatedFromToast:"Aggiornato {t} · da Toast", refresh:"↻ Aggiorna", toastDown:"Toast non risponde al momento — riprova tra poco.",
-      lbTitle:"Classifica team", managersOnly:"Solo manager", lbLead:"Ore lavorate + puntualità, direttamente da Toast. Lo staff non la vede — ognuno vede solo le proprie statistiche.", thisMonth:"Questo mese", allTime:"Sempre",
-      colName:"Nome", colHours:"Ore", colOnTime:"Puntuale", lbRulesSum:"Come funziona la classifica", lbRules:"Le ore sono il tempo timbrato su Toast. “Puntuale” è la quota di turni previsti in cui la timbratura d'entrata è entro 5 minuti dall'inizio (compare dopo 3 turni timbrati). L'ordine combina entrambi: prima le ore, con un bonus per la puntualità e per la serie di turni puntuali in corso . Contano solo i turni timbrati e i giorni di chiusura non penalizzano nessuno.",
-      addPeople:"Aggiungi persone in Staff per avviare la classifica.", shift1:"turno", shiftN:"turni", inARow:"{n} di fila", noClockedYet:"nessun turno timbrato", onTimePct:"{p}% puntuale", avgLate:"media +{n} min", neverLate:"mai in ritardo", newTag:"nuovo", takesLead:"{n} passa in testa!", last180:"Ultimi 180 giorni", sinceD:"Dal {d}", weekOfD:"Settimana del {d}", updatedT:"aggiornato {t}", place1:"1º", place2:"2º", place3:"3º", ofThree:"{n}/3 turni",
-      myWeek:"La mia settimana", myStats:"Statistiche", weekOfName:"Settimana di {n}", myWeekTitle:"La mia settimana", weekLeadMine:"I tuoi turni e le ore dalle timbrature Toast.", weekLeadOf:"Turni di {n} e ore dalle timbrature Toast.",
+      nobodyPast:"Nessuno ha timbrato questo giorno.", nobodyYet:"Nessuno ha ancora timbrato oggi.", tcOff:"Timbrature non collegate.", onClockNow:"al lavoro adesso", shiftDone:"uscita timbrata", nowWord:"adesso", updatedFromToast:"Aggiornato {t} · da Toast", refresh:"↻ Aggiorna", toastDown:"Toast non risponde. Riprova tra poco.",
+      lbTitle:"Classifica team", managersOnly:"Solo manager", lbLead:"Ore lavorate e puntualità, da Toast. Lo staff non vede questa classifica: ognuno vede solo le proprie statistiche.", thisMonth:"Questo mese", allTime:"Totale", periodWeek:"Questa settimana", adminOff:"La modalità manager non è attiva sul server.", rulesShort:"Regolamento", pinNoneShort:"Nessun PIN",
+      colName:"Nome", colHours:"Ore", colOnTime:"Puntuale", lbRulesSum:"Come funziona la classifica", lbRules:"Le ore sono il tempo timbrato su Toast. “Puntuale” è la quota di turni previsti in cui la timbratura d'entrata è entro 5 minuti dall'inizio (compare dopo 3 turni timbrati). L'ordine combina entrambi: prima le ore, con un bonus per la puntualità e per la serie di turni puntuali in corso. Contano solo i turni timbrati e i giorni di chiusura non penalizzano nessuno.",
+      addPeople:"Aggiungi persone in Staff per avviare la classifica.", shift1:"turno", shiftN:"turni", inARow:"{n} di fila", noClockedYet:"nessun turno timbrato", onTimePct:"{p}% puntuale", avgLate:"media +{n} min", neverLate:"mai in ritardo", newTag:"nuovo", takesLead:"{n} passa al primo posto.", last180:"Ultimi 180 giorni", sinceD:"Dal {d}", weekOfD:"Settimana del {d}", updatedT:"aggiornato {t}", place1:"1º", place2:"2º", place3:"3º", ofThree:"{n}/3 turni",
+      myWeek:"La mia settimana", myStats:"Le mie statistiche", weekOfName:"Settimana di {n}", myWeekTitle:"La mia settimana", weekLeadMine:"I tuoi turni e le ore dalle timbrature Toast.", weekLeadOf:"Turni di {n} e ore dalle timbrature Toast.",
       scheduled:"previste", worked:"lavorate", soFar:" finora", difference:"differenza", noShiftsMine:"Nessun turno per te questa settimana.", noShiftsPerson:"Nessun turno questa settimana.", noWeeksYet:"Nessuna settimana", nothingPublished:"Niente di pubblicato.",
-      hoursFromToast:"Ore da Toast · aggiornato {t}", notLinked:"Toast non riconosce ancora questo nome — collegalo in Staff.", loadingHours:"Carico le ore da Toast…", hoursNeedToast:"Le ore lavorate compaiono quando le timbrature Toast sono collegate.", toastDownShort:"Toast non risponde al momento — i turni previsti restano visibili.",
+      hoursFromToast:"Ore da Toast · aggiornato {t}", notLinked:"Toast non riconosce ancora questo nome. Collegalo in Staff.", loadingHours:"Carico le ore da Toast…", hoursNeedToast:"Le ore lavorate compaiono quando le timbrature Toast sono collegate.", toastDownShort:"Toast non risponde; i turni previsti restano visibili.",
       noClockIn:"Nessuna timbratura", notClockedYet:"Non ha ancora timbrato", notOnSchedule:"fuori turno", dayMarked:"Giorno segnato {s}", confirmChip:"conferma",
       statsTitle:"Le mie statistiche", statsOf:"Statistiche di {n}", statsLeadMine:"Le tue ore e la tua puntualità, da Toast. Le vedi solo tu.", statsLeadOf:"Ore e puntualità di {n}, da Toast.",
       hoursTile:"ore", onTimeTile:"puntuale", streakTile:"di fila", onClockSince:"Al lavoro adesso · da {t}", shiftsClocked:"{n} timbrati", noClockedShifts:"Nessun turno timbrato", loadingWord:"Caricamento…",
       teamHours:"Ore del team {p}", teamOnTime:"Puntualità del team", teamShifts:"Turni lavorati dal team", teamOnNow:"Al lavoro adesso", pThisWeek:"questa settimana", pThisMonth:"questo mese", p180:"(180 giorni)",
       statsRulesSum:"Come viene calcolato", statsRules:"Le ore sono il tempo timbrato su Toast. “Puntuale” è la quota di turni previsti in cui la timbratura d'entrata è entro 5 minuti dall'inizio (compare dopo 3 turni timbrati). Contano solo i turni timbrati e i giorni di chiusura non penalizzano. Nessun altro vede questi numeri.",
       bStreak:"{n} turni puntuali di fila", bPerfect:"Puntualità perfetta", b30:"30+ ore", b20:"20+ ore", bShifts:"{n} turni",
-      m0:"Le statistiche compaiono dopo il primo turno timbrato. Benvenuto/a a bordo! ", m1:"Continua così — dopo 3 turni previsti vedrai anche la puntualità.", m90:"Fantastico — quasi sempre perfettamente in orario. Grazie! ", m80:"Ottimo lavoro — puntualità solida. Continua così!", m60:"Bel lavoro. Qualche minuto prima e sei nella zona verde.", mLow:"Grazie per le tue ore! Prova a timbrare entro 5 minuti dall'inizio — ce la fai.",
-      hi:"Ciao {n} ", nextShift:"Prossimo turno: {w} · ", onShiftNow:"In turno adesso · ", noUpcoming:"Nessun turno in programma.",
+      m0:"Le statistiche compaiono dopo il primo turno timbrato.", m1:"La puntualità compare dopo 3 turni previsti.", m90:"Puntualità eccellente: sei quasi sempre in orario.", m80:"Buona puntualità. Continua così.", m60:"Qualche minuto prima alla timbratura ti porterebbe sopra l'80% di puntualità.", mLow:"Cerca di timbrare entro 5 minuti dall'inizio del turno.",
+      hi:"Ciao {n}", nextShift:"Prossimo turno: {w} · ", onShiftNow:"In turno adesso · ", noUpcoming:"Nessun turno in programma.",
       histEntry:"{d} · {t} · v{v}",
       packetTitle:"I tuoi documenti", packetLead:"La legge di New York obbliga Bar Lento a consegnarti questi documenti. Leggili fino alla fine (circa 15 minuti, tempo di lavoro pagato), poi conferma una volta con la tua email: una sola copia firmata con tutto arriva a te e al titolare.", packetPill:"{n} documenti · una firma", packetAck:"Confermo di aver ricevuto e letto tutti i documenti qui sopra: {list}.",
-      docsBtn:"Documenti", docsTitle:"I miei documenti", docsLead:"Tutto quello che Bar Lento ti ha consegnato da leggere e firmare, con la data della firma. Tocca un documento per rileggerlo o stamparlo.", docsMail:"Inviami le copie", docsMailed:"Le tue copie firmate sono in arrivo a {e}", docsMailNone:"Nessun documento firmato ancora", docOf:"documento {i} di {n}",
+      docsBtn:"Documenti", docsTitle:"Documenti", docsLead:"Tutto quello che Bar Lento ti ha consegnato da leggere e firmare, con la data della firma. Tocca un documento per rileggerlo o stamparlo.", docsMail:"Inviami le copie", docsMailed:"Le tue copie firmate sono state inviate a {e}.", docsMailSoon:"Già inviate pochi minuti fa. Controlla la posta (anche lo spam).", docsMailNone:"Nessun documento firmato ancora", docOf:"documento {i} di {n}",
       docSigned:"✓ Firmato {d}", docToSign:"Da firmare · entro {d}", docLate:"In ritardo · firma ora", trainDone:"✓ Completata {d}", trainTodo:"Da completare quest'anno · entro {d}", trainLate:"In ritardo · completa ora", later:"Più tardi",
       readLead:"Leggi il documento fino alla fine, poi conferma con la tua email: la copia firmata arriva a te e al titolare.", readLeadNoMail:"Leggi il documento fino alla fine, poi conferma con la tua email.", readLeadDone:"Hai firmato questo documento il {d}.", readLeadDoneTrain:"Hai completato questa formazione il {d}.", readLeadTrain:"Guarda il video (link in fondo), poi conferma con la tua email: l'attestato arriva a te e al titolare.",
-      agreeTrain:"✓ Fatto", agree:"✓ Accetto", thanksDoc:"Grazie! La copia firmata è in arrivo a {e}", thanksDocNoMail:"Grazie! Documento firmato ✓", thanksTrain:"Formazione registrata ✓ — conferma in arrivo a {e}", thanksTrainNoMail:"Formazione registrata ✓",
-      rosterDocs:"Documenti {k}/{n}", copiesSent:"Copie firmate inviate a {e}: {k}", sendCopies:"Reinvia copie", linksHead:"Link", contactsHead:"Contatti — scrivi a tutti",
-      rulesOk:"Regolamento ✓ {d} · {e}", rulesNo:"Regolamento non ancora firmato", rulesLink:"Stampa documenti", stNotIn:"Non è ancora entrato/a", stLine:"PIN ✓ · Regolamento {r} · Documenti {k}/{n}", stLineNoDocs:"PIN ✓ · Regolamento {r}", phBirthday:"Compleanno", phAccess:"Accesso", phDocs:"Documenti", phWeek:"Turni e ore", viewWeekBtn:"Vedi settimana", removeName:"Rimuovi {n}", noBirthday:"non impostato", devicesShort:"{k} dispositiv{p}", personLead:"Compleanno, PIN personale e documenti firmati.", trainingRow:"Formazione {y}", copyNotSent:"copia non ancora inviata", sendCopy:"Invia copia firmata via email", copySent:"Copia firmata inviata a {e}", copyFail:"Invio email non riuscito ({r})", mailOff:"Email non ancora configurata sul server (impostazioni Vercel).",
-      pinSet:"PIN creato", pinDevices:"{k} dispositiv{p}", pinNone:"Nessun PIN", pinReset:"Azzera PIN", pinResetSure:"Sicura? Azzera", pinResetDone:"PIN azzerato per {n} — ne creerà uno nuovo al prossimo accesso", pinResetFail:"Impossibile azzerare il PIN. Riprova.", viewWeek:"Vedi la settimana di {n}", staffLeadPin:" Ognuno crea un PIN personale per vedere i propri turni e le proprie ore; <b>Azzera PIN</b> se lo dimentica (scollega anche tutti i suoi dispositivi).",
-      toastPick:"— dipendente Toast —", toastLoading:"Carico Toast…", toastLinked:"{n} collegato/a a Toast", toastUnlinked:"{n} scollegato/a da Toast", notified:"Ragazzi avvisati ✓ ({k} telefon{p})", notifiedNone:"Modifiche registrate — nessuno ha ancora attivato le notifiche.", notifyFail:"Invio non riuscito. Partirà automaticamente più tardi.", markedClosed:"{h} ✓"
+      agreeTrain:"Fatto", agree:"Accetto", thanksDoc:"Documenti firmati. Copia inviata a {e}.", thanksDocNoMail:"Documenti firmati.", thanksTrain:"Formazione registrata. Conferma inviata a {e}.", thanksTrainNoMail:"Formazione registrata.",
+      rosterDocs:"Documenti {k}/{n}", copiesSent:"Copie firmate inviate a {e}: {k}", sendCopies:"Reinvia copie", linksHead:"Link", contactsHead:"Contatti (scrivi a tutti)",
+      rulesOk:"Regolamento ✓ {d} · {e}", rulesNo:"Regolamento non ancora firmato", rulesLink:"Stampa documenti", stNotIn:"Non è ancora entrato/a", stLine:"PIN ✓ · Regolamento {r} · Documenti {k}/{n}", stLineNoDocs:"PIN ✓ · Regolamento {r}", phBirthday:"Compleanno", phAccess:"Accesso", phDocs:"Documenti", phWeek:"Turni e ore", viewWeekBtn:"Vedi settimana", removeName:"Rimuovi {n}", noBirthday:"non impostato", devicesShort:"{k} dispositiv{p}", personLead:"Compleanno, PIN personale e documenti firmati.", trainingRow:"Formazione {y}", copyNotSent:"copia non ancora inviata", sendCopy:"Invia copia firmata via email", copySent:"Copia firmata inviata a {e}", mailFail:"Invio email non riuscito ({r})", mailOff:"Email non ancora configurata sul server (impostazioni Vercel).",
+      pinSet:"PIN creato", pinDevices:"{k} dispositiv{p}", pinNone:"Nessun PIN", pinReset:"Azzera PIN", pinResetSure:"Tocca di nuovo per azzerare", pinResetDone:"PIN azzerato per {n} — ne creerà uno nuovo al prossimo accesso", pinResetFail:"Impossibile azzerare il PIN. Riprova.", viewWeek:"Vedi la settimana di {n}",
+      toastPick:"— dipendente Toast —", toastLoading:"Carico Toast…", toastLinked:"{n} collegato/a a Toast", toastUnlinked:"{n} scollegato/a da Toast", notified:"Team avvisato ({k} telefon{p})", notifiedNone:"Modifiche registrate — nessuno ha ancora attivato le notifiche.", notifyFail:"Invio non riuscito. Partirà automaticamente più tardi.", markedClosed:"{h} ✓"
     }
   };
   var lang="en";
@@ -1350,7 +1350,7 @@
     if(mustIdentify()) return false;
     var today=new Date(), names=birthdaysOn(today); if(!names.length) return false;
     var key="bl_bday_"+toISO(today); if(storageGet(key)) return false;
-    $("bdayNames").textContent=names.join(" & ")+"!";
+    $("bdayNames").textContent=names.join(lang==="it"?" e ":" and ");
     $("bdayOverlay").classList.add("show"); confetti(6000); storageSet(key,"1"); return true;
   }
 
@@ -1377,7 +1377,9 @@
     opts=opts||{}; var headers={"Content-Type":"application/json"};
     if(opts.auth && state.password) headers["x-admin-password"]=state.password;
     if(state.me.token) headers["x-staff-token"]=state.me.token;
-    var res=await fetch(path,{method:opts.method||"GET",headers:headers,body:opts.body?JSON.stringify(opts.body):undefined,cache:"no-store"});
+    var res;
+    try{ res=await fetch(path,{method:opts.method||"GET",headers:headers,body:opts.body?JSON.stringify(opts.body):undefined,cache:"no-store"}); }
+    catch(e){ return {ok:false,status:0,json:{error:"network"}}; } // offline / aborted: callers show their own message
     var json=null; try{json=await res.json();}catch(e){}
     return {ok:res.ok,status:res.status,json:json||{}};
   }
@@ -1410,8 +1412,9 @@
   async function save(){
     if(state.saving){ scheduleSave(); return; }
     state.saving=true; $("saveStatus").textContent=t("statusSaving");
-    var r=await api("/api/data",{method:"POST",auth:true,body:{version:state.version,data:state.data}});
-    state.saving=false;
+    var r;
+    try{ r=await api("/api/data",{method:"POST",auth:true,body:{version:state.version,data:state.data}}); }
+    finally{ state.saving=false; }
     if(r.ok){
       state.version=r.json.version; state.updatedAt=r.json.updatedAt; state.data=r.json.data; state.confirmations=r.json.confirmations||state.confirmations;
       state.pendingNotify=r.json.pendingNotify||0; renderNotifyBtn(); armIdleNotify();
@@ -1424,7 +1427,7 @@
       $("saveStatus").textContent=t("statusLoggedOut"); toast(t("pwInvalid")); logout(true);
     } else if(r.status===503){
       $("saveStatus").textContent=t("statusNotSaved");
-      toast(r.json.error==="storage_missing" ? t("dbMissing") : "Manager mode is not enabled on the server.",4800);
+      toast(r.json.error==="storage_missing" ? t("dbMissing") : t("adminOff"),4800);
     } else {
       $("saveStatus").textContent=t("statusError"); toast(t("saveFail"));
     }
@@ -1452,7 +1455,7 @@
     var hol=holidayOn(now);
     var statusText = closedToday ? (note.status==="holiday"?t("closedTodayHol"):t("closedToday")) : (isOpen?t("openNow"):t("closedNow"));
     var sub = closedToday ? DAY_NAMES[todayKey]+(note.text?" · "+h(note.text):"") : DAY_NAMES[todayKey]+" · "+range12(hours.open,hours.close)+(note&&note.status==="half"?" "+t("halfDayTag"):"")+(note&&note.text?" · "+h(note.text):"");
-    if(hol) sub+=" · "+hol.icon+" "+h(hol.name);
+    if(hol) sub+=" · "+h(hol.name);
     el.innerHTML='<div class="status"><span class="led"></span><div><div class="text">'+statusText+'</div><div class="sub">'+sub+'</div></div></div>'
       +'<div class="whoworks">'+(names.length?t("workingToday")+' <span class="names">'+names.join(", ")+'</span>':(closedToday?'':t("noShiftsToday")))+'</div>';
   }
@@ -1504,7 +1507,7 @@
     var period=lb.period; var btn=$("lbRefresh"); if(!quiet) btn.classList.add("spin");
     var r=await api("/api/toast?action=leaderboard&period="+period,{auth:true}); btn.classList.remove("spin");
     if(r.ok&&r.json&&r.json.rows){ lb.data[r.json.period]=r.json; }
-    else if(!quiet) toast("Toast isn't answering right now — try again in a moment.",3500);
+    else if(!quiet) toast(t("toastDown"),3500);
     if($("lbOverlay").classList.contains("show")) renderLb();
   }
   function renderLb(){
@@ -1705,7 +1708,7 @@
       var badge=note&&note.status?'<span class="badge '+note.status+'">'+statusLabel(note.status)+'</span>':"";
       var noteHtml=note&&note.text?'<div class="daynote">'+h(note.text)+'</div>':"";
       var hol=holidayOn(date), bdays=birthdaysOn(date);
-      var chips=(hol?'<span class="holichip">'+hol.icon+' '+h(hol.name)+'</span>':"")+bdays.map(function(n){return '<span class="bdaychip">'+t("bdayChip",{n:lang==="it"?h(n):h(possessive(n))})+'</span>';}).join("");
+      var chips=(hol?'<span class="holichip">'+h(hol.name)+'</span>':"")+bdays.map(function(n){return '<span class="bdaychip">'+t("bdayChip",{n:lang==="it"?h(n):h(possessive(n))})+'</span>';}).join("");
       if(chips) noteHtml='<div class="chips">'+chips+'</div>'+noteHtml;
       return '<div class="day-card'+(isLate?" late":"")+(isToday?" today":"")+(closed?" closed":"")+(isPast&&!state.admin?" past":"")+'" style="--i:'+i+'">'
         +'<div class="day-head"><span class="name">'+DAY_NAMES[key]+(isToday?' <span style="color:var(--accent);font-size:.75rem">'+t("todayTag")+'</span>':"")+'</span><span class="date mono">'+dateShort(date)+'</span></div>'
@@ -1753,7 +1756,7 @@
     $("confirmName").textContent=s.name+(s.station?" · "+s.station:"");
     $("confirmWhen").textContent=DAY_NAMES[day]+", "+dateShort(date)+" · "+range12(s.start,s.end);
     $("confirmLead").innerHTML=on
-      ? 'Tap <b>Confirm shift</b> to let Marta know you\'ve seen the day and the time.'
+      ? 'Tap <b>Confirm shift</b> to let the manager know you have seen the day and the time.'
       : 'You already confirmed this shift. Remove the confirmation?';
     $("confirmErr").textContent="";
     $("confirmGo").textContent=on?"✓ Confirm shift":"Remove confirmation"; $("confirmGo").className="btn "+(on?"good":"danger"); $("confirmGo").disabled=false;
@@ -1767,7 +1770,7 @@
     renderDays(); state.pendingConfirm[key]=true;
     var r=await api("/api/confirm",{method:"POST",body:{week:c.week,day:c.day,id:c.id,on:c.on}});
     delete state.pendingConfirm[key];
-    if(r.ok){state.confirmations=r.json.confirmations||state.confirmations;renderDays();toast(c.on?"Shift confirmed ✓ Thank you!":"Confirmation removed");}
+    if(r.ok){state.confirmations=r.json.confirmations||state.confirmations;renderDays();toast(c.on?"Shift confirmed.":"Confirmation removed.");}
     else{ if(c.on) delete state.confirmations[key]; else state.confirmations[key]="1"; renderDays();
       if(r.status===401){ meSet(null,null); renderMe(); toast("Please sign in again to confirm."); maybeWhoPopup(); }
       else if(r.status===403) toast("Only the person on this shift can confirm it.");
@@ -1778,7 +1781,7 @@
   function openLogin(){
     if(state.admin){logout(false);return;}
     if(!state.features.admin){
-      $("loginBody").innerHTML='<div class="hint">Manager mode isn\'t enabled yet: the server has no password set (ADMIN_PASSWORD on Vercel).</div>';
+      $("loginBody").innerHTML='<div class="hint">Manager mode is not enabled on this server.</div>';
       $("loginGo").style.display="none";
     } else {
       $("loginGo").style.display="";
@@ -1835,7 +1838,7 @@
     state.editing={week:wk,day:day,id:rec?rec.id:null};
     var date=addDays(fromISO(wk),DAY_KEYS.indexOf(day));
     $("shiftTitle").textContent=rec?t("editShift"):t("newShift");
-    $("shiftLead").textContent=DAY_NAMES[day]+", "+dateShort(date)+" · "+t("hours")+" "+range12(hoursFor(wk,day).open,hoursFor(wk,day).close);
+    $("shiftLead").textContent=DAY_NAMES[day]+", "+dateShort(date)+" · "+t("openHours")+" "+range12(hoursFor(wk,day).open,hoursFor(wk,day).close);
     var names=state.data.staff.slice(); if(rec&&rec.name&&names.indexOf(rec.name)===-1) names.unshift(rec.name);
     var sel=$("nameSel");
     sel.innerHTML=names.map(function(n){return '<option value="'+h(n)+'">'+h(n)+'</option>';}).join("")+'<option value="__other">'+t("otherName")+'</option>';
@@ -1889,7 +1892,7 @@
     $("dayStatus").value=note.status||""; $("dayNote").value=note.text||""; $("dayErr").textContent="";
     timeOptions($("halfOpen"),note.open||base.open); timeOptions($("halfClose"),note.close||"19:00"); syncHalfHours();
     var hb=$("dayHoliday");
-    if(hol){ hb.style.display=""; hb.innerHTML='<span>'+hol.icon+'</span><span>'+t("holidayNote",{h:h(hol.name)})+'</span>'; }
+    if(hol){ hb.style.display=""; hb.innerHTML='<span>'+t("holidayNote",{h:h(hol.name)})+'</span>'; }
     else { hb.style.display="none"; hb.innerHTML=""; }
 
     var reason=hol?hol.name:"";
@@ -1932,7 +1935,7 @@
     $("nwLead").textContent=t("nwLead",{r:weekLabel(k).range});
     var opts=[
       prevK&&n?{ic:"",label:t("nwCopy",{k:n}),sub:t("nwCopySub",{r:weekLabel(prevK).range}),copy:true}:null,
-      {ic:"▢",label:t("nwEmpty"),sub:t("nwEmptySub"),copy:false}
+      {ic:"",label:t("nwEmpty"),sub:t("nwEmptySub"),copy:false}
     ].filter(Boolean);
     var pe=$("nwPresets");
     pe.innerHTML=opts.map(function(o,i){return '<button type="button" class="preset'+(i===0?" active":"")+'" data-i="'+i+'"><span class="ic">'+o.ic+'</span><span class="tx">'+h(o.label)+'<span class="sub">'+h(o.sub)+'</span></span></button>';}).join("");
@@ -1965,7 +1968,7 @@
     var ra=acc.rules, okR=!!(ra&&rulesActive()&&ra.version===RULES.version); var nDocs=(DOCS.list||[]).length, kOk=0;
     (DOCS.list||[]).forEach(function(d){ var a=acc.docs&&acc.docs[d.id]; if(a&&a.version===d.version) kOk++; });
     var allOk=(!rulesActive()||okR)&&kOk===nDocs;
-    return {txt:nDocs?t("stLine",{r:okR?"✓":"–",k:kOk,n:nDocs}):t("stLineNoDocs",{r:okR?"✓":"–"}),ok:allOk};
+    var line=nDocs?t("stLine",{r:okR?"✓":"–",k:kOk,n:nDocs}):t("stLineNoDocs",{r:okR?"✓":"–"}); if(!acc.pin) line=line.replace(/^PIN ✓/,t("pinNoneShort")); return {txt:line,ok:allOk&&!!acc.pin};
   }
   function renderRoster(){
     var el=$("rosterList"); if(!state.data.birthdays) state.data.birthdays={}; if(!state.data.toastMap) state.data.toastMap={};
@@ -1989,21 +1992,21 @@
     if(rulesActive()||(DOCS.list||[]).length){
       var ra=acc.rules, okR=!!(ra&&rulesActive()&&ra.version===RULES.version); var anyAck=!!ra;
       html+='<div class="pcard"><div class="ph">'+h(t("phDocs"))+'</div>';
-      if(rulesActive()) html+='<div class="pr"><span>House Rules</span><span class="'+(okR?"ok":"dim")+'">'+(okR?"✓ "+h(ackDate(ra.at))+(ra.emailedAt?"":" · "+h(t("copyNotSent"))):"–")+'</span></div>';
+      if(rulesActive()) html+='<div class="pr"><span>'+h(t("rulesShort"))+'</span><span class="'+(okR?"ok":"dim")+'">'+(okR?"✓ "+h(ackDate(ra.at))+(ra.emailedAt?"":" · "+h(t("copyNotSent"))):"–")+'</span></div>';
       (DOCS.list||[]).forEach(function(d){ var a=acc.docs&&acc.docs[d.id]; var ok=!!(a&&a.version===d.version); if(a) anyAck=true; html+='<div class="pr"><span><span class="doc-ic'+(ok?" ok":"")+'">'+h(d.icon||"")+'</span> '+h(d.kind==="training"?t("trainingRow",{y:d.version}):(d.short||d.title))+'</span><span class="'+(ok?"ok":"dim")+'">'+(ok?"✓ "+h(ackDate(a.at)):"–")+'</span></div>'; });
       if(anyAck&&state.mailEnabled) html+='<div class="pr"><span class="dim" style="font-size:.78rem">'+(ra&&ra.email?""+h(ra.email):"")+'</span><button type="button" class="pinbtn mail">'+h(t("sendCopies"))+'</button></div>';
       html+='</div>';
     }
     html+='<div class="pcard"><div class="ph">'+h(t("phWeek"))+'</div><div class="pr"><span class="dim">'+h(t("viewWeek",{n:n}))+'</span><button type="button" class="pinbtn view">'+h(t("viewWeekBtn"))+'</button></div></div>';
     var body=$("personBody"); body.innerHTML=html;
-    var rm=$("personRemove"); rm.textContent="✕ "+t("removeName",{n:n}); rm.dataset.arm=""; rm.classList.remove("arm"); rm.dataset.name=n;
+    var rm=$("personRemove"); rm.textContent=t("removeName",{n:n}); rm.dataset.arm=""; rm.classList.remove("arm"); rm.dataset.name=n;
     body.querySelectorAll(".pinbtn.mail").forEach(function(b){b.addEventListener("click",async function(){
       b.disabled=true;
       var r=await api("/api/me",{method:"POST",auth:true,body:{action:"sendCopies",name:n}});
       b.disabled=false;
       if(r.ok){ toast(t("copiesSent",{e:r.json.email||"",k:(r.json.sent||[]).join(", ")}),4500); await loadAccounts(); renderPerson(); renderRoster(); }
       else if(r.status===503) toast(t("mailOff"),4000);
-      else toast(t("copyFail",{r:(r.json&&r.json.detail)||r.status}),4500);
+      else toast(t("mailFail",{r:(r.json&&r.json.detail)||r.status}),4500);
     });});
     body.querySelectorAll(".pinbtn.view").forEach(function(b){b.addEventListener("click",function(){ $("personOverlay").classList.remove("show"); $("staffOverlay").classList.remove("show"); openMe(n); });});
     body.querySelectorAll(".pinbtn.reset").forEach(function(b){b.addEventListener("click",async function(){
@@ -2018,7 +2021,7 @@
   function removePerson(){
     var b=$("personRemove"), n=b.dataset.name; var i=state.data.staff.indexOf(n); if(i===-1) return;
     var up=upcomingShiftsOf(n);
-    if(!b.dataset.arm){ var sfx=up.length?(up.length===1?t("upcoming1"):t("upcomingN",{k:up.length})):""; b.dataset.arm="1"; b.classList.add("arm"); b.textContent=t("removeQ")+" "+t("removeName",{n:n}); toast(t("removeTap",{n:n,s:sfx}),4000); setTimeout(function(){ if(b.isConnected&&b.dataset.arm){ b.dataset.arm=""; b.classList.remove("arm"); b.textContent="✕ "+t("removeName",{n:n}); } },4000); return; }
+    if(!b.dataset.arm){ var sfx=up.length?(up.length===1?t("upcoming1"):t("upcomingN",{k:up.length})):""; b.dataset.arm="1"; b.classList.add("arm"); b.textContent=t("removeQ")+" "+t("removeName",{n:n}); toast(t("removeTap",{n:n,s:sfx}),4000); setTimeout(function(){ if(b.isConnected&&b.dataset.arm){ b.dataset.arm=""; b.classList.remove("arm"); b.textContent=t("removeName",{n:n}); } },4000); return; }
     state.data.staff.splice(i,1); delete state.data.birthdays[n];
     up.forEach(function(u){ state.data.weeks[u.week][u.day]=state.data.weeks[u.week][u.day].filter(function(s){return s.id!==u.id;}); delete state.confirmations[shiftKey(u.week,u.day,u.id)]; });
     $("personOverlay").classList.remove("show"); person.name=null;
@@ -2061,7 +2064,7 @@
       var head=L_EN.days[key]+" "+L_EN.months[date.getMonth()]+" "+date.getDate();
       if(note&&isClosedStatus(note.status)) head+=" — "+STATUS_LABEL[note.status].toUpperCase();
       else head+=" ("+range12(hours.open,hours.close)+")"+(note&&note.status==="event"?" — PRIVATE EVENT":"")+(note&&note.status==="half"?" — HALF DAY":"");
-      lines.push(head); if(note&&note.text) lines.push("  ℹ︎ "+note.text);
+      lines.push(head); if(note&&note.text) lines.push("  Note: "+note.text);
       var shifts=sortShifts((state.data.weeks[wk]||{})[key]||[]);
       if(shifts.length) shifts.forEach(function(s){lines.push("  • "+s.name+(s.station?" ("+s.station+")":"")+" "+range12(s.start,s.end));});
       else if(!(note&&isClosedStatus(note.status))) lines.push("  — no shifts —");
@@ -2175,7 +2178,7 @@
     fetch("/",{method:"HEAD",cache:"no-store"}).then(function(r){
       var e=r.headers.get("etag"); if(!e) return;
       if(appEtag===null){ appEtag=e; return; }
-      if(e!==appEtag&&!anyModalOpen()&&!state.editing&&!state.dayEditing&&!state.confirming){ try{ sessionStorage.setItem("bl_skip_splash","1"); }catch(x){} location.reload(); }
+      if(e!==appEtag&&!anyModalOpen()&&!state.editing&&!state.dayEditing&&!state.confirming&&!state.saving&&!state.dirtyTimer){ try{ sessionStorage.setItem("bl_skip_splash","1"); }catch(x){} location.reload(); }
     }).catch(function(){});
   }
 
@@ -2216,13 +2219,13 @@
     document.body.classList.toggle("locked",mustIdentify());
     if(!state.features.storage||(!state.data.staff.length&&!state.me.name)){ b.style.display="none"; strip.classList.remove("show"); return; }
     b.style.display="";
-    if(state.me.name&&state.data.staff.indexOf(state.me.name)===-1){ meSet(null,null); toast("Your access was removed. Ask Marta if that's a mistake.",5000); document.body.classList.toggle("locked",mustIdentify()); setTimeout(maybeWhoPopup,50); }
+    if(state.me.name&&state.data.staff.indexOf(state.me.name)===-1){ meSet(null,null); toast("Your access was removed. Contact the manager if this is a mistake.",5000); document.body.classList.toggle("locked",mustIdentify()); setTimeout(maybeWhoPopup,50); }
     if(!state.me.name){ b.className="mebtn"; b.innerHTML=t("whoBtn"); strip.classList.remove("show"); return; }
     var n=state.me.name, col=avColor(n), ini=h(initials(n));
     b.className="mebtn on"; b.innerHTML='<span class="mav" style="background:'+col+'">'+ini+'</span>'+h(n.split(/\s+/)[0]);
     $("meAv").textContent=initials(n); $("meAv").style.background=col;
     $("meHi").textContent=t("hi",{n:n.split(/\s+/)[0]});
-    var nx=nextShiftOf(n), el=$("meNext"); el.className="";
+    var nx=nextShiftOf(n), el=$("meNextShift"); el.className="";
     if(!nx){ el.textContent=t("noUpcoming"); }
     else {
       var now=new Date(), todayISO=toISO(now), m=now.getHours()*60+now.getMinutes(), tomorrowISO=toISO(addDays(now,1));
@@ -2343,7 +2346,7 @@
   async function agreeRules(){
     var doc=rules.doc; if(!doc) return; var isRules=doc.id==="rules", isPacket=doc.id==="packet", training=doc.kind==="training", email=$("rulesEmail").value.trim();
     if(!rulesEmailOk()){ $("rulesErr").textContent="Please enter a valid email address."; return; }
-    if(!$("rulesCheck").checked){ $("rulesErr").textContent="Please tick the box to confirm."; return; }
+    if(!$("rulesCheck").checked){ $("rulesErr").textContent="Please check the box to confirm."; return; }
     $("rulesAgree").disabled=true;
     var body; if(isRules) body={action:"ackRules",email:email,version:doc.version}; else if(isPacket){ var vs={}; doc.docs.forEach(function(d){vs[d.id]=d.version;}); body={action:"ackDocs",ids:doc.docs.map(function(d){return d.id;}),versions:vs,email:email}; } else body={action:"ackDoc",id:doc.id,email:email,version:doc.version};
     var r; try{ r=await api("/api/me",{method:"POST",body:body}); }catch(e){ r={ok:false,status:0,json:{}}; }
@@ -2352,13 +2355,13 @@
       else if(isPacket){ state.me.docAcks=state.me.docAcks||{}; doc.docs.forEach(function(d){ state.me.docAcks[d.id]=(r.json.acks&&r.json.acks[d.id])||{version:d.version,at:new Date().toISOString()}; }); }
       else { state.me.docAcks=state.me.docAcks||{}; state.me.docAcks[doc.id]=r.json.ack||{version:doc.version,at:new Date().toISOString()}; }
       var o=$("rulesOverlay"); delete o.dataset.lock; o.classList.remove("show");
-      if(isRules) toast(r.json.emailed?"Thank you! Your signed copy is on its way to "+email:"Thank you! House Rules acknowledged ✓",3800);
+      if(isRules) toast(r.json.emailed?"House Rules acknowledged. A signed copy has been sent to "+email+".":"House Rules acknowledged.",3800);
       else toast(training?(r.json.emailed?t("thanksTrain",{e:email}):t("thanksTrainNoMail")):(r.json.emailed?t("thanksDoc",{e:email}):t("thanksDocNoMail")),3800);
       if(rules.backToDocs){ rules.backToDocs=false; openDocs(); } else afterLoginFlow();
     }
     else if(r.status===401){ $("rulesOverlay").classList.remove("show"); meSet(null,null); renderMe(); maybeWhoPopup(); }
     else if(r.status===400&&r.json&&r.json.error==="bad_version"){ $("rulesErr").textContent="This document was just updated — please reload the page and read the new version."; }
-    else { $("rulesErr").textContent="Couldn't save right now — check your connection and try again."; $("rulesAgree").disabled=false; }
+    else { $("rulesErr").textContent="Could not save. Check your connection and try again."; $("rulesAgree").disabled=false; }
   }
   // Documents: the House Rules + every document with this person's status; tap to read again or to sign.
   function renderDocs(){
@@ -2373,9 +2376,10 @@
   async function mailMyCopies(){
     var b=$("docsMail"); b.disabled=true;
     var r; try{ r=await api("/api/me",{method:"POST",body:{action:"myCopies"}}); }catch(e){ r={ok:false,status:0,json:{}}; }
-    if(r.ok) toast(t("docsMailed",{e:r.json.email||state.me.email||""}),4000);
+    if(r.ok) toast(t("docsMailed",{e:(r.json.emails||[]).join(", ")||r.json.email||state.me.email||""}),4000);
     else if(r.status===404) toast(t("docsMailNone"),3000);
-    else toast(t("copyFail",{r:(r.json&&(r.json.detail||r.json.error))||r.status}),4500);
+    else if(r.status===429) toast(t("docsMailSoon"),3500);
+    else toast(t("mailFail",{r:(r.json&&(r.json.detail||r.json.error))||r.status}),4500);
     setTimeout(function(){ b.disabled=false; },15000);
   }
   function openDocs(){ if(!state.me.name) return; renderDocs(); $("docsOverlay").classList.add("show"); }
@@ -2400,20 +2404,20 @@
     if(anyModalOpen()) return;
     storageSet(key,"1");
     var l=weekLabel(week); $("recapRange").textContent=l.range;
-    var devTxt=c.avgDev==null?"—":c.avgDev<0?Math.abs(c.avgDev)+" min early":c.avgDev===0?"on the dot":c.avgDev+" min after";
+    var devTxt=c.avgDev==null?"—":c.avgDev<0?Math.abs(c.avgDev)+" min early":c.avgDev===0?"on time":c.avgDev+" min late";
     $("recapSum").innerHTML='<div class="tile on"><b>'+durText((d.linked?c.workedMin:c.scheduledMin)*60000)+'</b><span>'+(d.linked?"hours worked":"hours scheduled")+'</span></div>'
       +'<div class="tile'+(c.onTimePct!=null&&c.onTimePct>=80?" on":"")+'"><b>'+(c.onTimePct==null?"—":c.onTimePct+"%")+'</b><span>on time</span></div>'
       +'<div class="tile'+(c.avgDev!=null&&c.avgDev<=0?" on":"")+'"><b>'+devTxt+'</b><span>clock-in</span></div>';
     var msgs=[], party=false;
-    if(!d.linked) msgs.push({t:"Your Toast hours will show here once Marta links your name.",c:"neutral"});
+    if(!d.linked) msgs.push({t:"Your Toast hours will appear here once the manager links your name.",c:"neutral"});
     if(d.linked&&p.clockedShifts>0&&c.workedMin>=p.workedMin+30){ msgs.push({t:"You worked "+durText(c.workedMin*60000)+" — more than the week before ("+durText(p.workedMin*60000)+")."}); party=true; }
-    if(c.matched>=2&&c.onTimePct===100){ msgs.push({t:"On time for every single shift. Fantastic!",c:"gold"}); party=true; }
-    else if(p.onTimePct!=null&&c.onTimePct!=null&&c.onTimePct>p.onTimePct){ msgs.push({t:"Punctuality up from "+p.onTimePct+"% to "+c.onTimePct+"%. Keep it going!"}); party=true; }
-    if(c.avgDev!=null&&c.avgDev<=-3) msgs.push({t:"You clock in about "+Math.abs(c.avgDev)+" minutes early on average — the team notices."});
-    else if(c.matched>=2&&c.early>=Math.ceil(c.matched*0.75)) msgs.push({t:"Early bird: in before your start on "+c.early+" of "+c.matched+" shifts."});
-    if(c.matched>=2&&c.onTimePct!=null&&c.onTimePct<50) msgs.push({t:"This week, try clocking in a few minutes before your start — you've got this!",c:"neutral"});
-    else if(c.matched>=2&&c.onTimePct!=null&&c.onTimePct<80) msgs.push({t:"Almost there — a couple of minutes earlier and you're in the green zone.",c:"neutral"});
-    if(!msgs.length) msgs.push({t:"Thanks for your work last week — see you on the floor!"});
+    if(c.matched>=2&&c.onTimePct===100){ msgs.push({t:"On time for every shift last week.",c:"gold"}); party=true; }
+    else if(p.onTimePct!=null&&c.onTimePct!=null&&c.onTimePct>p.onTimePct){ msgs.push({t:"Punctuality improved from "+p.onTimePct+"% to "+c.onTimePct+"%."}); party=true; }
+    if(c.avgDev!=null&&c.avgDev<=-3) msgs.push({t:"You clocked in about "+Math.abs(c.avgDev)+" minutes early on average."});
+    else if(c.matched>=2&&c.early>=Math.ceil(c.matched*0.75)) msgs.push({t:"Clocked in before your start on "+c.early+" of "+c.matched+" shifts."});
+    if(c.matched>=2&&c.onTimePct!=null&&c.onTimePct<50) msgs.push({t:"This week, try to clock in a few minutes before your scheduled start.",c:"neutral"});
+    else if(c.matched>=2&&c.onTimePct!=null&&c.onTimePct<80) msgs.push({t:"A couple of minutes earlier at clock-in would bring you above 80% on time.",c:"neutral"});
+    if(!msgs.length) msgs.push({t:"Thank you for your work last week."});
     $("recapEmoji").textContent=party?"":"";
     $("recapMsgs").innerHTML=msgs.slice(0,3).map(function(m,i){ return '<div class="'+(m.c||"")+'" style="animation-delay:'+(i*90)+'ms">'+h(m.t)+'</div>'; }).join("");
     $("recapOverlay").classList.add("show"); if(party) confetti(3500);
@@ -2441,9 +2445,9 @@
   function pinShake(msg){ var d=$("pinDots"); d.classList.remove("shake"); void d.offsetWidth; d.classList.add("shake"); $("pinErr").textContent=msg||""; pin.buf=""; setTimeout(pinDots,350); if(navigator.vibrate) try{navigator.vibrate(60);}catch(e){} }
   function pinTitle(){
     var first=pin.name.split(/\s+/)[0];
-    if(pin.mode==="create"){ $("pinTitle").textContent="Create your PIN"; $("pinLead").textContent="Choose 4 numbers only you know. You'll use them on a new phone or computer."; }
-    else if(pin.mode==="confirm"){ $("pinTitle").textContent="Type it again"; $("pinLead").textContent="Just to be sure — enter the same 4 numbers."; }
-    else { $("pinTitle").textContent="Enter your PIN"; $("pinLead").textContent="Hi "+first+"! Type your 4-digit PIN to see your shifts and hours."; }
+    if(pin.mode==="create"){ $("pinTitle").textContent="Create your PIN"; $("pinLead").textContent="Choose 4 digits that only you know. You will need them on a new phone or computer."; }
+    else if(pin.mode==="confirm"){ $("pinTitle").textContent="Confirm your PIN"; $("pinLead").textContent="Enter the same 4 digits again."; }
+    else { $("pinTitle").textContent="Enter your PIN"; $("pinLead").textContent="Enter your 4-digit PIN to see your shifts and hours."; }
     $("pinHint").style.display=pin.mode==="login"?"":"none";
   }
   async function beginPin(name){
@@ -2473,7 +2477,7 @@
       var rc=await api("/api/me",{method:"POST",body:{action:"create",name:pin.name,pin:pin.buf}});
       pin.busy=false;
       if(rc.ok) return pinSuccess(rc.json,true);
-      if(rc.status===409){ pin.mode="login"; pinTitle(); pinShake("This name already has a PIN. Enter it, or ask Marta to reset it."); return; }
+      if(rc.status===409){ pin.mode="login"; pinTitle(); pinShake("This name already has a PIN. Enter it, or ask the manager to reset it."); return; }
       pinShake("Couldn't save your PIN. Please try again."); pin.mode="create"; pinTitle(); return;
     }
     pin.busy=true;
@@ -2491,7 +2495,7 @@
     meSet(j.name,j.token); pin.name=null;
     setTimeout(async function(){
       $("pinOverlay").classList.remove("show"); $("whoOverlay").classList.remove("show"); renderMe(); renderDays();
-      toast(created?"PIN saved ✓ Welcome, "+j.name.split(/\s+/)[0]+"!":"Welcome back, "+j.name.split(/\s+/)[0]+" ");
+      toast(created?"PIN saved. Welcome, "+j.name.split(/\s+/)[0]+".":"Welcome back, "+j.name.split(/\s+/)[0]+".");
       state.me.rulesAck=undefined; await meWhoAmI();
       afterLoginFlow();
     },350);
@@ -2613,11 +2617,11 @@
         toast("Notifications turned off"); renderBell(); return;
       }
       var perm=await Notification.requestPermission();
-      if(perm!=="granted"){ toast("No problem — you can turn them on later."); renderBell(); return; }
+      if(perm!=="granted"){ toast("Notifications stay off. You can turn them on later."); renderBell(); return; }
       var info=await api("/api/push"); if(!info.ok||!info.json.publicKey){ toast("Notifications aren't available right now."); return; }
       var s=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64ToU8(info.json.publicKey)});
       var r=await api("/api/push",{method:"POST",body:{subscription:s.toJSON()}});
-      if(r.ok){ toast("You'll get a notification when the schedule changes ✓"); } else { toast("Couldn't save your notification settings. Try again."); }
+      if(r.ok){ toast("You will be notified when the schedule changes."); } else { toast("Couldn't save your notification settings. Try again."); }
       renderBell();
     }catch(e){ toast("Couldn't enable notifications on this device."); renderBell(); }
   }

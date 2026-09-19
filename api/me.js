@@ -45,7 +45,12 @@ async function recordDocAck(docDef, who, email, at, ua, ident) {
   const hash = crypto.createHash("sha256").update(JSON.stringify(docDef)).digest("hex");
   const history = prev ? (prev.history || []).concat([{ version: prev.version, email: prev.email, at: prev.at, ua: prev.ua, hash: prev.hash || null, fullName: prev.fullName || null, emailedAt: prev.emailedAt || null }]) : [];
   const rec = { version: docDef.version, email, at, ua, hash, history, name: who, doc: docDef.id, fullName: ident ? ident.fullName : null, emailedAt: null };
-  await accounts.setDocAck(docDef.id, who, rec);
+  if (prev) await accounts.setDocAck(docDef.id, who, rec); // new version replaces the old one (kept in history)
+  else if (!(await accounts.setDocAckIfAbsent(docDef.id, who, rec))) { // someone (the same person, twice) got there first
+    const first = await accounts.getDocAck(docDef.id, who).catch(() => null);
+    if (first && first.version === docDef.version) return { rec: first, existed: true };
+    await accounts.setDocAck(docDef.id, who, rec);
+  }
   return { rec, existed: false };
 }
 // Email the signed copy of a document (documents.js) to the person and the owner's proof copy. Never throws.
@@ -216,7 +221,12 @@ module.exports = async (req, res) => {
       const history = prev ? (prev.history || []).concat([{ version: prev.version, email: prev.email, at: prev.at, ua: prev.ua, hash: prev.hash || null, fullName: prev.fullName || null, emailedAt: prev.emailedAt || null }]) : [];
       const ident = await toastIdentity(doc0.data, who);
       const rec = { version, email, at, ua: String(req.headers["user-agent"] || "").slice(0, 160), hash, history, name: who, fullName: ident ? ident.fullName : null, emailedAt: null };
-      await accounts.setRulesAck(who, rec);
+      if (prev) await accounts.setRulesAck(who, rec);
+      else if (!(await accounts.setRulesAckIfAbsent(who, rec))) { // double tap at the same instant: the first record stays
+        const first = await accounts.getRulesAck(who).catch(() => null);
+        if (first && first.version === version) return send(res, 200, { ok: true, rulesAck: { version: first.version, at: first.at } });
+        await accounts.setRulesAck(who, rec);
+      }
       // Signed copy by email to the person, copy to the owner (the acknowledgment is valid even if the email fails).
       const mailed = await emailRulesCopy(rec);
       if (mailed.sent) { rec.emailedAt = new Date().toISOString(); await accounts.setRulesAck(who, rec).catch(() => {}); }
@@ -287,22 +297,31 @@ module.exports = async (req, res) => {
       else { const doc0 = await store.getSchedule(); name = await accounts.whoIs(tokenFrom(req), doc0.data.staff); if (!name) return send(res, 401, { error: "unauthorized" }); }
       if (!mail.enabled()) return send(res, 503, { error: "mail_not_configured" });
       if (!name) return send(res, 400, { error: "bad_request" });
-      const sent = [], failed = [];
-      const rAck = await accounts.getRulesAck(name).catch(() => null);
-      if (rAck) { const m = await emailRulesCopy(Object.assign({ name }, rAck), false); if (m.sent) { rAck.emailedAt = new Date().toISOString(); await accounts.setRulesAck(name, rAck).catch(() => {}); sent.push("House Rules"); } else failed.push("House Rules: " + m.reason); }
+      if (action === "myCopies") { // self-service: at most once every 10 minutes per person (mail quota, no accidental double taps)
+        const last = Number(await store._redis("HGET", "barlento:copies_sent", name).catch(() => 0)) || 0;
+        if (Date.now() - last < 10 * 60000) return send(res, 429, { error: "too_soon", retryIn: Math.ceil((10 * 60000 - (Date.now() - last)) / 1000) });
+        await store._redis("HSET", "barlento:copies_sent", name, String(Date.now())).catch(() => {});
+      }
+      const sent = [], failed = [], skipped = [], emails = [];
+      // Only a copy whose text is still exactly the one signed is re-sent (same version → same fingerprint); older signatures stay on record but are not re-rendered.
+      const rAck0 = await accounts.getRulesAck(name).catch(() => null);
+      const rAck = rAck0 && rAck0.version === RULES.version ? rAck0 : null;
+      if (rAck0 && !rAck) skipped.push("House Rules " + rAck0.version);
+      if (rAck) { if (!emails.includes(rAck.email)) emails.push(rAck.email); const m = await emailRulesCopy(Object.assign({ name }, rAck), false); if (m.sent) { rAck.emailedAt = new Date().toISOString(); await accounts.setRulesAck(name, rAck).catch(() => {}); sent.push("House Rules"); } else failed.push("House Rules: " + m.reason); }
       // every other signed document in ONE email (to the person only; the owner already has the proof copies)
       const signed = [];
-      for (const d of DOCS.list) { const a = await accounts.getDocAck(d.id, name).catch(() => null); if (a) signed.push({ d, a }); }
+      for (const d of DOCS.list) { const a = await accounts.getDocAck(d.id, name).catch(() => null); if (!a) continue; if (a.version === d.version) signed.push({ d, a }); else skipped.push((d.short || d.title) + " " + a.version); }
       if (signed.length) {
+        signed.forEach((x) => { if (x.a.email && !emails.includes(x.a.email)) emails.push(x.a.email); });
         const last = signed.map((x) => x.a).sort((p, q) => String(q.at).localeCompare(String(p.at)))[0];
         const hashes = {}; signed.forEach((x) => { hashes[x.d.id] = x.a.hash; });
         const m = await emailPacket(signed.map((x) => Object.assign({}, x.d, { version: x.a.version })), { name, fullName: last.fullName || null, email: last.email, at: last.at, ua: last.ua, hashes }, false);
         if (m.sent) { const t = new Date().toISOString(); for (const x of signed) { x.a.emailedAt = t; await accounts.setDocAck(x.d.id, name, x.a).catch(() => {}); sent.push(x.d.short || x.d.title); } }
         else failed.push("Documents: " + m.reason);
       }
-      if (!sent.length && !failed.length) return send(res, 404, { error: "no_ack" });
+      if (!sent.length && !failed.length) return send(res, 404, { error: "no_ack", skipped });
       if (sent.length) await store.appendLog({ at: new Date().toISOString(), version: null, changes: [`Signed copies re-sent to ${name}${action === "myCopies" ? " (self-service)" : ""}: ${sent.join(", ")}`] }).catch(() => {});
-      return send(res, failed.length && !sent.length ? 502 : 200, { ok: sent.length > 0, sent, failed, email: (rAck && rAck.email) || (sent.length ? "your email" : null) });
+      return send(res, failed.length && !sent.length ? 502 : 200, { ok: sent.length > 0, sent, failed, skipped, emails, email: emails[0] || null });
     }
 
     // Manager: (re)send the signed copy of the House Rules to a person who already acknowledged (e.g. mail was configured later).
