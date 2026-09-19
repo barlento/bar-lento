@@ -5,6 +5,7 @@ const toast = require("../lib/toast");
 const staffsync = require("../lib/staffsync");
 const punch = require("../lib/punch");
 const former = require("../lib/former");
+const presence = require("../lib/presence");
 const crypto = require("crypto");
 const RULES = require("../rules.js");
 const DOCS = require("../documents.js");
@@ -177,7 +178,7 @@ module.exports = async (req, res) => {
         let toastReport = null;
         if (toast.enabled()) { // Toast identity (full name · email) of every linked person + who in Toast is not in the app, and why
           try { const emps = await toast.employees(true); const map = toast.autoMap(doc.data.staff, doc.data.toastMap, emps);
-            doc.data.staff.forEach((n) => { const e = map[n] && emps.find((x) => x.guid === map[n]); if (e) { summary[n] = summary[n] || { pin: false, devices: 0 }; summary[n].toast = { fullName: e.name, email: e.email }; } });
+            doc.data.staff.forEach((n) => { const e = map[n] && emps.find((x) => x.guid === map[n]); if (e) { summary[n] = summary[n] || { pin: false, devices: 0 }; summary[n].toast = { fullName: e.name, email: e.email, jobs: e.jobs || [] }; } });
             const linked = new Set(doc.data.staff.map((n) => map[n]).filter(Boolean)), ignore = new Set(doc.data.toastIgnore || []);
             const active = emps.filter((e) => !e.archived);
             const missing = active.filter((e) => !linked.has(e.guid)).map((e) => ({ name: e.name, reason: ignore.has(e.guid) ? "removed" : (!e.first && !e.name ? "noname" : "pending") }));
@@ -187,10 +188,13 @@ module.exports = async (req, res) => {
         const formerAcks = Object.keys(former0).map((k) => Object.assign({ key: k }, former0[k]));
         const formerDocAcks = Object.keys(formerDocs).map((k) => Object.assign({ key: k }, formerDocs[k]));
         const formerStaff = (await former.all().catch(() => [])).filter((r) => !doc.data.staff.includes(r.name)).map((r) => ({ name: r.name, fullName: r.fullName || null, removedAt: r.removedAt, by: r.by || null }));
-        return send(res, 200, { accounts: summary, formerAcks, formerDocAcks, rulesVersion: RULES.version || null, docsVersions: docVersions(), mail: mail.enabled(), toastReport, formerStaff, version: doc.version });
+        const seen = await presence.all().catch(() => ({})); const presenceOut = {}; const now = Date.now();
+        doc.data.staff.forEach((n) => { presenceOut[n] = { lastSeen: seen[n] || null, online: presence.isOnline(seen[n], now) }; });
+        return send(res, 200, { accounts: summary, formerAcks, formerDocAcks, rulesVersion: RULES.version || null, docsVersions: docVersions(), mail: mail.enabled(), toastReport, formerStaff, presence: presenceOut, dept: doc.data.dept || {}, version: doc.version });
       }
       // Who is on this device? (also used by "hours" below)
       let name = await accounts.whoIs(tokenFrom(req), doc.data.staff);
+      if (name) presence.touch(name).catch(() => {}); // any call from a signed-in device = the app is open
       if (action === "who") {
         if (!name) return send(res, 401, { error: "unauthorized" });
         const [ack, ident, docAcks, pinRec] = await Promise.all([accounts.getRulesAck(name).catch(() => null), toastIdentity(doc.data, name), accounts.docAcksFor(name, DOC_IDS).catch(() => null), accounts.getPinRecord(name).catch(() => null)]);

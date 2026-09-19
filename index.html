@@ -420,6 +420,24 @@
   .roster .person .nm small.ok{color:var(--good)}
   .roster .person .bd{font-size:.74rem;font-weight:600;color:var(--ink-muted);white-space:nowrap}
   .roster .person .go{color:var(--ink-muted);font-size:1.1rem}
+  /* live presence (manager's Staff list): green = the app is open on their phone right now, red = not */
+  .roster .person .av{position:relative;overflow:visible}
+  .pres{position:absolute;right:-2px;bottom:-2px;width:12px;height:12px;border-radius:50%;border:2px solid var(--surface,#fff);background:var(--ink-muted)}
+  .pres.on{background:var(--good);animation:presOn 1.8s ease-out infinite}
+  .pres.off{background:#FF3B30;animation:presOff 2.6s ease-in-out infinite}
+  @keyframes presOn{0%{box-shadow:0 0 0 0 rgba(36,138,61,.55)}70%{box-shadow:0 0 0 7px rgba(36,138,61,0)}100%{box-shadow:0 0 0 0 rgba(36,138,61,0)}}
+  @keyframes presOff{0%,100%{box-shadow:0 0 0 0 rgba(255,59,48,.45)}50%{box-shadow:0 0 0 4px rgba(255,59,48,0)}}
+  .roster .person .nm small.on{color:var(--good)}
+  .roster-online{font-size:.78rem;font-weight:600;color:var(--ink-muted);margin:0 0 8px;display:flex;align-items:center;gap:8px}
+  .roster-online .pres{position:static;border:0;width:9px;height:9px}
+  /* department (floor / kitchen): one small line icon next to the name, same grey everywhere */
+  .dept{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;color:var(--ink-muted);flex:none}
+  .dept svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .who-name .dept{margin-left:auto}
+  .roster .person .nm .dept{vertical-align:-3px;margin-left:6px}
+  .dept-tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+  .dept-tiles button{display:flex;align-items:center;justify-content:center;gap:8px;padding:10px;border-radius:12px;border:1px solid var(--border);background:var(--surface);font:inherit;font-weight:700;color:inherit;cursor:pointer}
+  .dept-tiles button.sel{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
   .pcard{border:1px solid var(--border);border-radius:12px;background:var(--surface);padding:10px 12px;margin-bottom:8px}
   .pcard .ph{font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:6px}
   .pcard .pr{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:.88rem;font-weight:600}
@@ -1194,7 +1212,9 @@
       readLead:"Please read this document to the end, then confirm with your email: your signed copy is emailed to you and to the owner.", readLeadSigned:"Please read this document to the end, tick the box and tap Sign: your signed copy is emailed to you and to the owner.", readLeadNoMail:"Please read this document to the end, then confirm with your email.", readLeadDone:"You acknowledged this document on {d}.", readLeadDoneTrain:"You completed this training on {d}.", readLeadTrain:"Watch the video (links at the end), then confirm with your email: your training record is emailed to you and to the owner.",
       agreeTrain:"Done", sign:"Sign", agree:"I agree", thanksDoc:"Documents acknowledged. A signed copy has been sent to {e}.", thanksDocNoMail:"Documents acknowledged.", thanksTrain:"Training recorded. A confirmation has been sent to {e}.", thanksTrainNoMail:"Training recorded.",
       rosterDocs:"Documents {k}/{n}", copiesSent:"Signed copies sent to {e}: {k}", sendCopies:"Re-send copies", linksHead:"Links", contactsHead:"Contacts (write to all)",
-      rulesOk:"Rules ✓ {d} · {e}", rulesNo:"Rules not acknowledged yet", rulesLink:"Print documents", stNotIn:"Hasn't signed in yet", stLine:"PIN ✓ · Rules {r} · Docs {k}/{n}", stLineNoDocs:"PIN ✓ · Rules {r}", phBirthday:"Birthday", phAccess:"Access", phDocs:"Documents", phWeek:"Shifts and hours", viewWeekBtn:"View week", removeName:"Remove {n}", noBirthday:"not set", devicesShort:"{k} device{p}", personLead:"Birthday, personal PIN and signed documents.", trainingRow:"Training {y}", copyNotSent:"copy not emailed yet", sendCopy:"Send signed copy by email", copySent:"Signed copy sent to {e}", mailFail:"Could not send the email ({r})", mailOff:"Email isn't configured yet on the server (Vercel settings).",
+      rulesOk:"Rules ✓ {d} · {e}", rulesNo:"Rules not acknowledged yet",
+      onlineNow:"Online now", lastSeen:"Last seen {t}", neverOnline:"Never opened the app", onlineCount:"{k} of {n} online now", justNow:"just now", minAgo:"{m} min ago", hAgo:"{h} h ago", dAgo:"{d} d ago",
+      phDept:"Department", deptFloor:"Floor", deptKitchen:"Kitchen", deptFromToast:"From Toast: {j}", deptSet:"{n} is now in the {d}.", rulesLink:"Print documents", stNotIn:"Hasn't signed in yet", stLine:"PIN ✓ · Rules {r} · Docs {k}/{n}", stLineNoDocs:"PIN ✓ · Rules {r}", phBirthday:"Birthday", phAccess:"Access", phDocs:"Documents", phWeek:"Shifts and hours", viewWeekBtn:"View week", removeName:"Remove {n}", noBirthday:"not set", devicesShort:"{k} device{p}", personLead:"Birthday, personal PIN and signed documents.", trainingRow:"Training {y}", copyNotSent:"copy not emailed yet", sendCopy:"Send signed copy by email", copySent:"Signed copy sent to {e}", mailFail:"Could not send the email ({r})", mailOff:"Email isn't configured yet on the server (Vercel settings).",
       pinSet:"PIN set", pinDevices:"{k} device{p}", pinNone:"No PIN yet", pinReset:"Reset PIN", pinResetSure:"Tap again to reset", pinResetDone:"PIN reset for {n} — they'll create a new one next time", pinResetFail:"Couldn't reset the PIN. Try again.", viewWeek:"View {n}'s week",
       toastPick:"— Toast employee —", toastLoading:"Loading Toast…", toastLinked:"{n} linked to Toast", toastUnlinked:"{n} unlinked from Toast", notified:"Team notified ({k} phone{p})", notifiedNone:"Changes noted — nobody has notifications turned on yet.", notifyFail:"Couldn't send the notification. It will go out automatically later.", markedClosed:"{h} ✓"
     },
@@ -1251,6 +1271,8 @@
       readLead:"Leggi il documento fino alla fine, poi conferma con la tua email: la copia firmata arriva a te e al titolare.", readLeadSigned:"Leggi il documento fino alla fine, spunta la casella e tocca Firma: la copia firmata arriva a te e al titolare.", readLeadNoMail:"Leggi il documento fino alla fine, poi conferma con la tua email.", readLeadDone:"Hai firmato questo documento il {d}.", readLeadDoneTrain:"Hai completato questa formazione il {d}.", readLeadTrain:"Guarda il video (link in fondo), poi conferma con la tua email: l'attestato arriva a te e al titolare.",
       agreeTrain:"Fatto", sign:"Firma", agree:"Accetto", thanksDoc:"Documenti firmati. Copia inviata a {e}.", thanksDocNoMail:"Documenti firmati.", thanksTrain:"Formazione registrata. Conferma inviata a {e}.", thanksTrainNoMail:"Formazione registrata.",
       rosterDocs:"Documenti {k}/{n}", copiesSent:"Copie firmate inviate a {e}: {k}", sendCopies:"Reinvia copie", linksHead:"Link", contactsHead:"Contatti (scrivi a tutti)",
+      onlineNow:"Online adesso", lastSeen:"Visto {t}", neverOnline:"Non ha mai aperto l'app", onlineCount:"{k} su {n} online adesso", justNow:"adesso", minAgo:"{m} min fa", hAgo:"{h} h fa", dAgo:"{d} g fa",
+      phDept:"Reparto", deptFloor:"Sala", deptKitchen:"Cucina", deptFromToast:"Da Toast: {j}", deptSet:"{n} ora è in {d}.",
       rulesOk:"Regolamento ✓ {d} · {e}", rulesNo:"Regolamento non ancora firmato", rulesLink:"Stampa documenti", stNotIn:"Non è ancora entrato/a", stLine:"PIN ✓ · Regolamento {r} · Documenti {k}/{n}", stLineNoDocs:"PIN ✓ · Regolamento {r}", phBirthday:"Compleanno", phAccess:"Accesso", phDocs:"Documenti", phWeek:"Turni e ore", viewWeekBtn:"Vedi settimana", removeName:"Rimuovi {n}", noBirthday:"non impostato", devicesShort:"{k} dispositiv{p}", personLead:"Compleanno, PIN personale e documenti firmati.", trainingRow:"Formazione {y}", copyNotSent:"copia non ancora inviata", sendCopy:"Invia copia firmata via email", copySent:"Copia firmata inviata a {e}", mailFail:"Invio email non riuscito ({r})", mailOff:"Email non ancora configurata sul server (impostazioni Vercel).",
       pinSet:"PIN creato", pinDevices:"{k} dispositiv{p}", pinNone:"Nessun PIN", pinReset:"Azzera PIN", pinResetSure:"Tocca di nuovo per azzerare", pinResetDone:"PIN azzerato per {n} — ne creerà uno nuovo al prossimo accesso", pinResetFail:"Impossibile azzerare il PIN. Riprova.", viewWeek:"Vedi la settimana di {n}",
       toastPick:"— dipendente Toast —", toastLoading:"Carico Toast…", toastLinked:"{n} collegato/a a Toast", toastUnlinked:"{n} scollegato/a da Toast", notified:"Team avvisato ({k} telefon{p})", notifiedNone:"Modifiche registrate — nessuno ha ancora attivato le notifiche.", notifyFail:"Invio non riuscito. Partirà automaticamente più tardi.", markedClosed:"{h} ✓"
@@ -1662,6 +1684,11 @@
   function durText(ms){ var m=Math.max(0,Math.round(ms/60000)); var hh=Math.floor(m/60), mm=m%60; return hh?hh+"h "+pad(mm)+"m":mm+" min"; }
   function initials(n){ return String(n||"?").split(/\s+/).slice(0,2).map(function(w){return w.charAt(0).toUpperCase();}).join(""); }
   var AV_COLORS=["#1D1D1F"]; // one neutral tone for every avatar: no colour coding of people
+  // Department icons (floor = wine glass, kitchen = chef hat): one grey line icon, no emoji.
+  var DEPT_SVG={floor:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10l-1 7a4 4 0 0 1-8 0L7 3z"/><path d="M12 14v6M8 21h8"/></svg>',kitchen:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 20V12a5 5 0 0 1-1-9.9A4 4 0 0 1 12 3a4 4 0 0 1 6 -.9A5 5 0 0 1 17 12v8z"/><path d="M7 16h10"/></svg>'};
+  function deptOf(n){ return ((state.data.dept||{})[n]==="kitchen")?"kitchen":"floor"; }
+  function deptIcon(n){ var d=deptOf(n); return '<span class="dept" title="'+h(t(d==="kitchen"?"deptKitchen":"deptFloor"))+'" aria-label="'+h(t(d==="kitchen"?"deptKitchen":"deptFloor"))+'">'+DEPT_SVG[d]+'</span>'; }
+  function agoText(iso){ if(!iso) return ""; var m=Math.round((Date.now()-Date.parse(iso))/60000); if(m<1) return t("justNow"); if(m<60) return t("minAgo",{m:m}); if(m<48*60) return t("hAgo",{h:Math.round(m/60)}); return t("dAgo",{d:Math.round(m/1440)}); }
   function avColor(n){ var x=0; for(var i=0;i<n.length;i++) x=(x*31+n.charCodeAt(i))>>>0; return AV_COLORS[x%AV_COLORS.length]; }
   function tcDateLabel(iso){
     var today=nyTodayISO(), d=fromISO(iso);
@@ -2038,10 +2065,14 @@
   function renderRoster(){
     var el=$("rosterList"); if(!state.data.birthdays) state.data.birthdays={}; if(!state.data.toastMap) state.data.toastMap={};
     $("staffOverlay").querySelector(".lead").textContent=t(state.features.toast?"staffLeadToast":"staffLead");
-    el.innerHTML=state.data.staff.length?state.data.staff.map(function(n){
-      var st=personStatus(n), b=state.data.birthdays[n]||"";
-      return '<button type="button" class="person" data-name="'+h(n)+'"><span class="av" style="background:'+avColor(n)+'">'+h(initials(n))+'</span><span class="nm">'+h(n)+(st.txt?'<small class="'+(st.ok?"ok":"")+'">'+h(st.txt)+'</small>':'')+'</span><span class="bd">'+(b?''+h(bdayShort(b)):'')+'</span><span class="go">›</span></button>';
+    var pres=state.presence||null, onlineK=0;
+    var rows=state.data.staff.length?state.data.staff.map(function(n){
+      var st=personStatus(n), b=state.data.birthdays[n]||""; var pr=pres&&pres[n]; var on=!!(pr&&pr.online); if(on) onlineK++;
+      var seen=pr?(on?t("onlineNow"):(pr.lastSeen?t("lastSeen",{t:agoText(pr.lastSeen)}):t("neverOnline"))):"";
+      var line=[seen,st.txt].filter(Boolean).join(" · ");
+      return '<button type="button" class="person" data-name="'+h(n)+'"><span class="av" style="background:'+avColor(n)+'">'+h(initials(n))+(pres?'<span class="pres '+(on?"on":"off")+'"></span>':'')+'</span><span class="nm">'+h(n)+deptIcon(n)+(line?'<small class="'+(on?"on":st.ok?"ok":"")+'">'+h(line)+'</small>':'')+'</span><span class="bd">'+(b?''+h(bdayShort(b)):'')+'</span><span class="go">›</span></button>';
     }).join(""):'<div class="empty-note">'+t("noNames")+'</div>';
+    el.innerHTML=(pres&&state.data.staff.length?'<div class="roster-online"><span class="pres '+(onlineK?"on":"off")+'"></span>'+h(t("onlineCount",{k:onlineK,n:state.data.staff.length}))+'</div>':'')+rows;
     el.querySelectorAll(".person").forEach(function(b){ b.addEventListener("click",function(){ openPerson(b.getAttribute("data-name")); }); });
     var tr=state.toastReport, tn=$("rosterToast");
     if(tr&&!tr.error){
@@ -2069,6 +2100,8 @@
     var html='<div class="pcard"><div class="ph">'+h(t("phBirthday"))+'</div><div class="pr"><span class="dim">'+(b?h(bdayShort(b)+", "+b.slice(0,4)):h(t("noBirthday")))+'</span><input type="date" value="'+h(b)+'" aria-label="Birthday of '+h(n)+'"></div></div>';
     var accTxt=acc.pin?t("pinSet")+(acc.devices?" · "+t("devicesShort",{k:acc.devices,p:lang==="it"?(acc.devices===1?"o":"i"):(acc.devices===1?"":"s")}):""):t("pinNone");
     if(acc.toast) html+='<div class="pcard"><div class="ph">'+h(t("phToast"))+'</div><div class="pr"><span>'+h(acc.toast.fullName||"")+'</span><span class="dim" style="font-size:.78rem">'+h(acc.toast.email||"")+'</span></div></div>';
+    { var d=deptOf(n); var jobs=acc.toast&&acc.toast.jobs&&acc.toast.jobs.length?t("deptFromToast",{j:acc.toast.jobs.join(", ")}):"";
+      html+='<div class="pcard"><div class="ph">'+h(t("phDept"))+'</div>'+(jobs?'<div class="pr"><span class="dim" style="font-size:.78rem">'+h(jobs)+'</span></div>':'')+'<div class="dept-tiles"><button type="button" class="dept-pick'+(d==="floor"?" sel":"")+'" data-d="floor"><span class="dept">'+DEPT_SVG.floor+'</span>'+h(t("deptFloor"))+'</button><button type="button" class="dept-pick'+(d==="kitchen"?" sel":"")+'" data-d="kitchen"><span class="dept">'+DEPT_SVG.kitchen+'</span>'+h(t("deptKitchen"))+'</button></div></div>'; }
     html+='<div class="pcard"><div class="ph">'+h(t("phAccess"))+'</div><div class="pr"><span class="'+(acc.pin?"ok":"dim")+'">'+h(accTxt)+'</span><button type="button" class="pinbtn reset"'+(acc.pin||acc.devices?"":" disabled")+'>'+h(t("pinReset"))+'</button></div></div>';
     var explicit=(state.data.appClock||[]).indexOf(n)!==-1; var ac=!acc.toast||explicit; // not in Toast → app clock automatically; in Toast → only if the manager chose it (salaried people)
     {
@@ -2107,6 +2140,10 @@
       state.data.appClock=state.data.appClock||[]; var i=state.data.appClock.indexOf(n);
       if(i===-1) state.data.appClock.push(n); else state.data.appClock.splice(i,1);
       scheduleSave(); renderPerson(); toast(i===-1?t("appClockSet",{n:n}):t("appClockUnset",{n:n}),4000);
+    });});
+    body.querySelectorAll(".dept-pick").forEach(function(b){b.addEventListener("click",function(){
+      var d=b.getAttribute("data-d"); if(deptOf(n)===d) return; state.data.dept=state.data.dept||{}; state.data.dept[n]=d;
+      scheduleSave(); renderPerson(); renderRoster(); toast(t("deptSet",{n:n,d:t(d==="kitchen"?"deptKitchen":"deptFloor")}),3500);
     });});
     body.querySelectorAll(".pinbtn.view").forEach(function(b){b.addEventListener("click",function(){ $("personOverlay").classList.remove("show"); $("staffOverlay").classList.remove("show"); openMe(n); });});
     body.querySelectorAll(".pinbtn.reset").forEach(function(b){b.addEventListener("click",async function(){
@@ -2296,7 +2333,10 @@
   $("langBtn").addEventListener("click",function(){setLang(lang==="en"?"it":"en"); toast(lang==="it"?"Italiano attivo solo su questo dispositivo, in modalità manager.":"English restored on this device.",2600);});
   $("weekClose").addEventListener("click",function(){$("weekOverlay").classList.remove("show");maybeRecapPopup();});
   document.addEventListener("visibilitychange",function(){ if(document.visibilityState==="hidden"&&state.admin&&state.pendingNotify&&state.password&&!state.dirtyTimer&&!state.saving){ try{ fetch("/api/notify",{method:"POST",headers:{"x-admin-password":state.password,"Content-Type":"application/json"},keepalive:true}); state.pendingNotify=0; }catch(e){} } });
-  $("staffBtn").addEventListener("click",function(){renderRoster();$("staffRulesLink").style.display=(rulesActive()||(DOCS.list||[]).length)?"":"none";$("staffOverlay").classList.add("show");loadAccounts().then(renderRoster);});
+  var staffTimer=null;
+  $("staffBtn").addEventListener("click",function(){renderRoster();$("staffRulesLink").style.display=(rulesActive()||(DOCS.list||[]).length)?"":"none";$("staffOverlay").classList.add("show");loadAccounts().then(renderRoster);
+    clearInterval(staffTimer); staffTimer=setInterval(function(){ if(!$("staffOverlay").classList.contains("show")){ clearInterval(staffTimer); return; } if(document.visibilityState==="visible"&&!state.saving&&!state.dirtyTimer) loadAccounts().then(renderRoster); },30000); // live dots
+  });
   $("personClose").addEventListener("click",function(){ $("personOverlay").classList.remove("show"); });
   $("personRemove").addEventListener("click",removePerson);
   $("staffClose").addEventListener("click",function(){$("staffOverlay").classList.remove("show");});
@@ -2600,7 +2640,7 @@
   // -- who are you --
   function openWho(auto){
     var names=state.data.staff.slice().sort(function(a,b){return a.localeCompare(b);});
-    $("whoGrid").innerHTML=names.map(function(n,i){ return '<button type="button" class="who-name" data-name="'+h(n)+'" style="animation-delay:'+Math.min(i*35,350)+'ms"><span class="av" style="background:'+avColor(n)+'">'+h(initials(n))+'</span><span class="nm">'+h(n)+'</span></button>'; }).join("");
+    $("whoGrid").innerHTML=names.map(function(n,i){ return '<button type="button" class="who-name" data-name="'+h(n)+'" style="animation-delay:'+Math.min(i*35,350)+'ms"><span class="av" style="background:'+avColor(n)+'">'+h(initials(n))+'</span><span class="nm">'+h(n)+'</span>'+deptIcon(n)+'</button>'; }).join("");
     $("whoGrid").querySelectorAll(".who-name").forEach(function(b){ b.addEventListener("click",function(){ beginPin(b.getAttribute("data-name")); }); });
     var manual=!auto&&!!state.me.name; $("whoOverlay").dataset.manual=manual?"1":"";
     $("whoCancel").style.display=manual?"":"none";
@@ -2761,7 +2801,7 @@
   async function loadAccounts(){
     if(!state.admin) return;
     var r=await api("/api/me?action=list",{auth:true});
-    if(r.ok){ state.accounts=r.json.accounts||{}; state.mailEnabled=!!r.json.mail; state.toastReport=r.json.toastReport||null; state.formerStaff=r.json.formerStaff||[];
+    if(r.ok){ state.accounts=r.json.accounts||{}; state.mailEnabled=!!r.json.mail; state.toastReport=r.json.toastReport||null; state.formerStaff=r.json.formerStaff||[]; state.presence=r.json.presence||null;
       if(typeof r.json.version==="number"&&r.json.version!==state.version&&!state.saving&&!state.dirtyTimer) await load(true); }
   }
 

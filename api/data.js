@@ -8,6 +8,7 @@ const staffsync = require("../lib/staffsync");
 const punch = require("../lib/punch");
 const former = require("../lib/former");
 const backfill = require("../lib/backfill");
+const presence = require("../lib/presence");
 
 function send(res, status, body) {
   res.setHeader("Cache-Control", "no-store");
@@ -41,6 +42,8 @@ module.exports = async (req, res) => {
       const doc = await migrations(docS).catch(() => docS);
       // Past weeks follow Toast by themselves (real clock-ins replace the plan; last 8 weeks, every 6 h).
       const doc1 = await backfill.auto(doc, doc0.updatedAt).catch(() => doc);
+      // A signed-in device polling = that person has the app open: note it for the manager's live Staff list.
+      { const tok = String(req.headers["x-staff-token"] || ""); if (tok) accounts.whoIs(tok, doc1.data.staff).then((n) => presence.touch(n)).catch(() => {}); }
       return send(res, 200, {
         version: doc1.version,
         updatedAt: doc1.updatedAt,
