@@ -49,14 +49,15 @@ module.exports = async (req, res) => {
     const doc = await store.getSchedule();
     let emps = [], map = {};
     if (toast.enabled()) { try { emps = await toast.employees(true); map = toast.autoMap(doc.data.staff, doc.data.toastMap, emps); } catch (e) {} }
-    const sent = [], skipped = [], failed = [];
+    const sent = [], skipped = [], failed = [], changed = [];
     for (const name of doc.data.staff) {
       if (/^test\b/i.test(name)) { skipped.push(`${name} (test)`); continue; }
       try {
         const rAck = await accounts.getRulesAck(name).catch(() => null);
         const emp = map[name] && emps.find((e) => e.guid === map[name]);
-        const email = (rAck && rAck.email) || (emp && emp.email) || "";
+        const email = (emp && emp.email) || (rAck && rAck.email) || "";
         if (!email) { skipped.push(`${name} (no email)`); continue; }
+        if (emp && emp.email && rAck && rAck.email && emp.email.toLowerCase() !== rAck.email.toLowerCase()) changed.push(`${name}: Toast now ${emp.email} (signed with ${rAck.email})`);
         const rep = await exp.employeeReport(name, from, to, `Week of ${from} to ${to}`);
         if (!rep.totals.clockins) { skipped.push(`${name} (no clock-ins this week)`); continue; }
         const first = name.split(/\s+/)[0]; const wk = label(from, to);
@@ -67,7 +68,7 @@ module.exports = async (req, res) => {
       } catch (e) { failed.push(`${name}: ${String(e && e.message || e).slice(0, 120)}`); }
     }
     if (DOCS.copyTo && (sent.length || failed.length)) { // one line to the owner, never one email per person
-      const body = `Weekly reports for ${label(from, to)}\n\nSent (${sent.length}):\n${sent.map((s) => "- " + s).join("\n") || "- none"}\n\nSkipped (${skipped.length}):\n${skipped.map((s) => "- " + s).join("\n") || "- none"}\n\nFailed (${failed.length}):\n${failed.map((s) => "- " + s).join("\n") || "- none"}`;
+      const body = `Weekly reports for ${label(from, to)}\n\nSent (${sent.length}):\n${sent.map((s) => "- " + s).join("\n") || "- none"}\n\nSkipped (${skipped.length}):\n${skipped.map((s) => "- " + s).join("\n") || "- none"}\n\nFailed (${failed.length}):\n${failed.map((s) => "- " + s).join("\n") || "- none"}${changed.length ? `\n\nEmail changed in Toast since signing (the app now uses the Toast one):\n${changed.map((s) => "- " + s).join("\n")}` : ""}`;
       await mail.send({ to: DOCS.copyTo, subject: `Weekly reports sent — ${label(from, to)} (${sent.length} people)`, text: body, html: `<pre style="font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;white-space:pre-wrap;color:#1D1D1F">${body.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]))}</pre>` }).catch(() => {});
     }
     await store.appendLog({ at: new Date().toISOString(), version: null, changes: [`Weekly reports ${from}: sent to ${sent.length}${skipped.length ? `, skipped ${skipped.length}` : ""}${failed.length ? `, failed ${failed.length}` : ""}`] }).catch(() => {});

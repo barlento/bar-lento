@@ -357,19 +357,21 @@ module.exports = async (req, res) => {
         await store._redis("HSET", "barlento:copies_sent", name, String(Date.now())).catch(() => {});
       }
       const sent = [], failed = [], skipped = [], emails = [];
+      let toastEmail = ""; // the email in Toast today wins over the one typed at signing (a change in Toast follows automatically)
+      try { const ident = await toastIdentity((await store.getSchedule()).data, name); toastEmail = (ident && ident.email) || ""; } catch (e) {}
       // Only a copy whose text is still exactly the one signed is re-sent (same version → same fingerprint); older signatures stay on record but are not re-rendered.
       const rAck0 = await accounts.getRulesAck(name).catch(() => null);
       const rAck = rAck0 && rAck0.version === RULES.version ? rAck0 : null;
       if (rAck0 && !rAck) skipped.push("House Rules " + rAck0.version);
-      if (rAck) { if (!emails.includes(rAck.email)) emails.push(rAck.email); const m = await emailRulesCopy(Object.assign({ name }, rAck), false); if (m.sent) { rAck.emailedAt = new Date().toISOString(); await accounts.setRulesAck(name, rAck).catch(() => {}); sent.push("House Rules"); } else failed.push("House Rules: " + m.reason); }
+      if (rAck) { const dest = toastEmail || rAck.email; if (!emails.includes(dest)) emails.push(dest); const m = await emailRulesCopy(Object.assign({}, rAck, { name, email: dest }), false); if (m.sent) { rAck.emailedAt = new Date().toISOString(); await accounts.setRulesAck(name, rAck).catch(() => {}); sent.push("House Rules"); } else failed.push("House Rules: " + m.reason); }
       // every other signed document in ONE email (to the person only; the owner already has the proof copies)
       const signed = [];
       for (const d of DOCS.list) { const a = await accounts.getDocAck(d.id, name).catch(() => null); if (!a) continue; if (a.version === d.version) signed.push({ d, a }); else skipped.push((d.short || d.title) + " " + a.version); }
       if (signed.length) {
-        signed.forEach((x) => { if (x.a.email && !emails.includes(x.a.email)) emails.push(x.a.email); });
+        signed.forEach((x) => { const dest = toastEmail || x.a.email; if (dest && !emails.includes(dest)) emails.push(dest); });
         const last = signed.map((x) => x.a).sort((p, q) => String(q.at).localeCompare(String(p.at)))[0];
         const hashes = {}; signed.forEach((x) => { hashes[x.d.id] = x.a.hash; });
-        const m = await emailPacket(signed.map((x) => Object.assign({}, x.d, { version: x.a.version })), { name, fullName: last.fullName || null, email: last.email, at: last.at, ua: last.ua, hashes }, false);
+        const m = await emailPacket(signed.map((x) => Object.assign({}, x.d, { version: x.a.version })), { name, fullName: last.fullName || null, email: toastEmail || last.email, at: last.at, ua: last.ua, hashes }, false);
         if (m.sent) { const t = new Date().toISOString(); for (const x of signed) { x.a.emailedAt = t; await accounts.setDocAck(x.d.id, name, x.a).catch(() => {}); sent.push(x.d.short || x.d.title); } }
         else failed.push("Documents: " + m.reason);
       }
