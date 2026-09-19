@@ -1187,7 +1187,7 @@
       historyTitle:"Change history", historyLead:"Every edit made from manager mode, newest first. Confirmation times are included in the CSV export.", loading:"Loading…", historyFail:"Couldn't load the history.", noChanges:"No changes recorded yet.", historyNeedsDb:"History is available once the database is connected.",
       exporting:"Preparing the CSV export…", exportNeedsDb:"Export is available once the database is connected.", exportFail:"Couldn't export.",
       weekCreated:"Week of {r} created", weekCopied:"Week of {r} created with {k} shifts copied — adjust names and times", weekNoPrev:"Week created (no previous week to copy from)", noPrev:"There's no previous week to copy.", weekDeleted:"Week deleted",
-      welcome:"Manager mode is on.", noDb:"Note: the database is not connected; changes will not be saved.", loggedOut:"Logged out of manager mode.",
+      welcome:"Manager mode is on.", welcomeChef:"Chef mode is on: kitchen only.", noDb:"Note: the database is not connected; changes will not be saved.", loggedOut:"Logged out of manager mode.",
       conflict:"The schedule was changed from another device. The latest version has been reloaded; please redo your change.", pwInvalid:"Password no longer valid. Please log in again.", dbMissing:"The database isn't connected yet — changes can't be saved.", saveFail:"Couldn't save. Please try again.",
       tagline:"Weekly schedule — New York", mgrLogin:"Manager login", whoBtn:"Who are you?", clockBtn:"Time clock", bellOff:"Notify me", bellOn:"Notifications on", bellBlocked:"Notifications blocked", bellIos:"Notifications",
       updatedAt:"Updated {d}", previewMode:"preview mode", scheduleUpdated:"Schedule updated", loadFail:"Couldn't load the schedule. Please try again.",
@@ -1248,7 +1248,7 @@
       historyTitle:"Cronologia modifiche", historyLead:"Ogni modifica fatta dalla modalità manager, dalla più recente. Le ore di conferma sono nell'esportazione CSV.", loading:"Caricamento…", historyFail:"Impossibile caricare la cronologia.", noChanges:"Nessuna modifica registrata.", historyNeedsDb:"La cronologia è disponibile quando il database è collegato.",
       exporting:"Preparo il file CSV…", exportNeedsDb:"L'esportazione è disponibile quando il database è collegato.", exportFail:"Esportazione non riuscita.",
       weekCreated:"Settimana {r} creata", weekCopied:"Settimana {r} creata con {k} turni copiati — sistema nomi e orari", weekNoPrev:"Settimana creata (nessuna precedente da copiare)", noPrev:"Non c'è una settimana precedente da copiare.", weekDeleted:"Settimana eliminata",
-      welcome:"Modalità manager attiva.", noDb:"Attenzione: database non collegato, le modifiche non verranno salvate.", loggedOut:"Uscita dalla modalità manager.",
+      welcome:"Modalità manager attiva.", welcomeChef:"Modalità chef attiva: solo cucina.", noDb:"Attenzione: database non collegato, le modifiche non verranno salvate.", loggedOut:"Uscita dalla modalità manager.",
       conflict:"I turni sono stati modificati da un altro dispositivo. È stata ricaricata l'ultima versione: ripeti la modifica.", pwInvalid:"Password non più valida. Accedi di nuovo.", dbMissing:"Il database non è ancora collegato — le modifiche non si salvano.", saveFail:"Salvataggio non riuscito. Riprova.",
       tagline:"Turni settimanali — New York", mgrLogin:"Accesso manager", whoBtn:"Chi sei?", clockBtn:"Timbrature", bellOff:"Avvisami", bellOn:"Notifiche attive", bellBlocked:"Notifiche bloccate", bellIos:"Notifiche",
       updatedAt:"Aggiornato {d}", previewMode:"anteprima", scheduleUpdated:"Turni aggiornati", loadFail:"Impossibile caricare i turni. Riprova.",
@@ -1906,7 +1906,7 @@
     $("loginGo").disabled=true; $("loginErr").textContent="";
     var r=await api("/api/login",{method:"POST",body:{password:pw}});
     $("loginGo").disabled=false;
-    if(r.ok){ state.password=pw; state.admin=true; state.role=r.json.role||"manager"; storageSet(PW_KEY,pw); $("loginOverlay").classList.remove("show"); $("whoOverlay").classList.remove("show"); ensureActiveWeek(); applyLang(); $("saveStatus").textContent=t("statusReady"); toast(t("welcome"));
+    if(r.ok){ state.password=pw; state.admin=true; state.role=r.json.role||"manager"; storageSet(PW_KEY,pw); $("loginOverlay").classList.remove("show"); $("whoOverlay").classList.remove("show"); ensureActiveWeek(); applyLang(); $("saveStatus").textContent=t("statusReady"); toast(t(isChef()?"welcomeChef":"welcome"));
       if(!state.features.storage) toast(t("noDb"),5000); }
     else if(r.status===401){$("loginErr").textContent="Wrong password.";}
     else {$("loginErr").textContent="Couldn't verify the password. Please try again.";}
