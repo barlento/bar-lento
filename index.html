@@ -1758,6 +1758,7 @@
     $("weekTools").classList.toggle("show",state.admin);
     if(typeof renderLbBtn==="function") renderLbBtn();
     $("managerLink").textContent=state.admin?t("exitMode"):t("mgrLogin");
+    $("managerLink").style.display=(state.admin||!state.me.name)?"":"none";
     renderNotifyBtn();
     $("footHint").textContent=state.admin?t("footAdmin"):t("footStaff");
     if(state.admin){
@@ -2333,6 +2334,7 @@
     if(!state.features.storage||(!state.data.staff.length&&!state.me.name)){ b.style.display="none"; strip.classList.remove("show"); return; }
     b.style.display="";
     if(state.me.name&&state.data.staff.indexOf(state.me.name)===-1){ meSet(null,null); toast("Your access was removed. Contact the manager if this is a mistake.",5000); document.body.classList.toggle("locked",mustIdentify()); setTimeout(maybeWhoPopup,50); }
+    $("managerLink").style.display=(state.admin||!state.me.name)?"":"none";
     if(!state.me.name){ b.className="mebtn"; b.innerHTML=t("whoBtn"); strip.classList.remove("show"); return; }
     var n=state.me.name, col=avColor(n), ini=h(initials(n));
     b.className="mebtn on"; b.innerHTML='<span class="mav" style="background:'+col+'">'+ini+'</span>'+h(n.split(/\s+/)[0]);
