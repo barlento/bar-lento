@@ -344,7 +344,7 @@ var DOCS = {
       "title": "Sexual Harassment Prevention Training",
       "short": "Annual training",
       "subtitle": "Required every year by New York State Labor Law §201-g · New York State model training",
-      "intro": "New York State requires every employee to complete interactive sexual harassment prevention training every year, and new employees as soon as possible after they start. Bar Lento uses the State’s official training video, in English or in English with Italian subtitles. Watching it is paid working time: watch it during a shift when the floor is quiet, or tell the Manager the time you spent so it is added to your paid hours.",
+      "intro": "New York State requires every employee to complete interactive sexual harassment prevention training every year, and new employees as soon as possible after they start. It is a free refresher: the State’s official training video, about 30 minutes, in English or in English with Italian subtitles. There is no test, nothing to prepare and nothing to hand in: watch it, then tick the box and tap Sign. Watching it is paid working time: watch it during a shift when the floor is quiet, or tell the Manager the time you spent so it is added to your paid hours.",
       "sections": [
         {
           "h": "How to complete it",
@@ -352,8 +352,8 @@ var DOCS = {
             [
               "Watch the New York State model training video (links below): the English video, or the version with Italian subtitles in two parts (Part 1: training, Part 2: case studies). It takes about half an hour. Watch it to the end.",
               "If you choose the version with Italian subtitles, watch both parts.",
-              "If anything is unclear, ask an Owner in person or by email. Your questions and our answers are part of the training (that is what makes it “interactive”) and are answered within a few days.",
-              "Then tick the box below and confirm with your email. Your confirmation is emailed to you and to the Owners and kept as Bar Lento’s training record for this year.",
+              "Nothing else is required of you. If anything is unclear, you are welcome to ask the Manager or an Owner, in person or by email, at any time: questions and answers are part of the training (that is what makes it “interactive”).",
+              "Then tick the box below and tap Sign. Your confirmation is emailed to you and to the Owners and kept as Bar Lento’s training record for this year.",
               "You are asked again every year, in January. Bar Lento also keeps the Sexual Harassment Prevention Policy under Documents: you can reread it at any time."
             ]
           ]
@@ -388,7 +388,7 @@ var DOCS = {
           "url": "https://www.ny.gov/combating-sexual-harassment-workplace/sexual-harassment-prevention-model-policy-and-training"
         }
       ],
-      "ack": "I confirm that I have watched the New York State sexual harassment prevention training video to the end this year, that I understand it, and that I know I can ask the Owners questions about it at any time."
+      "ack": "I confirm that I have watched the New York State sexual harassment prevention training video to the end this year, that I understand it, and that I know I can ask the Manager or an Owner questions about it at any time."
     },
     {
       "id": "pto",
