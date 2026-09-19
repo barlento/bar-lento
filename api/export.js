@@ -107,7 +107,7 @@ async function collectArchive() {
       (w[d] || []).slice().sort((a, b) => a.start.localeCompare(b.start) || a.name.localeCompare(b.name)).forEach((s) => {
         const mins = Math.max(0, minutesOf(s.end) - minutesOf(s.start) + (minutesOf(s.end) < minutesOf(s.start) ? 1440 : 0));
         const conf = confirmations[`${wk}:${d}:${s.id}`];
-        shifts.push({ date, weekday: DAY_LONG[d], week: wk, name: s.name, station: s.station || "", start: fmt12(s.start), end: fmt12(s.end), hours: round2(mins / 60), status: statusLabel, confirmed: conf ? nyParts(conf).stamp : "", id: s.id });
+        shifts.push({ date, weekday: DAY_LONG[d], week: wk, name: s.name, station: s.src === "toast" ? "Toast" : (s.station || ""), start: fmt12(s.start), end: fmt12(s.end), hours: round2(mins / 60), status: statusLabel, confirmed: s.src === "toast" ? "clock-in from Toast" : (conf ? nyParts(conf).stamp : ""), id: s.id });
       });
     });
   });
@@ -162,7 +162,7 @@ async function collectPerson(name, doc, confirmations, fromISO, toISO) {
     const w = doc.data.weeks[wk];
     store.DAY_KEYS.forEach((d) => {
       const date = isoDate(wk, d); if (date < fromISO || date > toISO) return;
-      (w[d] || []).filter((sh) => sh.name === name).forEach((sh) => {
+      (w[d] || []).filter((sh) => sh.name === name && sh.src !== "toast").forEach((sh) => {
         const mins = Math.max(0, minutesOf(sh.end) - minutesOf(sh.start) + (minutesOf(sh.end) < minutesOf(sh.start) ? 1440 : 0));
         const conf = confirmations[`${wk}:${d}:${sh.id}`]; const note = (w.notes && w.notes[d]) || {};
         const m = M(date); m.scheduled += mins / 60; m.shifts++;

@@ -48,6 +48,12 @@ const MAILS = [];
 // time entries: for every scheduled shift in the current week whose date <= today, a punch 3 min late, out 10 min after end (open if today & ongoing)
 function fakeEntries() {
   const today = nyTodayISO(); const out = [];
+  // past weeks with no schedule at all: real-looking clock-ins to import
+  [["2026-08-25", "joe", "16:02", "22:07"], ["2026-08-25", "sierrah", "17:01", "23:12"], ["2026-08-27", "joe", "15:58", "21:03"], ["2026-09-01", "kayla", "16:05", "22:40"], ["2026-09-03", "joe", "16:00", "01:10"]].forEach(([date, who, i, o], k) => {
+    const [ih, im] = i.split(":").map(Number), [oh, om] = o.split(":").map(Number);
+    const inISO = nyInstant(date, ih, im); let outISO = nyInstant(date, oh, om); if (Date.parse(outISO) < Date.parse(inISO)) outISO = new Date(Date.parse(outISO) + 86400000).toISOString();
+    if (Date.parse(inISO) < Date.now()) out.push({ guid: "te-past-" + k, employeeReference: { guid: "guid-" + who }, inDate: inISO, outDate: outISO, deleted: false });
+  });
   const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
   Object.keys(seed.weeks).forEach((wk) => {
     DAYS.forEach((d, i) => {

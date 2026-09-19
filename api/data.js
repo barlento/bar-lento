@@ -7,6 +7,7 @@ const accounts = require("../lib/accounts");
 const staffsync = require("../lib/staffsync");
 const punch = require("../lib/punch");
 const former = require("../lib/former");
+const backfill = require("../lib/backfill");
 
 function send(res, status, body) {
   res.setHeader("Cache-Control", "no-store");
@@ -39,6 +40,13 @@ module.exports = async (req, res) => {
       if (!store.hasStorage()) return send(res, 503, { error: "storage_missing" });
 
       const body = req.body || {};
+      if (body.action === "backfillToast") { // manager: past weeks from the clock-ins already in Toast (idempotent)
+        const from = /^\d{4}-\d{2}-\d{2}$/.test(body.from || "") ? body.from : (() => { const d = new Date(); d.setUTCMonth(d.getUTCMonth() - 12); return d.toISOString().slice(0, 10); })();
+        const r = await backfill.backfillFromToast(await store.getSchedule(), from);
+        if (r.error) return send(res, 503, { error: r.error });
+        const confirmations = await store.getConfirmations();
+        return send(res, 200, { ok: true, added: r.added, weeks: r.weeks, seen: r.seen, skippedOpen: r.skippedOpen, unknown: r.unknown, version: r.doc.version, updatedAt: r.doc.updatedAt, data: r.doc.data, confirmations });
+      }
       const data = store.normalizeData(body.data || {});
       const current = await store.getSchedule();
       if (typeof body.version === "number" && body.version !== current.version) {
