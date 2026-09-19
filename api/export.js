@@ -12,6 +12,7 @@ const punch = require("../lib/punch");
 const former = require("../lib/former");
 const toast = require("../lib/toast");
 const DOCS = require("../documents.js");
+const pdf = require("../lib/pdf");
 
 const DAY_LONG = { mon: "Monday", tue: "Tuesday", wed: "Wednesday", thu: "Thursday", fri: "Friday", sat: "Saturday", sun: "Sunday" };
 const STATUS_LABEL = { "": "Open", closed: "Closed", holiday: "Holiday", half: "Half day", event: "Private event" };
@@ -93,7 +94,7 @@ function summarySheet(wb, title, subtitle, pairs, tables) {
 }
 
 // ---------- 1. schedule archive ----------
-async function archiveWorkbook() {
+async function collectArchive() {
   const [doc, confirmations] = await Promise.all([store.getSchedule(), store.getConfirmations()]);
   const shifts = [], days = [];
   Object.keys(doc.data.weeks).sort().forEach((wk) => {
@@ -110,6 +111,10 @@ async function archiveWorkbook() {
       });
     });
   });
+  return { doc, shifts, days };
+}
+async function archiveWorkbook() {
+  const { doc, shifts, days } = await collectArchive();
   const wb = new ExcelJS.Workbook(); wb.creator = "Bar Lento staff app"; wb.created = new Date();
   const first = days[0] ? days[0].date : "", last = days.length ? days[days.length - 1].date : "";
   summarySheet(wb, "Bar Lento — schedule archive", `Generated ${nyParts(new Date().toISOString()).stamp} New York time · every week ever published in the app`, [
@@ -125,6 +130,18 @@ async function archiveWorkbook() {
     { header: "Date", key: "date", type: "date", width: 16 }, { header: "Weekday", key: "weekday", width: 11 }, { header: "Status", key: "status", width: 18 }, { header: "Note", key: "note", width: 50, wrap: true }, { header: "People scheduled", key: "people", width: 16, align: "right" }, { header: "Week of", key: "week", type: "date", width: 16 },
   ], days);
   return { wb, filename: `bar-lento-schedule-archive-${todayNY()}.xlsx` };
+}
+async function archivePdfFile() {
+  const { doc, shifts, days } = await collectArchive();
+  const weeks = Object.keys(doc.data.weeks).sort().map((wk) => {
+    const wdays = days.filter((d) => d.week === wk).map((d) => ({ date: d.date, weekday: d.weekday, status: d.status, note: d.note, shifts: shifts.filter((s) => s.date === d.date).map((s) => ({ name: s.name, station: s.station, start: s.start, end: s.end, hours: s.hours, confirmed: s.confirmed })) }));
+    const f = wdays[0] ? dateCell(wdays[0].date) : null, l = wdays[6] ? dateCell(wdays[6].date) : null;
+    const lab = (dt) => dt.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+    return { wk, label: f && l ? `Week of ${lab(f)} – ${lab(l)}, ${l.getUTCFullYear()}` : `Week of ${wk}`, days: wdays };
+  });
+  const a = { first: days[0] ? days[0].date : "", last: days.length ? days[days.length - 1].date : "", weeks, staff: doc.data.staff, totalShifts: shifts.length };
+  const out = await pdf.archivePdf(a, nyParts(new Date().toISOString()).stamp);
+  return { buf: out.buf, filename: `bar-lento-schedule-archive-${todayNY()}.pdf` };
 }
 
 // ---------- 2. one person's record ----------
@@ -239,6 +256,12 @@ async function personWorkbook(name, fromISO, toISO) {
   ], r.events);
   return { wb, filename: `bar-lento-record-${name.replace(/[^A-Za-z0-9]+/g, "-").toLowerCase()}-${fromISO}-to-${toISO}.xlsx` };
 }
+async function personPdfFile(name, fromISO, toISO) {
+  const [doc, confirmations] = await Promise.all([store.getSchedule(), store.getConfirmations()]);
+  const r = await collectPerson(name, doc, confirmations, fromISO, toISO);
+  const out = await pdf.personRecordPdf(r, nyParts(new Date().toISOString()).stamp);
+  return { buf: out.buf, filename: `bar-lento-record-${name.replace(/[^A-Za-z0-9]+/g, "-").toLowerCase()}-${fromISO}-to-${toISO}.pdf` };
+}
 
 module.exports = async (req, res) => {
   try {
@@ -249,6 +272,7 @@ module.exports = async (req, res) => {
 
     const url = new URL(req.url, "http://x");
     const person = String(url.searchParams.get("person") || "").trim().slice(0, 60);
+    const format = url.searchParams.get("format") === "xlsx" ? "xlsx" : "pdf"; // PDF by default: opens everywhere, not editable
     let out;
     if (person) {
       const isD = (v) => /^\d{4}-\d{2}-\d{2}$/.test(v || "");
@@ -257,11 +281,11 @@ module.exports = async (req, res) => {
       if (!isD(from)) { const d = new Date(to + "T12:00:00Z"); d.setUTCMonth(d.getUTCMonth() - 12); from = d.toISOString().slice(0, 10); }
       const minFrom = new Date(to + "T12:00:00Z"); minFrom.setUTCMonth(minFrom.getUTCMonth() - 24);
       if (from < minFrom.toISOString().slice(0, 10)) from = minFrom.toISOString().slice(0, 10);
-      out = await personWorkbook(person, from, to);
-    } else out = await archiveWorkbook();
-    const buf = await out.wb.xlsx.writeBuffer();
+      out = format === "xlsx" ? await personWorkbook(person, from, to) : await personPdfFile(person, from, to);
+    } else out = format === "xlsx" ? await archiveWorkbook() : await archivePdfFile();
+    const buf = out.buf || await out.wb.xlsx.writeBuffer();
     res.setHeader("Cache-Control", "no-store");
-    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.setHeader("Content-Type", format === "xlsx" ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" : "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="${out.filename}"`);
     return res.status(200).send(Buffer.from(buf));
   } catch (err) {
