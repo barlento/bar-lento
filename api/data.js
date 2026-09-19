@@ -48,7 +48,7 @@ module.exports = async (req, res) => {
       // and their Toast employee must not come back at the next sync.
       const gone = (current.data.staff || []).filter((n) => !data.staff.includes(n));
       const ignore = new Set(data.toastIgnore || []);
-      gone.forEach((n) => { const g = (current.data.toastMap || {})[n]; if (g) ignore.add(g); });
+      gone.forEach((n) => { const g = (current.data.toastMap || {})[n]; if (g) ignore.add(g); delete data.toastMap[n]; });
       data.toastIgnore = Array.from(ignore);
       const doc = { version: (current.version || 0) + 1, data, updatedAt: new Date().toISOString() };
       await store.saveSchedule(doc);

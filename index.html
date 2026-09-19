@@ -899,6 +899,7 @@
     <h2 id="staffTitle" data-t="staffTitle">Staff</h2>
     <p class="lead" data-t="staffLead">Tap a name for birthday, PIN and documents. Removing a name never deletes past weeks.</p>
     <div class="roster" id="rosterList"></div>
+    <div class="hint" id="rosterToast" style="display:none;margin-top:10px"></div>
     <div class="addrow">
       <input id="newStaffInput" type="text" placeholder="New name" data-tp="newNamePh" autocapitalize="words">
       <button class="btn primary" id="addStaffBtn" type="button" data-t="add">Add</button>
@@ -1122,7 +1123,7 @@
       holidayNote:"This day is <b>{h}</b>. You decide whether to open or close.",
       pOpen:"Open · regular hours", pClosedFor:"Closed for {h}", pFullDay:"Full day", pHalfFor:"Half day for {h}", pHalf:"Half day", pHalfSub:"Choose the hours below", pEvent:"Private event", pEventSub:"Bar reserved · shifts still shown", pOther:"Closed — other reason", pOtherSub:"Enter the reason below; the team will see it",
       reasonPh2:"Reason, e.g. Renovation · Staff training · Bad weather", errReason:"Please enter the reason; the team will see it.", errClose:"Closing time must be after opening time.", dayOpenSet:"Day set to open",
-      staffTitle:"Staff", staffLead:"Tap a name for birthday, PIN and documents. Removing a name never deletes past weeks.", staffLeadToast:"New Toast employees appear here by themselves. Tap a name for birthday, PIN and documents. Removing a name never deletes past weeks.", fromToast:"Added from Toast: {n}", phToast:"Toast",
+      staffTitle:"Staff", staffLead:"Tap a name for birthday, PIN and documents. Removing a name never deletes past weeks.", staffLeadToast:"New Toast employees appear here by themselves. Tap a name for birthday, PIN and documents. Removing a name never deletes past weeks.", fromToast:"Added from Toast: {n}", phToast:"Toast", toastActive:"Toast: {n} active employees", toastMissing:"Not in the app:", toastRemoved:"removed here", toastPending:"waiting", toastNoName:"no name in Toast", toastErr:"Toast not reachable right now ({e})",
       newNamePh:"New name", noNames:"No names yet.", nameExists:"That name is already on the list", removeQ:"Remove?", bdaySaved:"Birthday saved for {n}", bdayRemoved:"Birthday removed",
       removeTap:"Tap again to remove {n}{s}. Past weeks are kept.", upcoming1:" and 1 upcoming shift", upcomingN:" and {k} upcoming shifts", removed:"{n} removed{s}. Past shifts kept in the archive.", deleted1:" · 1 upcoming shift deleted", deletedN:" · {k} upcoming shifts deleted",
       historyTitle:"Change history", historyLead:"Every edit made from manager mode, newest first. Confirmation times are included in the CSV export.", loading:"Loading…", historyFail:"Couldn't load the history.", noChanges:"No changes recorded yet.", historyNeedsDb:"History is available once the database is connected.",
@@ -1179,7 +1180,7 @@
       holidayNote:"Questo giorno è <b>{h}</b>. Decidi tu se aprire o chiudere.",
       pOpen:"Aperto · orario normale", pClosedFor:"Chiuso per {h}", pFullDay:"Tutto il giorno", pHalfFor:"Mezza giornata per {h}", pHalf:"Mezza giornata", pHalfSub:"Scegli gli orari qui sotto", pEvent:"Evento privato", pEventSub:"Locale riservato · i turni restano visibili", pOther:"Chiuso — altro motivo", pOtherSub:"Scrivi il motivo qui sotto: il team lo vedrà",
       reasonPh2:"Motivo, es. Lavori · Formazione · Maltempo", errReason:"Scrivi il motivo: il team lo vedrà.", errClose:"L'orario di chiusura deve essere dopo l'apertura.", dayOpenSet:"Giorno impostato su aperto",
-      staffTitle:"Staff", staffLead:"Tocca un nome per compleanno, PIN e documenti. Togliere un nome non cancella mai le settimane passate.", staffLeadToast:"I nuovi dipendenti di Toast compaiono qui da soli. Tocca un nome per compleanno, PIN e documenti. Togliere un nome non cancella mai le settimane passate.", fromToast:"Aggiunto da Toast: {n}", phToast:"Toast",
+      staffTitle:"Staff", staffLead:"Tocca un nome per compleanno, PIN e documenti. Togliere un nome non cancella mai le settimane passate.", staffLeadToast:"I nuovi dipendenti di Toast compaiono qui da soli. Tocca un nome per compleanno, PIN e documenti. Togliere un nome non cancella mai le settimane passate.", fromToast:"Aggiunto da Toast: {n}", phToast:"Toast", toastActive:"Toast: {n} dipendenti attivi", toastMissing:"Non nell'app:", toastRemoved:"tolto qui", toastPending:"in attesa", toastNoName:"senza nome su Toast", toastErr:"Toast non raggiungibile adesso ({e})",
       newNamePh:"Nuovo nome", noNames:"Nessun nome ancora.", nameExists:"Nome già presente", removeQ:"Rimuovi?", bdaySaved:"Compleanno salvato per {n}", bdayRemoved:"Compleanno rimosso",
       removeTap:"Tocca di nuovo per rimuovere {n}{s}. Le settimane passate restano.", upcoming1:" e 1 turno futuro", upcomingN:" e {k} turni futuri", removed:"{n} rimosso/a{s}. I turni passati restano in archivio.", deleted1:" · 1 turno futuro cancellato", deletedN:" · {k} turni futuri cancellati",
       historyTitle:"Cronologia modifiche", historyLead:"Ogni modifica fatta dalla modalità manager, dalla più recente. Le ore di conferma sono nell'esportazione CSV.", loading:"Caricamento…", historyFail:"Impossibile caricare la cronologia.", noChanges:"Nessuna modifica registrata.", historyNeedsDb:"La cronologia è disponibile quando il database è collegato.",
@@ -1981,6 +1982,13 @@
       return '<button type="button" class="person" data-name="'+h(n)+'"><span class="av" style="background:'+avColor(n)+'">'+h(initials(n))+'</span><span class="nm">'+h(n)+(st.txt?'<small class="'+(st.ok?"ok":"")+'">'+h(st.txt)+'</small>':'')+'</span><span class="bd">'+(b?''+h(bdayShort(b)):'')+'</span><span class="go">›</span></button>';
     }).join(""):'<div class="empty-note">'+t("noNames")+'</div>';
     el.querySelectorAll(".person").forEach(function(b){ b.addEventListener("click",function(){ openPerson(b.getAttribute("data-name")); }); });
+    var tr=state.toastReport, tn=$("rosterToast");
+    if(tr&&!tr.error){
+      var parts=[t("toastActive",{n:tr.active})];
+      if(tr.missing&&tr.missing.length) parts.push(t("toastMissing")+" "+tr.missing.map(function(m){return m.name+" ("+t(m.reason==="removed"?"toastRemoved":m.reason==="noname"?"toastNoName":"toastPending")+")";}).join(", "));
+      tn.textContent=parts.join(" · "); tn.style.display="";
+    } else if(tr&&tr.error){ tn.textContent=t("toastErr",{e:tr.error}); tn.style.display=""; }
+    else tn.style.display="none";
     if(person.name&&$("personOverlay").classList.contains("show")) renderPerson();
   }
   // ---- one person: birthday, access (PIN), documents, week, remove ----
@@ -2598,7 +2606,8 @@
   async function loadAccounts(){
     if(!state.admin) return;
     var r=await api("/api/me?action=list",{auth:true});
-    if(r.ok){ state.accounts=r.json.accounts||{}; state.mailEnabled=!!r.json.mail; }
+    if(r.ok){ state.accounts=r.json.accounts||{}; state.mailEnabled=!!r.json.mail; state.toastReport=r.json.toastReport||null;
+      if(typeof r.json.version==="number"&&r.json.version!==state.version&&!state.saving&&!state.dirtyTimer) await load(true); }
   }
 
   // ---------- push notifications ----------

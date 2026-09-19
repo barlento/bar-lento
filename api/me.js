@@ -2,6 +2,7 @@ const store = require("../lib/store");
 const auth = require("../lib/auth");
 const accounts = require("../lib/accounts");
 const toast = require("../lib/toast");
+const staffsync = require("../lib/staffsync");
 const crypto = require("crypto");
 const RULES = require("../rules.js");
 const DOCS = require("../documents.js");
@@ -161,20 +162,29 @@ module.exports = async (req, res) => {
     const isAdmin = auth.adminEnabled() && auth.checkPassword(auth.passwordFrom(req));
 
     if (req.method === "GET") {
-      const doc = await store.getSchedule();
+      let doc = await store.getSchedule();
       if (action === "list") {
         if (!isAdmin) return send(res, 401, { error: "unauthorized" });
+        // Opening Staff = fresh from Toast right now (new employees appear at once, not after the next 10-minute check).
+        let synced = [];
+        try { const r = await staffsync.syncFromToast(doc, { force: true }); doc = r.doc; synced = r.added.map((a) => a.name); } catch (e) {}
         const [summary, acks, former, formerDocs, ...perDoc] = await Promise.all([accounts.summary(), accounts.allRulesAck().catch(() => ({})), accounts.allRulesAckArchive().catch(() => ({})), accounts.allDocAckArchive().catch(() => ({}))].concat(DOC_IDS.map((id) => accounts.allDocAck(id).catch(() => ({})))));
         Object.keys(acks).forEach((n) => { summary[n] = summary[n] || { pin: false, devices: 0 }; summary[n].rules = { version: acks[n].version, at: acks[n].at, email: acks[n].email, fullName: acks[n].fullName || null, emailedAt: acks[n].emailedAt || null, history: acks[n].history || [] }; });
         DOC_IDS.forEach((id, i) => { Object.keys(perDoc[i]).forEach((n) => { const a = perDoc[i][n]; summary[n] = summary[n] || { pin: false, devices: 0 }; summary[n].docs = summary[n].docs || {}; summary[n].docs[id] = { version: a.version, at: a.at, email: a.email, emailedAt: a.emailedAt || null }; }); });
         // Acknowledgments of people no longer on staff (legal archive), for the manager's records.
-        if (toast.enabled()) { // Toast identity (full name · email) of every linked person
+        let toastReport = null;
+        if (toast.enabled()) { // Toast identity (full name · email) of every linked person + who in Toast is not in the app, and why
           try { const emps = await toast.employees(true); const map = toast.autoMap(doc.data.staff, doc.data.toastMap, emps);
-            doc.data.staff.forEach((n) => { const e = map[n] && emps.find((x) => x.guid === map[n]); if (e) { summary[n] = summary[n] || { pin: false, devices: 0 }; summary[n].toast = { fullName: e.name, email: e.email }; } }); } catch (e) {}
+            doc.data.staff.forEach((n) => { const e = map[n] && emps.find((x) => x.guid === map[n]); if (e) { summary[n] = summary[n] || { pin: false, devices: 0 }; summary[n].toast = { fullName: e.name, email: e.email }; } });
+            const linked = new Set(doc.data.staff.map((n) => map[n]).filter(Boolean)), ignore = new Set(doc.data.toastIgnore || []);
+            const active = emps.filter((e) => !e.archived);
+            const missing = active.filter((e) => !linked.has(e.guid)).map((e) => ({ name: e.name, reason: ignore.has(e.guid) ? "removed" : (!e.first && !e.name ? "noname" : "pending") }));
+            toastReport = { active: active.length, archived: emps.length - active.length, missing, synced };
+          } catch (e) { toastReport = { error: String(e && e.message || e).slice(0, 120) }; }
         }
         const formerAcks = Object.keys(former).map((k) => Object.assign({ key: k }, former[k]));
         const formerDocAcks = Object.keys(formerDocs).map((k) => Object.assign({ key: k }, formerDocs[k]));
-        return send(res, 200, { accounts: summary, formerAcks, formerDocAcks, rulesVersion: RULES.version || null, docsVersions: docVersions(), mail: mail.enabled() });
+        return send(res, 200, { accounts: summary, formerAcks, formerDocAcks, rulesVersion: RULES.version || null, docsVersions: docVersions(), mail: mail.enabled(), toastReport, version: doc.version });
       }
       // Who is on this device? (also used by "hours" below)
       let name = await accounts.whoIs(tokenFrom(req), doc.data.staff);
