@@ -77,20 +77,28 @@ bullets([
   "My stats shows your own numbers only. Nobody sees anybody else’s.",
 ]);
 shots([{ file: "06-myweek.png", caption: "My week: shifts, clock-ins, hours" }, { file: "08-documents.png", caption: "Documents: everything you signed" }]);
-heading("4. Your documents");
+heading("4. The documents you sign, explained");
+para("New York State and New York City require every employer to give employees a set of written policies and to keep proof that each person received them. Bar Lento does this in the app: you read, tick and sign once; your signed copy arrives by email and the record is kept. Nothing to print, nothing to bring back.", { after: 8 });
 bullets([
-  "My week → Documents lists the House Rules and every policy you signed, with the date. Tap one to read it again or print it.",
-  "Email me my signed copies sends them again to your email whenever you want.",
-  "Once a year (January) the State training video is asked again: a free 30-minute refresher, nothing to hand in.",
+  "House Rules \u2014 how we work together at Bar Lento: schedule and confirmations, being on time, uniform, breaks, guests, safety, phones, tips, time off, who to talk to. Written for Bar Lento and checked against New York law.",
+  "Sexual Harassment Prevention Policy \u2014 the official New York State model policy, adopted in full, with a complaint form. Required by NY Labor Law \u00a7201-g for every employer.",
+  "Sexual Harassment Prevention Training \u2014 once a year, the free 30-minute video from New York State (in English, or English with Italian subtitles). Watch it, tick, sign. No test, nothing to hand in. Required every year by the same law.",
+  "Protected Time Off (Safe and Sick Leave) Policy \u2014 how paid sick and safe time is earned and used under the New York City Earned Safe and Sick Time Act and New York State Paid Sick Leave Law, with the official NYC Notice of Employee Rights in English and Italian.",
+  "Tips Policy \u2014 how tips work at Bar Lento (no tip pool; card tips through payroll; cash tips declared in Toast), under NY Labor Law \u00a7196-d.",
+  "Lactation Policy \u2014 the New York State Department of Labor model policy on the right to express breast milk at work (NY Labor Law \u00a7206-c).",
 ]);
-heading("5. If you are not in Toast");
-para("A few people (temporary jobs, salaried staff) do not clock in on the Toast terminal. For them the app has a Clock in / Clock out button: tap it when you start and when you finish. It is recorded with the exact time and shows in the time clock, in My week and in your report like everyone else’s.", { after: 8 });
-shots([{ file: "09-clockin.png", caption: "Clock in / Clock out, only for people not on Toast", ratio: 0.42 }]);
+callout("What signing means", "Signing confirms that you received and read the document. It does not take away any right the law gives you: where a policy and the law differ, the law wins. Every version you sign is kept with the date, your email and a fingerprint of the exact text, so nobody can change it afterwards. You can reread or print any document at any time from My week, then Documents.");
+heading("5. Your privacy");
+bullets([
+  "What is stored: your name, your PIN (only as a cryptographic hash, never the PIN itself), the phones you signed in from, the email you sign with, your shifts and confirmations, your clock-ins mirrored from Toast, your signed documents, your birthday if the manager entered it.",
+  "Why: to organize shifts, verify hours and comply with New York labor law. Nothing else. No advertising, no tracking, no sale of data.",
+  "Who sees it: you see your own data; the time clock is visible to signed-in colleagues because it is operational; the manager and the owners see what they need to run the business. Nobody else.",
+  "Everything is written in plain words at bar-lento.vercel.app/legal.html. You can ask the owners for a copy of your records at any time.",
+]);
 
 // ---------- 6. good to know ----------
 heading("6. Good to know");
 bullets([
-  "Your data is confidential and used only to run Bar Lento. What is stored and why is written in plain words at bar-lento.vercel.app/legal.html.",
   "Records that the law requires (schedules, hours, signed policies) are kept as long as the law requires, also after someone leaves.",
   "Questions about the app, your hours or a document: ask the manager or an owner.",
 ]);
