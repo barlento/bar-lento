@@ -12,10 +12,10 @@ const hdr = { "Content-Type": "application/json", "x-admin-password": PW };
   const f = flat(w0907);
   const joe = f.filter((s) => s.name === "Joe"), pietro = f.filter((s) => s.name === "Pietro");
   console.log("2 week 09-07: Joe shifts", joe.map((s) => s.day + " " + s.start + "-" + s.end + " " + (s.src || "plan")).join(", "));
-  console.log("  Pietro (not in Toast) shifts kept as planned:", pietro.length, pietro.every((s) => s.src !== "toast"));
+  console.log("  Pietro (not in Toast, no app clock-ins) planned shifts gone:", pietro.length === 0, "| any planned shift left:", f.some((s) => !s.src));
   if (joe.some((s) => s.src !== "toast")) errors.push("Joe (Toast person) still has planned shifts in a past week");
   if (!joe.length) errors.push("Joe has no clock-in shifts in week 09-07");
-  if (!pietro.length || pietro.some((s) => s.src === "toast")) errors.push("Pietro's planned shifts were touched");
+  if (f.some((s) => !s.src)) errors.push("a planned shift survived in a past week");
   const aug = flat(r.j.data.weeks["2026-08-24"] || {}); console.log("3 week 08-24:", aug.map((s) => s.name + " " + s.day + " " + s.start + "-" + s.end).join(", "));
   if (!aug.some((s) => s.name === "Joe" && s.day === "tue" && s.start === "16:02")) errors.push("Joe's real Aug 25 clock-in missing");
   // Kayla: archived in Toast → removed from staff by the sync, but her clock-ins still land under her name (former register)

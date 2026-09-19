@@ -1742,7 +1742,7 @@
         var mine=!!state.me.name&&s.name===state.me.name;
         return '<button type="button" class="shift'+(ok?" confirmed":"")+(mine?" mine":"")+'" data-day="'+key+'" data-id="'+h(s.id)+'" aria-pressed="'+ok+'">'
           +'<span class="check" aria-hidden="true">✓</span>'
-          +'<span class="main"><span class="who">'+h(s.name)+(s.station?'<span class="st">'+h(s.station)+'</span>':(s.src==="toast"?'<span class="st">Toast</span>':""))+'</span><span class="when mono">'+range12(s.start,s.end)+'</span>'+clockBadge(wk,key,s,isToday,isPast)+'</span>'
+          +'<span class="main"><span class="who">'+h(s.name)+(s.station?'<span class="st">'+h(s.station)+'</span>':(s.src==="toast"?'<span class="st">Toast</span>':s.src==="app"?'<span class="st">App</span>':""))+'</span><span class="when mono">'+range12(s.start,s.end)+'</span>'+clockBadge(wk,key,s,isToday,isPast)+'</span>'
           +'<span class="edit" aria-hidden="true"></span></button>';
       }).join(""):'<div class="empty-note">'+(closed?t("noShiftsClosed"):t("noShiftsAssigned"))+'</div>';
       var badge=note&&note.status?'<span class="badge '+note.status+'">'+statusLabel(note.status)+'</span>':"";
