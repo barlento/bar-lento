@@ -401,6 +401,9 @@
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   .sheet .actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:6px}
   .sheet .actions .spacer{flex:1}
+  .me-actions{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:8px;margin-top:8px}
+  .me-actions .btn{width:100%;padding-left:8px;padding-right:8px}
+  .me-actions .btn .badge-n{margin-left:6px}
   .err{color:var(--danger);font-size:.82rem;min-height:1.2em;margin:-4px 0 8px}
   .bigword{font-family:'IBM Plex Mono',monospace;font-weight:600;background:var(--surface-2);padding:2px 8px;border-radius:6px}
   .shiftcard{display:flex;flex-direction:column;gap:3px;background:var(--surface-2);border-radius:12px;padding:12px 14px;margin-bottom:14px}
@@ -1083,13 +1086,14 @@
     <div class="tc-sum" id="meSum"></div>
     <div class="me-list" id="meList"></div>
     <p class="me-note" id="meNote"></p>
-    <div class="actions">
-      <button class="linkbtn" id="meSwitch" type="button">Switch</button>
-      <button class="linkbtn" id="meLogout" type="button">Log out</button>
+    <div class="me-actions">
       <button class="btn" id="meRules" type="button" style="display:none">Documents</button>
-      <span class="spacer"></span>
       <button class="btn" id="meStatsLink" type="button" data-t="myStats">My stats</button>
-      <button class="btn" id="meClose" type="button" data-t="close">Close</button>
+    </div>
+    <div class="me-actions" id="meAccount">
+      <button class="btn" id="meSwitch" type="button">Switch</button>
+      <button class="btn" id="meLogout" type="button">Log out</button>
+      <button class="btn primary" id="meClose" type="button" data-t="close">Close</button>
     </div>
   </div>
 </div>
@@ -2615,7 +2619,8 @@
     var keys=meWeeks(), cur=currentMondayISO();
     me.week=keys.indexOf(cur)!==-1?cur:(keys.filter(function(k){return k>=cur;})[0]||keys[keys.length-1]||null);
     meTitles(); $("meRules").style.display=((rulesActive()||(DOCS.list||[]).length)&&!asName)?"":"none"; $("meRules").innerHTML=docsButtonLabel();
-    $("meSwitch").style.display=asName&&asName!==state.me.name?"none":""; $("meLogout").style.display=asName&&asName!==state.me.name?"none":"";
+    var other=asName&&asName!==state.me.name; $("meSwitch").style.display=other?"none":""; $("meLogout").style.display=other?"none":"";
+    $("meStatsLink").style.display=(!other&&state.me.appClock)?"none":"";
     renderMePanel(); $("meOverlay").classList.add("show"); loadMeHours();
   }
   function meShiftWeek(n){ var keys=meWeeks(), i=keys.indexOf(me.week); var j=i+n; if(j<0||j>=keys.length) return; me.week=keys[j]; renderMePanel(); loadMeHours(); }
