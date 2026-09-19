@@ -199,7 +199,7 @@ module.exports = async (req, res) => {
           Object.keys(summary).forEach((n) => { if (!k.has(n)) delete summary[n]; }); Object.keys(presenceOut).forEach((n) => { if (!k.has(n)) delete presenceOut[n]; });
           return send(res, 200, { accounts: summary, formerAcks: [], formerDocAcks: [], rulesVersion: RULES.version || null, docsVersions: docVersions(), mail: mail.enabled(), toastReport: null, formerStaff: [], presence: presenceOut, dept: doc.data.dept || {}, role: "chef", version: doc.version });
         }
-        return send(res, 200, { accounts: summary, formerAcks, formerDocAcks, rulesVersion: RULES.version || null, docsVersions: docVersions(), mail: mail.enabled(), toastReport, formerStaff, presence: presenceOut, dept: doc.data.dept || {}, chef: await auth.chefEnabled().catch(() => false), role: "manager", version: doc.version });
+        return send(res, 200, { accounts: summary, formerAcks, formerDocAcks, rulesVersion: RULES.version || null, docsVersions: docVersions(), mail: mail.enabled(), toastReport, formerStaff, presence: presenceOut, dept: doc.data.dept || {}, chef: await auth.chefInfo().catch(() => ({ on: false, name: null })), role: "manager", version: doc.version });
       }
       // Who is on this device? (also used by "hours" below)
       let name = await accounts.whoIs(tokenFrom(req), doc.data.staff);
@@ -418,13 +418,14 @@ module.exports = async (req, res) => {
       return mailed.sent ? send(res, 200, { ok: true, email: ack.email }) : send(res, 502, { error: "mail_failed", detail: mailed.reason });
     }
 
-    if (action === "setChefPassword") { // manager only: the chef's password (empty = switch the chef login off)
+    if (action === "setChefPassword") { // manager only, from the person sheet: give this person the chef login (empty password = take it away)
       if (!isAdmin) return send(res, 401, { error: "unauthorized" });
-      const pw = String(body.password || "").trim();
+      const pw = String(body.password || "").trim(); const who = String(body.name || "").trim().slice(0, 60);
       if (pw && pw.length < 6) return send(res, 400, { error: "too_short" });
-      const on = await auth.setChefPassword(pw);
-      await store.appendLog({ at: new Date().toISOString(), changes: [on ? "Chef login: password set by the manager" : "Chef login switched off"] }).catch(() => {});
-      return send(res, 200, { ok: true, chef: on });
+      if (pw && !doc0.data.staff.includes(who)) return send(res, 400, { error: "unknown_name" });
+      const on = await auth.setChefPassword(pw, who);
+      await store.appendLog({ at: new Date().toISOString(), changes: [on ? `Chef login given to ${who} (password set by the manager)` : "Chef login switched off"] }).catch(() => {});
+      return send(res, 200, { ok: true, chef: await auth.chefInfo() });
     }
     if (action === "reset") {
       if (!mayManage(String(body.name || "").trim().slice(0, 60))) return send(res, 401, { error: "unauthorized" });

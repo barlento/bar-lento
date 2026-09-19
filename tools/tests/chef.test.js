@@ -3,8 +3,8 @@ const { chromium } = require("playwright");
 const B="http://127.0.0.1:4173"; const errors=[]; const M={ "Content-Type":"application/json","x-admin-password":"segreta" };
 const j=async(u,o)=>{const r=await fetch(B+u,o); let x=null; try{x=await r.json();}catch(e){} return {s:r.status,j:x,h:r.headers};};
 (async()=>{
-  let r=await j("/api/me",{method:"POST",headers:M,body:JSON.stringify({action:"setChefPassword",password:"cucina123"})}); console.log("1 manager sets chef password:",r.s,r.j);
-  if(!r.j||!r.j.chef) errors.push("chef password not set");
+  let r=await j("/api/me",{method:"POST",headers:M,body:JSON.stringify({action:"setChefPassword",password:"cucina123",name:"Mariia"})}); console.log("1 manager gives Mariia the chef login:",r.s,r.j);
+  if(!r.j||!r.j.chef||!r.j.chef.on||r.j.chef.name!=="Mariia") errors.push("chef password not set for Mariia");
   const C={ "Content-Type":"application/json","x-admin-password":"cucina123" };
   r=await j("/api/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password:"cucina123"})}); console.log("2 chef login:",r.s,r.j); if(!r.j||r.j.role!=="chef") errors.push("chef role not returned");
   r=await j("/api/data"); const feat=r.j.features; console.log("3 features.chef:",feat.chef); if(!feat.chef) errors.push("features.chef false");
@@ -35,15 +35,25 @@ const j=async(u,o)=>{const r=await fetch(B+u,o); let x=null; try{x=await r.json(
   console.log("14 chef UI:",ui); if(!/Chef mode/.test(ui.mode)||ui.names.some(n=>!inK(n))||ui.history!=="none"||ui.tools!=="none"||ui.daybtn!=="none") errors.push("chef UI leaks: "+JSON.stringify(ui));
   await p.click(".addshift"); await p.waitForSelector("#shiftOverlay.show"); const opts=await p.evaluate(()=>[...document.querySelectorAll("#nameSel option")].map(o=>o.value)); console.log("15 chef name picker:",opts); if(opts.some(v=>!inK(v))) errors.push("name picker leaks");
   await p.evaluate(()=>{document.querySelectorAll(".overlay.show").forEach(o=>o.classList.remove("show"))});
-  await p.click("#staffBtn"); await p.waitForSelector("#staffOverlay.show"); await p.waitForTimeout(900); const ro=await p.evaluate(()=>({names:[...document.querySelectorAll(".roster .person")].map(b=>b.getAttribute("data-name")), chefCard:getComputedStyle(document.getElementById("rosterChef")).display, addRow:getComputedStyle(document.querySelector("#staffOverlay .addrow")).display}));
-  console.log("16 chef Staff:",ro); if(ro.names.some(n=>!inK(n))||ro.chefCard!=="none"||ro.addRow!=="none") errors.push("chef Staff leaks");
+  await p.click("#staffBtn"); await p.waitForSelector("#staffOverlay.show"); await p.waitForTimeout(900); const ro=await p.evaluate(()=>({names:[...document.querySelectorAll(".roster .person")].map(b=>b.getAttribute("data-name")), addRow:getComputedStyle(document.querySelector("#staffOverlay .addrow")).display}));
+  console.log("16 chef Staff:",ro); if(ro.names.some(n=>!inK(n))||ro.addRow!=="none") errors.push("chef Staff leaks");
+  await p.click('.person[data-name="'+K[0]+'"]'); await p.waitForSelector("#personOverlay.show"); await p.waitForTimeout(300); const lvlChef=await p.evaluate(()=>!!document.querySelector(".lvl-pick")); console.log("16b chef sees no access-level card:",!lvlChef); if(lvlChef) errors.push("chef can see the access level card");
   await p.screenshot({path:require("path").join(__dirname,"..","out","chef-mode.png")});
-  // manager still sees the chef card
-  await p.evaluate(()=>{document.querySelectorAll(".overlay.show").forEach(o=>o.classList.remove("show"))}); await p.click("#managerLink"); await p.waitForTimeout(500); await p.click("#whoManager"); await p.fill("#pwInput","segreta"); await p.click("#loginGo"); await p.waitForTimeout(800);
-  await p.click("#staffBtn"); await p.waitForSelector("#staffOverlay.show"); await p.waitForTimeout(900); const mg=await p.evaluate(()=>({mode:document.querySelector("#adminBar [data-t=adminMode]").textContent, chefCard:getComputedStyle(document.getElementById("rosterChef")).display, state:document.getElementById("chefPwState").textContent.slice(0,30)}));
-  console.log("17 manager Staff:",mg); if(mg.chefCard==="none"||!/Chef login is on/.test(mg.state)) errors.push("manager chef card wrong");
-  // switch the chef login off from the UI
-  await p.fill("#chefPw",""); await p.click("#chefPwSave"); await p.waitForTimeout(700); r=await j("/api/data"); console.log("18 chef off:",r.j.features.chef===false); if(r.j.features.chef) errors.push("chef login not switched off");
+  // manager: the access level lives in the person sheet
+  await p.evaluate(()=>{document.querySelectorAll(".overlay.show").forEach(o=>o.classList.remove("show"))}); await p.click("#managerLink"); await p.waitForTimeout(500); await p.click("#whoManager");
+  const eye=await p.evaluate(()=>{const i=document.getElementById("pwInput"); const e=document.querySelector('.eye[data-for="pwInput"]'); if(!e) return null; i.value="abc"; e.click(); const shown=i.type; e.click(); return {shown, hidden:i.type};}); console.log("17 eye on the login password:",eye); if(!eye||eye.shown!=="text"||eye.hidden!=="password") errors.push("eye toggle missing on login");
+  await p.fill("#pwInput","segreta"); await p.click("#loginGo"); await p.waitForTimeout(800);
+  await p.click("#staffBtn"); await p.waitForSelector("#staffOverlay.show"); await p.waitForTimeout(900); await p.click('.person[data-name="Mariia"]'); await p.waitForSelector("#personOverlay.show"); await p.waitForTimeout(300);
+  const mg=await p.evaluate(()=>({sel:document.querySelector(".lvl-pick.sel")?.getAttribute("data-l"), hint:[...document.querySelectorAll("#personBody .hint")].map(x=>x.textContent).find(x=>/Chef login/.test(x))||"", eye:!!document.querySelector('.eye[data-for="lvlPw"]')}));
+  console.log("17b Mariia's sheet:",mg); if(mg.sel!=="chef"||!/Chef login is on for Mariia/.test(mg.hint)||!mg.eye) errors.push("access level card wrong for the chef");
+  // take the chef login away: tap Staff
+  await p.click('.lvl-pick[data-l="staff"]'); await p.waitForTimeout(800); r=await j("/api/data"); console.log("18 chef off:",r.j.features.chef===false); if(r.j.features.chef) errors.push("chef login not switched off");
+  // give it to Joe from his sheet
+  await p.evaluate(()=>{document.getElementById("personOverlay").classList.remove("show")}); await p.click('.person[data-name="'+F+'"]'); await p.waitForSelector("#personOverlay.show"); await p.waitForTimeout(300); await p.click('.lvl-pick[data-l="chef"]'); await p.waitForTimeout(300); await p.fill("#lvlPw","nuova123"); await p.click(".pinbtn.lvlsave"); await p.waitForTimeout(800);
+  const l2=await j("/api/me?action=list",{headers:M}); console.log("18b chef login now held by:",l2.j.chef); if(!l2.j.chef||l2.j.chef.name!==F) errors.push("chef login not given from the person sheet");
+  await j("/api/me",{method:"POST",headers:M,body:JSON.stringify({action:"setChefPassword",password:"",name:F})});
+  // PIN pad: show digits
+  const p3=await (await b.newContext({...require("playwright").devices["iPhone 13"]})).newPage(); await p3.goto(B+"/?v=ch3"); await p3.waitForSelector("#whoOverlay.show"); await p3.click('.who-name[data-name="Catherine"]'); await p3.waitForFunction(()=>/PIN/.test(document.getElementById("pinTitle").textContent)); await p3.click("#pinEye"); for(const k of "12") await p3.click(`#pinPad button[data-k="${k}"]`); const dig=await p3.evaluate(()=>({shown:document.getElementById("pinDigits").style.display!=="none", txt:document.getElementById("pinDigits").textContent})); console.log("18c PIN show:",dig); if(!dig.shown||!/^12/.test(dig.txt)) errors.push("PIN eye not working"); await p3.context().close();
   // the button stays visible and explains what to do when no password is set
   const p2=await (await b.newContext({viewport:{width:1200,height:900}})).newPage(); await p2.goto(B+"/?v=ch2"); await p2.waitForSelector("#whoOverlay.show"); const vis=await p2.isVisible("#whoChef"); await p2.click("#whoChef"); await p2.waitForTimeout(400); const msg=await p2.evaluate(()=>[...document.querySelectorAll(".toast")].map(x=>x.textContent).join(" | ")); console.log("19 button without password:",vis,"|",msg.slice(0,60)); if(!vis||!/not set up yet/.test(msg)) errors.push("chef button hidden or silent without a password");
   await b.close(); console.log("ERRORS:",errors.length?errors:"none"); process.exit(errors.length?1:0);
