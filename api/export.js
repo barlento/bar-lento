@@ -173,21 +173,13 @@ async function collectPerson(name, doc, confirmations, fromISO, toISO) {
   // Toast clock-ins, month by month
   const clock = [], notes = [];
   if (guid && toast.enabled()) {
-    let cur = fromISO;
-    while (cur <= toISO) {
-      const [y, m] = cur.split("-").map(Number);
-      const endOfMonth = new Date(Date.UTC(y, m, 0)).toISOString().slice(0, 10);
-      const winEnd = endOfMonth < toISO ? endOfMonth : toISO;
-      try {
-        const b1 = toast.dayBounds(cur), b2 = toast.dayBounds(winEnd);
-        (await toast.timeEntries(b1.start, b2.end, 300)).filter((t) => t.employeeGuid === guid && t.in).forEach((t) => {
-          const date = toast.shiftDate(t.in); if (date < fromISO || date > toISO) return;
-          const ms = t.out ? Date.parse(t.out) - Date.parse(t.in) : 0; const mm = M(date); mm.worked += ms / 3600000; mm.clockins++;
-          clock.push({ date, weekday: weekdayOf(date), source: "Toast POS", in: nyParts(t.in).time, out: t.out ? nyParts(t.out).time : "", hours: t.out ? round2(ms / 3600000) : null, note: t.out ? "" : "no clock-out recorded", recorded: nyParts(t.in).stamp, ref: `Toast time entry ${t.guid}` });
-        });
-      } catch (e) { notes.push(`Toast clock-ins for ${cur.slice(0, 7)} could not be read (${String(e.message || e).slice(0, 80)}) — export again later.`); }
-      cur = new Date(Date.UTC(y, m, 1)).toISOString().slice(0, 10);
-    }
+    try {
+      (await toast.timeEntriesSpan(fromISO, toISO, 300)).filter((t) => t.employeeGuid === guid && t.in).forEach((t) => {
+        const date = toast.shiftDate(t.in); if (date < fromISO || date > toISO) return;
+        const ms = t.out ? Date.parse(t.out) - Date.parse(t.in) : 0; const mm = M(date); mm.worked += ms / 3600000; mm.clockins++;
+        clock.push({ date, weekday: weekdayOf(date), source: "Toast POS", in: nyParts(t.in).time, out: t.out ? nyParts(t.out).time : "", hours: t.out ? round2(ms / 3600000) : null, note: t.out ? "" : "no clock-out recorded", recorded: nyParts(t.in).stamp, ref: `Toast time entry ${t.guid}` });
+      });
+    } catch (e) { notes.push(`Toast clock-ins could not be read completely (${String(e.message || e).slice(0, 80)}) — export again later.`); }
   } else if (!guid) notes.push("Not linked to a Toast employee: clock-ins come from the app only.");
   // app clock-ins (current + archived)
   const punches = (onStaff ? await punch.all(name).catch(() => []) : []).concat(await punch.archivedFor(name).catch(() => []));
