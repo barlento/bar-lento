@@ -646,7 +646,10 @@
   .hero.closedday{background:var(--surface-2)}
   .hero .text{font-weight:600;font-size:1.15rem;letter-spacing:-.015em}
   .hero .sub{opacity:1;color:var(--ink-muted)}
-  .tab{border-radius:999px;font-weight:600;min-width:120px}
+  .tab{border-radius:999px;font-weight:600;min-width:0;flex:1 1 0;padding:8px 10px}
+  .tab .lbl,.tab b,.tab span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tabs{overflow:visible}
+  @media (max-width:420px){.tab{font-size:.78rem}}
   .tab.active{background:var(--ink);border-color:var(--ink);color:#fff}
   .day-card{border-radius:20px;padding:16px;box-shadow:var(--shadow)}
   .shift{border-radius:14px;background:var(--surface-2)}
@@ -730,7 +733,7 @@
       <button class="abtn" id="lbBtn" type="button" style="display:none" data-t="lbBtn">Team ranking</button>
       <button class="abtn" id="staffBtn" type="button" data-t="staffBtn">Staff</button>
       <button class="abtn" id="historyBtn" type="button" data-t="historyBtn">History</button>
-      <button class="abtn" id="exportBtn" type="button" data-t="exportBtn">⬇ Archive (CSV)</button>
+      <button class="abtn" id="exportBtn" type="button" data-t="exportBtn">Export CSV</button>
       <button class="abtn lang" id="langBtn" type="button" title="Language / Lingua">IT</button>
       <button class="abtn" id="logoutBtn" type="button" data-t="logoutBtn">Log out</button>
     </div>
@@ -1104,10 +1107,10 @@
   // ---------- manager-mode language (staff always see English) ----------
   var I18N={
     en:{
-      adminMode:"Manager mode", lbBtn:"Team ranking", staffBtn:"Staff", historyBtn:"History", exportBtn:"⬇ Archive (CSV)", logoutBtn:"Log out", notifyBtn:"Notify team",
-      newWeekBtn:"＋ New week", deleteWeekBtn:"Delete this week", nwTitle:"New week", nwLead:"Create the week of {r}", nwCopy:"Copy last week's shifts ({k} shifts)", nwCopySub:"Same people and times as {r} — then adjust what changes", nwEmpty:"Start empty", nwEmptySub:"Add every shift by hand",
+      adminMode:"Manager mode", lbBtn:"Team ranking", staffBtn:"Staff", historyBtn:"History", exportBtn:"Export CSV", logoutBtn:"Log out", notifyBtn:"Notify team",
+      newWeekBtn:"＋ New week", deleteWeekBtn:"Delete week", nwTitle:"New week", nwLead:"Create the week of {r}", nwCopy:"Copy last week's shifts ({k} shifts)", nwCopySub:"Same people and times as {r} — then adjust what changes", nwEmpty:"Start empty", nwEmptySub:"Add every shift by hand",
       copyConfirm:"Sure? This replaces the current shifts", deleteWeekConfirm:"Sure? Delete week", deleteWeekConfirmN:"Sure? Delete week and {k} shifts", deleteWeekLocked:"Past week · archived", pastLocked:"Past weeks are archived and can't be deleted", onlyEmpty:"Only an empty week can be deleted",
-      footAdmin:"Tap a shift to edit it. Changes save automatically.", exitMode:"✓ Manager mode · Log out", addShift:"＋ Add shift", daySettings:"Day settings",
+      footAdmin:"Tap a shift to edit it. Changes save automatically.", exitMode:"Log out", addShift:"＋ Add shift", daySettings:"Day settings",
       statusPending:"Pending…", statusSaving:"Saving…", statusSaved:"Saved ✓", statusReloaded:"Reloaded", statusLoggedOut:"Logged out", statusNotSaved:"Not saved", statusError:"Error", statusReady:"Ready",
       editShift:"Edit shift", newShift:"New shift", hours:"hours", who:"Who", namePh:"Name", otherName:"Other name…", station:"Station", stationOpt:"(optional: BAR, S1, R…)", start:"Start", end:"End",
       delete:"Delete", deleteSure:"Sure? Delete", cancel:"Cancel", save:"Save", close:"Close", add:"Add",
@@ -1128,7 +1131,7 @@
       tagline:"Weekly schedule — New York", mgrLogin:"Manager login", whoBtn:"Who are you?", clockBtn:"Time clock", bellOff:"Notify me", bellOn:"Notifications on", bellBlocked:"Notifications blocked", bellIos:"Notifications",
       updatedAt:"Updated {d}", previewMode:"preview mode", scheduleUpdated:"Schedule updated ", loadFail:"Couldn't load the schedule. Please try again.",
       openNow:"Open now", closedNow:"Closed now", closedToday:"Closed today", closedTodayHol:"Closed today · Holiday", halfDayTag:"(half day)", workingToday:"Working today:", noShiftsToday:"No shifts assigned for today",
-      thisWeek:"This week", nextWeek:"Next week", pastWeek:"Past week", weekTag:"Week", hidePast:"Hide past weeks", pastArchive:"Past weeks · archive ({n})", noWeeks:"No weeks published yet.",
+      thisWeek:"This week", nextWeek:"Next week", pastWeek:"Past week", weekTag:"Week", hidePast:"Hide past weeks", pastArchive:"Archive ({n})", noWeeks:"No weeks published yet.",
       todayTag:"· today", noShiftsClosed:"No shifts — closed", noShiftsAssigned:"No shifts assigned", allConfirmed:"✓ all confirmed", confirmedN:"{c}/{n} confirmed", bdayChip:"{n} birthday",
       stClosedLbl:"Closed", stHolidayLbl:"Holiday · closed", stHalfLbl:"Half day", stEventLbl:"Private event",
       notClockedIn:"not clocked in", clockedIn:"clocked in {t}", lateBy:" · {t} late",
@@ -1161,10 +1164,10 @@
       toastPick:"— Toast employee —", toastLoading:"Loading Toast…", toastLinked:"{n} linked to Toast", toastUnlinked:"{n} unlinked from Toast", notified:"Team notified ✓ ({k} phone{p})", notifiedNone:"Changes noted — nobody has notifications turned on yet.", notifyFail:"Couldn't send the notification. It will go out automatically later.", markedClosed:"{h} ✓"
     },
     it:{
-      adminMode:"Modalità manager", lbBtn:"Classifica team", staffBtn:"Staff", historyBtn:"Cronologia", exportBtn:"⬇ Archivio (CSV)", logoutBtn:"Esci", notifyBtn:"Avvisa i ragazzi",
-      newWeekBtn:"＋ Nuova settimana", deleteWeekBtn:"Elimina questa settimana", nwTitle:"Nuova settimana", nwLead:"Crea la settimana {r}", nwCopy:"Copia i turni della settimana scorsa ({k} turni)", nwCopySub:"Stesse persone e orari di {r} — poi sistemi quello che cambia", nwEmpty:"Parti da zero", nwEmptySub:"Aggiungi ogni turno a mano",
+      adminMode:"Modalità manager", lbBtn:"Classifica team", staffBtn:"Staff", historyBtn:"Cronologia", exportBtn:"Esporta CSV", logoutBtn:"Esci", notifyBtn:"Avvisa i ragazzi",
+      newWeekBtn:"＋ Nuova settimana", deleteWeekBtn:"Elimina settimana", nwTitle:"Nuova settimana", nwLead:"Crea la settimana {r}", nwCopy:"Copia i turni della settimana scorsa ({k} turni)", nwCopySub:"Stesse persone e orari di {r} — poi sistemi quello che cambia", nwEmpty:"Parti da zero", nwEmptySub:"Aggiungi ogni turno a mano",
       copyConfirm:"Sicura? Sostituisce i turni attuali", deleteWeekConfirm:"Sicura? Elimina settimana", deleteWeekConfirmN:"Sicura? Elimina settimana e {k} turni", deleteWeekLocked:"Settimana passata · archivio", pastLocked:"Le settimane passate sono in archivio e non si eliminano", onlyEmpty:"Si può eliminare solo una settimana vuota",
-      footAdmin:"Tocca un turno per modificarlo. Le modifiche si salvano da sole.", exitMode:"✓ Modalità manager · Esci", addShift:"＋ Aggiungi turno", daySettings:"Impostazioni giorno",
+      footAdmin:"Tocca un turno per modificarlo. Le modifiche si salvano da sole.", exitMode:"Esci", addShift:"＋ Aggiungi turno", daySettings:"Impostazioni giorno",
       statusPending:"In attesa…", statusSaving:"Salvataggio…", statusSaved:"Salvato ✓", statusReloaded:"Ricaricato", statusLoggedOut:"Disconnessa", statusNotSaved:"Non salvato", statusError:"Errore", statusReady:"Pronto",
       editShift:"Modifica turno", newShift:"Nuovo turno", hours:"orario", who:"Chi", namePh:"Nome", otherName:"Altro nome…", station:"Postazione", stationOpt:"(facoltativa: BAR, S1, R…)", start:"Inizio", end:"Fine",
       delete:"Elimina", deleteSure:"Sicura? Elimina", cancel:"Annulla", save:"Salva", close:"Chiudi", add:"Aggiungi",
@@ -1182,10 +1185,10 @@
       weekCreated:"Settimana {r} creata", weekCopied:"Settimana {r} creata con {k} turni copiati — sistema nomi e orari", weekNoPrev:"Settimana creata (nessuna precedente da copiare)", noPrev:"Non c'è una settimana precedente da copiare.", copied:"Turni copiati dalla settimana precedente", weekDeleted:"Settimana eliminata",
       welcome:"Ciao! Sei in modalità manager.", noDb:"Attenzione: database non collegato, le modifiche non verranno salvate.", loggedOut:"Uscita dalla modalità manager.",
       conflict:"Qualcun altro ha modificato i turni da un altro dispositivo. Ho ricaricato l'ultima versione — ripeti la modifica.", pwInvalid:"Password non più valida. Accedi di nuovo.", dbMissing:"Il database non è ancora collegato — le modifiche non si salvano.", saveFail:"Salvataggio non riuscito. Riprova.",
-      tagline:"Turni settimanali — New York", mgrLogin:"Accesso manager", whoBtn:"Chi sei?", clockBtn:"Timbrature", bellOff:"Avvisami", bellOn:"Notifiche attive", bellBlocked:"Notifiche bloccate", bellIos:"Notifiche",
+      tagline:"Turni settimanali — New York", mgrLogin:"Manager", whoBtn:"Chi sei?", clockBtn:"Timbrature", bellOff:"Avvisami", bellOn:"Notifiche attive", bellBlocked:"Notifiche bloccate", bellIos:"Notifiche",
       updatedAt:"Aggiornato {d}", previewMode:"anteprima", scheduleUpdated:"Turni aggiornati ", loadFail:"Impossibile caricare i turni. Riprova.",
       openNow:"Aperto ora", closedNow:"Chiuso ora", closedToday:"Chiuso oggi", closedTodayHol:"Chiuso oggi · Festivo", halfDayTag:"(mezza giornata)", workingToday:"Oggi lavorano:", noShiftsToday:"Nessun turno assegnato per oggi",
-      thisWeek:"Questa settimana", nextWeek:"Prossima settimana", pastWeek:"Settimana passata", weekTag:"Settimana", hidePast:"Nascondi settimane passate", pastArchive:"Settimane passate · archivio ({n})", noWeeks:"Nessuna settimana pubblicata.",
+      thisWeek:"Questa", nextWeek:"Prossima", pastWeek:"Scorsa", weekTag:"Settimana", hidePast:"Nascondi passate", pastArchive:"Archivio ({n})", noWeeks:"Nessuna settimana pubblicata.",
       todayTag:"· oggi", noShiftsClosed:"Nessun turno — chiuso", noShiftsAssigned:"Nessun turno assegnato", allConfirmed:"✓ tutti confermati", confirmedN:"{c}/{n} confermati", bdayChip:"compleanno di {n}",
       stClosedLbl:"Chiuso", stHolidayLbl:"Festivo · chiuso", stHalfLbl:"Mezza giornata", stEventLbl:"Evento privato",
       notClockedIn:"non ha timbrato", clockedIn:"timbrato {t}", lateBy:" · {t} di ritardo",
