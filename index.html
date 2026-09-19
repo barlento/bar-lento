@@ -667,12 +667,12 @@
   .rules-body h2.pk{font-family:'Newsreader',Georgia,serif;font-weight:600}
   .updated{font-weight:500}
   /* ---- opening splash ---- */
-  #splash{position:fixed;inset:0;z-index:200;background:#141311;display:grid;place-items:center;color:#fff;cursor:pointer;animation:spOut .6s ease .95s both}
+  #splash{position:fixed;inset:0;z-index:200;background:#141311;display:grid;place-items:center;color:#fff;cursor:pointer;animation:spOut .9s ease 2.1s both}
   #splash.gone{display:none}
-  #splash .sp-in{text-align:center;animation:spIn .7s cubic-bezier(.2,.7,.2,1) both}
+  #splash .sp-in{text-align:center;animation:spIn .9s cubic-bezier(.2,.7,.2,1) both}
   #splash .sp-name{font-family:'Newsreader',Georgia,serif;font-weight:500;font-size:clamp(2.4rem,9vw,4rem);letter-spacing:-.02em;line-height:1}
-  #splash .sp-line{width:44px;height:2px;background:var(--accent);margin:18px auto 14px;border-radius:2px;transform-origin:center;animation:spLine .6s ease .25s both}
-  #splash .sp-sub{font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.55);animation:spIn .7s ease .35s both}
+  #splash .sp-line{width:44px;height:2px;background:var(--accent);margin:18px auto 14px;border-radius:2px;transform-origin:center;animation:spLine .8s ease .4s both}
+  #splash .sp-sub{font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.55);animation:spIn .9s ease .6s both}
   @keyframes spIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
   @keyframes spLine{from{transform:scaleX(0)}to{transform:scaleX(1)}}
   @keyframes spOut{from{opacity:1}to{opacity:0;visibility:hidden}}
@@ -1069,7 +1069,7 @@
     var skip=false; try{ skip=sessionStorage.getItem("bl_skip_splash")==="1"; sessionStorage.removeItem("bl_skip_splash"); }catch(e){}
     function gone(){ sp.classList.add("gone"); }
     if(skip){ gone(); return; }
-    sp.addEventListener("click",gone); sp.addEventListener("animationend",function(e){ if(e.target===sp) gone(); }); setTimeout(gone,1900);
+    sp.addEventListener("click",gone); sp.addEventListener("animationend",function(e){ if(e.target===sp) gone(); }); setTimeout(gone,3400);
   })();
 
   var DAY_KEYS=["mon","tue","wed","thu","fri","sat","sun"];
