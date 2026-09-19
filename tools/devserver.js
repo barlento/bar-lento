@@ -102,7 +102,7 @@ function startApp() {
       if (!fs.existsSync(file)) { res.statusCode = 404; return res.end("no api"); }
       let b = ""; req.on("data", (c) => (b += c)); req.on("end", async () => {
         try { req.body = b ? JSON.parse(b) : {}; } catch (e) { req.body = {}; }
-        const r = { setHeader: (k, v) => res.setHeader(k, v), status: (c) => { res.statusCode = c; return r; }, send: (x) => res.end(typeof x === "string" ? x : JSON.stringify(x)), end: (x) => res.end(x), json: (x) => res.end(JSON.stringify(x)) };
+        const r = { setHeader: (k, v) => res.setHeader(k, v), status: (c) => { res.statusCode = c; return r; }, send: (x) => res.end(typeof x === "string" || Buffer.isBuffer(x) ? x : JSON.stringify(x)), end: (x) => res.end(x), json: (x) => res.end(JSON.stringify(x)) };
         delete require.cache[require.resolve(file)];
         try { await require(file)(req, r); } catch (e) { res.statusCode = 500; res.end(String(e.stack)); }
       });
