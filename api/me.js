@@ -193,7 +193,7 @@ module.exports = async (req, res) => {
         if (!name) return send(res, 401, { error: "unauthorized" });
         const [ack, ident, docAcks, pinRec] = await Promise.all([accounts.getRulesAck(name).catch(() => null), toastIdentity(doc.data, name), accounts.docAcksFor(name, DOC_IDS).catch(() => null), accounts.getPinRecord(name).catch(() => null)]);
         const docsOut = {}; if (docAcks) DOC_IDS.forEach((id) => { docsOut[id] = ackView(docAcks[id]); });
-        const appClock = punch.isAppClock(doc.data, name);
+        const appClock = await punch.isAppClock(doc.data, name);
         const openP = appClock ? await punch.openEntry(name).catch(() => null) : null;
         return send(res, 200, { name, appClock, open: openP ? { in: openP.in } : null, rulesAck: ackView(ack), rulesVersion: RULES.version || null, docAcks: docAcks ? docsOut : undefined, docsVersions: docVersions(), since: pinRec && pinRec.createdAt || null, fullName: ident ? ident.fullName : null, email: ident ? ident.email : null, mail: mail.enabled() });
       }
@@ -203,7 +203,7 @@ module.exports = async (req, res) => {
         if (!name) return send(res, 401, { error: "unauthorized" });
         const week = String(url.searchParams.get("week") || "");
         if (!/^\d{4}-\d{2}-\d{2}$/.test(week)) return send(res, 400, { error: "bad_week" });
-        if (punch.isAppClock(doc.data, name)) {
+        if (await punch.isAppClock(doc.data, name)) {
           const entries = await punch.weekEntries(name, week);
           return send(res, 200, { name, week, toast: false, appClock: true, linked: true, entries, workedMinutes: Math.round(sumMinutes(entries)), fetchedAt: new Date().toISOString() });
         }
@@ -223,7 +223,7 @@ module.exports = async (req, res) => {
         const ym = String(url.searchParams.get("month") || "");
         if (!/^\d{4}-\d{2}$/.test(ym)) return send(res, 400, { error: "bad_month" });
         const entries = await punch.month(name, ym);
-        return send(res, 200, { name, month: ym, appClock: punch.isAppClock(doc.data, name), entries, totalMinutes: Math.round(punch.minutes(entries)), open: entries.find((e) => !e.out) || null, fetchedAt: new Date().toISOString() });
+        return send(res, 200, { name, month: ym, appClock: await punch.isAppClock(doc.data, name), entries, totalMinutes: Math.round(punch.minutes(entries)), open: entries.find((e) => !e.out) || null, fetchedAt: new Date().toISOString() });
       }
       // Personal week in review: last completed week vs the one before (hours, punctuality, early/late minutes).
       if (action === "recap") {
@@ -249,7 +249,7 @@ module.exports = async (req, res) => {
       const doc0 = await store.getSchedule();
       const who = await accounts.whoIs(tokenFrom(req), doc0.data.staff);
       if (!who) return send(res, 401, { error: "unauthorized" });
-      if (!punch.isAppClock(doc0.data, who)) return send(res, 403, { error: "not_app_clock" });
+      if (!(await punch.isAppClock(doc0.data, who))) return send(res, 403, { error: "not_app_clock" });
       const r = await punch.punch(who, body.on === true, req.headers["user-agent"]);
       if (r.error) return send(res, 409, { error: r.error, entry: r.entry || null });
       return send(res, 200, { ok: true, entry: r.entry, open: r.entry.out ? null : { in: r.entry.in } });
