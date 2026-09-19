@@ -2341,9 +2341,9 @@
     b.style.display="";
     if(state.me.name&&state.data.staff.indexOf(state.me.name)===-1){ meSet(null,null); toast("Your access was removed. Contact the manager if this is a mistake.",5000); document.body.classList.toggle("locked",mustIdentify()); setTimeout(maybeWhoPopup,50); }
     $("managerLink").style.display=(state.admin||!state.me.name)?"":"none";
-    if(!state.me.name){ b.className="mebtn"; b.innerHTML=t("whoBtn"); strip.classList.remove("show"); return; }
+    if(!state.me.name){ b.className="mebtn"; b.innerHTML=t("whoBtn"); b.style.display=state.admin?"none":""; strip.classList.remove("show"); return; }
     var n=state.me.name, col=avColor(n), ini=h(initials(n));
-    b.className="mebtn on"; b.innerHTML='<span class="mav" style="background:'+col+'">'+ini+'</span>'+h(n.split(/\s+/)[0]);
+    b.style.display=""; b.className="mebtn on"; b.innerHTML='<span class="mav" style="background:'+col+'">'+ini+'</span>'+h(n.split(/\s+/)[0]);
     $("meAv").textContent=initials(n); $("meAv").style.background=col;
     $("meHi").textContent=t("hi",{n:n.split(/\s+/)[0]});
     var pb=$("mePunchBtn"), sb=$("meStatsBtn");
