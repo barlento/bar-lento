@@ -1221,7 +1221,7 @@
       agreeTrain:"Done", sign:"Sign", agree:"I agree", thanksDoc:"Documents acknowledged. A signed copy has been sent to {e}.", thanksDocNoMail:"Documents acknowledged.", thanksTrain:"Training recorded. A confirmation has been sent to {e}.", thanksTrainNoMail:"Training recorded.",
       rosterDocs:"Documents {k}/{n}", copiesSent:"Signed copies sent to {e}: {k}", sendCopies:"Re-send copies", linksHead:"Links", contactsHead:"Contacts (write to all)",
       rulesOk:"Rules ✓ {d} · {e}", rulesNo:"Rules not acknowledged yet",
-      onlineNow:"Online now", lastSeen:"Last seen {t}", neverOnline:"Never opened the app", onlineCount:"{k} of {n} online now", justNow:"just now", minAgo:"{m} min ago", hAgo:"{h} h ago", dAgo:"{d} d ago",
+      onlineNow:"Online now", lastSeen:"Last seen {t}", neverOnline:"Not seen yet", onlineCount:"{k} of {n} online now", justNow:"just now", minAgo:"{m} min ago", hAgo:"{h} h ago", dAgo:"{d} d ago",
       phDept:"Department", deptFloor:"Floor", deptKitchen:"Kitchen", deptManagement:"Management", deptFromToast:"From Toast: {j}", deptSet:"{n} is now in {d}.", deptManualNote:"Chosen by hand: the Toast job no longer changes it.", rulesLink:"Print documents", stNotIn:"Hasn't signed in yet", stLine:"PIN ✓ · Rules {r} · Docs {k}/{n}", stLineNoDocs:"PIN ✓ · Rules {r}", phBirthday:"Birthday", phAccess:"Access", phDocs:"Documents", phWeek:"Shifts and hours", viewWeekBtn:"View week", removeName:"Remove {n}", noBirthday:"not set", devicesShort:"{k} device{p}", personLead:"Birthday, personal PIN and signed documents.", trainingRow:"Training {y}", copyNotSent:"copy not emailed yet", sendCopy:"Send signed copy by email", copySent:"Signed copy sent to {e}", mailFail:"Could not send the email ({r})", mailOff:"Email isn't configured yet on the server (Vercel settings).",
       pinSet:"PIN set", pinDevices:"{k} device{p}", pinNone:"No PIN yet", pinReset:"Reset PIN", pinResetSure:"Tap again to reset", pinResetDone:"PIN reset for {n} — they'll create a new one next time", pinResetFail:"Couldn't reset the PIN. Try again.", viewWeek:"View {n}'s week",
       toastPick:"— Toast employee —", toastLoading:"Loading Toast…", toastLinked:"{n} linked to Toast", toastUnlinked:"{n} unlinked from Toast", notified:"Team notified ({k} phone{p})", notifiedNone:"Changes noted — nobody has notifications turned on yet.", notifyFail:"Couldn't send the notification. It will go out automatically later.", markedClosed:"{h} ✓"
@@ -1281,7 +1281,7 @@
       readLead:"Leggi il documento fino alla fine, poi conferma con la tua email: la copia firmata arriva a te e al titolare.", readLeadSigned:"Leggi il documento fino alla fine, spunta la casella e tocca Firma: la copia firmata arriva a te e al titolare.", readLeadNoMail:"Leggi il documento fino alla fine, poi conferma con la tua email.", readLeadDone:"Hai firmato questo documento il {d}.", readLeadDoneTrain:"Hai completato questa formazione il {d}.", readLeadTrain:"Guarda il video (link in fondo), poi conferma con la tua email: l'attestato arriva a te e al titolare.",
       agreeTrain:"Fatto", sign:"Firma", agree:"Accetto", thanksDoc:"Documenti firmati. Copia inviata a {e}.", thanksDocNoMail:"Documenti firmati.", thanksTrain:"Formazione registrata. Conferma inviata a {e}.", thanksTrainNoMail:"Formazione registrata.",
       rosterDocs:"Documenti {k}/{n}", copiesSent:"Copie firmate inviate a {e}: {k}", sendCopies:"Reinvia copie", linksHead:"Link", contactsHead:"Contatti (scrivi a tutti)",
-      onlineNow:"Online adesso", lastSeen:"Visto {t}", neverOnline:"Non ha mai aperto l'app", onlineCount:"{k} su {n} online adesso", justNow:"adesso", minAgo:"{m} min fa", hAgo:"{h} h fa", dAgo:"{d} g fa",
+      onlineNow:"Online adesso", lastSeen:"Visto {t}", neverOnline:"Mai visto finora", onlineCount:"{k} su {n} online adesso", justNow:"adesso", minAgo:"{m} min fa", hAgo:"{h} h fa", dAgo:"{d} g fa",
       phDept:"Reparto", deptFloor:"Sala", deptKitchen:"Cucina", deptManagement:"Direzione", deptFromToast:"Da Toast: {j}", deptSet:"{n} ora è in {d}.", deptManualNote:"Scelto a mano: il ruolo su Toast non lo cambia più.",
       rulesOk:"Regolamento ✓ {d} · {e}", rulesNo:"Regolamento non ancora firmato", rulesLink:"Stampa documenti", stNotIn:"Non è ancora entrato/a", stLine:"PIN ✓ · Regolamento {r} · Documenti {k}/{n}", stLineNoDocs:"PIN ✓ · Regolamento {r}", phBirthday:"Compleanno", phAccess:"Accesso", phDocs:"Documenti", phWeek:"Turni e ore", viewWeekBtn:"Vedi settimana", removeName:"Rimuovi {n}", noBirthday:"non impostato", devicesShort:"{k} dispositiv{p}", personLead:"Compleanno, PIN personale e documenti firmati.", trainingRow:"Formazione {y}", copyNotSent:"copia non ancora inviata", sendCopy:"Invia copia firmata via email", copySent:"Copia firmata inviata a {e}", mailFail:"Invio email non riuscito ({r})", mailOff:"Email non ancora configurata sul server (impostazioni Vercel).",
       pinSet:"PIN creato", pinDevices:"{k} dispositiv{p}", pinNone:"Nessun PIN", pinReset:"Azzera PIN", pinResetSure:"Tocca di nuovo per azzerare", pinResetDone:"PIN azzerato per {n} — ne creerà uno nuovo al prossimo accesso", pinResetFail:"Impossibile azzerare il PIN. Riprova.", viewWeek:"Vedi la settimana di {n}",
@@ -2340,7 +2340,7 @@
   $("weekClose").addEventListener("click",function(){$("weekOverlay").classList.remove("show");maybeRecapPopup();});
   var staffTimer=null;
   $("staffBtn").addEventListener("click",function(){renderRoster();$("staffRulesLink").style.display=(rulesActive()||(DOCS.list||[]).length)?"":"none";$("staffOverlay").classList.add("show");loadAccounts().then(renderRoster);
-    clearInterval(staffTimer); staffTimer=setInterval(function(){ if(!$("staffOverlay").classList.contains("show")){ clearInterval(staffTimer); return; } if(document.visibilityState==="visible"&&!state.saving&&!state.dirtyTimer) loadAccounts().then(renderRoster); },30000); // live dots
+    clearInterval(staffTimer); staffTimer=setInterval(function(){ if(!$("staffOverlay").classList.contains("show")){ clearInterval(staffTimer); return; } if(document.visibilityState==="visible"&&!state.saving&&!state.dirtyTimer) loadAccounts().then(renderRoster); },15000); // live dots
   });
   $("personClose").addEventListener("click",function(){ $("personOverlay").classList.remove("show"); });
   $("personRemove").addEventListener("click",removePerson);
@@ -2380,7 +2380,7 @@
   function anyModalOpen(){return !!document.querySelector(".overlay.show");}
   function startPolling(){
     clearInterval(state.pollTimer);
-    state.pollTimer=setInterval(function(){ if(document.visibilityState==="visible"&&!anyModalOpen()){ load(true); loadToastToday(); } },45000);
+    state.pollTimer=setInterval(function(){ if(document.visibilityState==="visible"&&!anyModalOpen()){ load(true); loadToastToday(); } },30000); // live: schedule + clock-ins every 30 s while the app is open
     document.addEventListener("visibilitychange",function(){ if(document.visibilityState==="visible"&&!anyModalOpen()){ load(true); appUpdateCheck(); } });
     appUpdateCheck(); setInterval(appUpdateCheck,5*60000);
   }

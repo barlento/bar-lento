@@ -193,7 +193,7 @@ module.exports = async (req, res) => {
         const formerDocAcks = Object.keys(formerDocs).map((k) => Object.assign({ key: k }, formerDocs[k]));
         const formerStaff = (await former.all().catch(() => [])).filter((r) => !doc.data.staff.includes(r.name)).map((r) => ({ name: r.name, fullName: r.fullName || null, removedAt: r.removedAt, by: r.by || null }));
         const seen = await presence.all().catch(() => ({})); const presenceOut = {}; const now = Date.now();
-        doc.data.staff.forEach((n) => { presenceOut[n] = { lastSeen: seen[n] || null, online: presence.isOnline(seen[n], now) }; });
+        doc.data.staff.forEach((n) => { const fromSessions = summary[n] && summary[n].lastSeen || null; const last = [seen[n], fromSessions].filter(Boolean).sort().pop() || null; presenceOut[n] = { lastSeen: last, online: presence.isOnline(seen[n], now) }; });
         if (isChef) { // kitchen only, nothing about the floor, no archives
           const k = new Set(auth.kitchenNames(doc.data));
           Object.keys(summary).forEach((n) => { if (!k.has(n)) delete summary[n]; }); Object.keys(presenceOut).forEach((n) => { if (!k.has(n)) delete presenceOut[n]; });
