@@ -666,12 +666,25 @@
   .rules-body h3{font-family:'Newsreader',Georgia,serif;font-weight:600;font-size:1rem;color:var(--ink)}
   .rules-body h2.pk{font-family:'Newsreader',Georgia,serif;font-weight:600}
   .updated{font-weight:500}
+  /* ---- opening splash ---- */
+  #splash{position:fixed;inset:0;z-index:200;background:#141311;display:grid;place-items:center;color:#fff;cursor:pointer;animation:spOut .6s ease .95s both}
+  #splash.gone{display:none}
+  #splash .sp-in{text-align:center;animation:spIn .7s cubic-bezier(.2,.7,.2,1) both}
+  #splash .sp-name{font-family:'Newsreader',Georgia,serif;font-weight:500;font-size:clamp(2.4rem,9vw,4rem);letter-spacing:-.02em;line-height:1}
+  #splash .sp-line{width:44px;height:2px;background:var(--accent);margin:18px auto 14px;border-radius:2px;transform-origin:center;animation:spLine .6s ease .25s both}
+  #splash .sp-sub{font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.55);animation:spIn .7s ease .35s both}
+  @keyframes spIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @keyframes spLine{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+  @keyframes spOut{from{opacity:1}to{opacity:0;visibility:hidden}}
+  @media (prefers-reduced-motion:reduce){#splash{animation-delay:.3s;animation-duration:.3s}#splash .sp-in,#splash .sp-line,#splash .sp-sub{animation:none}}
   .btn,.abtn,.pinbtn,.linkbtn,.loginbtn,.bellbtn,.clockbtn,.mebtn,.lbbtn,.tab{white-space:nowrap}
   .sheet .actions .btn,.sheet .actions .linkbtn{min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis}
   .toast{top:calc(14px + env(safe-area-inset-top));bottom:auto;max-width:calc(100vw - 32px)}
 </style>
 </head>
 <body>
+<!-- Opening: "Bar Lento" in white on black, then a soft fade into the app (1.5 s, tap to skip, not shown on silent auto-updates) -->
+<div id="splash" aria-hidden="true"><div class="sp-in"><div class="sp-name">Bar Lento</div><div class="sp-line"></div><div class="sp-sub">158 8th Avenue · New York</div></div></div>
 <div class="wrap">
   <header class="top">
     <div class="brand">
@@ -1051,6 +1064,13 @@
 <script>
 (function(){
   "use strict";
+  // opening splash: skipped on the silent auto-update reload, dismissed early with a tap, removed from the page when done
+  (function(){ var sp=document.getElementById("splash"); if(!sp) return;
+    var skip=false; try{ skip=sessionStorage.getItem("bl_skip_splash")==="1"; sessionStorage.removeItem("bl_skip_splash"); }catch(e){}
+    function gone(){ sp.classList.add("gone"); }
+    if(skip){ gone(); return; }
+    sp.addEventListener("click",gone); sp.addEventListener("animationend",function(e){ if(e.target===sp) gone(); }); setTimeout(gone,1900);
+  })();
 
   var DAY_KEYS=["mon","tue","wed","thu","fri","sat","sun"];
   var L_EN={days:{mon:"Monday",tue:"Tuesday",wed:"Wednesday",thu:"Thursday",fri:"Friday",sat:"Saturday",sun:"Sunday"},short:{mon:"Mon",tue:"Tue",wed:"Wed",thu:"Thu",fri:"Fri",sat:"Sat",sun:"Sun"},months:["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]};
@@ -2134,7 +2154,7 @@
     fetch("/",{method:"HEAD",cache:"no-store"}).then(function(r){
       var e=r.headers.get("etag"); if(!e) return;
       if(appEtag===null){ appEtag=e; return; }
-      if(e!==appEtag&&!anyModalOpen()&&!state.editing&&!state.dayEditing&&!state.confirming) location.reload();
+      if(e!==appEtag&&!anyModalOpen()&&!state.editing&&!state.dayEditing&&!state.confirming){ try{ sessionStorage.setItem("bl_skip_splash","1"); }catch(x){} location.reload(); }
     }).catch(function(){});
   }
 
