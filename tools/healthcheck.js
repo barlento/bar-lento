@@ -72,7 +72,7 @@ async function checkSite() {
     const c = await (await get(SITE + "/api/toast?action=clock")).json();
     if (Array.isArray(c.entries)) ok(`time clock answers (${c.entries.length} entries today)`); else fail(`time clock: ${JSON.stringify(c).slice(0, 160)}`);
   } catch (e) { fail(`time clock: ${e.message}`); }
-  for (const p of ["/sw.js", "/manifest.webmanifest", "/rules.html", "/docs.html"].concat(DOCS.list.map((d) => "/docs.html?id=" + d.id))) {
+  for (const p of ["/sw.js", "/manifest.webmanifest", "/rules.html", "/docs.html", "/legal.html"].concat(DOCS.list.map((d) => "/docs.html?id=" + d.id))) {
     try { const x = await get(SITE + p); if (x.status === 200) ok(`page ok: ${p}`); else fail(`page ${p}: HTTP ${x.status}`); } catch (e) { fail(`page ${p}: ${e.message}`); }
   }
   // the texts the live site serves must be the ones in the repo (a deploy that did not go through would show here)
