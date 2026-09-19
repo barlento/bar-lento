@@ -2153,7 +2153,7 @@
     if(btn) btn.disabled=true; toast(t("recordWait"),3000);
     try{
       var res=await fetch("/api/export?person="+encodeURIComponent(n),{headers:{"x-admin-password":state.password},cache:"no-store"});
-      if(!res.ok){ toast(t("exportFail")); return; }
+      if(!res.ok){ var why=""; try{ why=(await res.text()).slice(0,140); }catch(e){} toast(t("exportFail")+(why?" ("+why+")":""),6000); return; }
       var blob=await res.blob(); var a=document.createElement("a"); a.href=URL.createObjectURL(blob);
       a.download="bar-lento-record-"+n.replace(/[^A-Za-z0-9]+/g,"-").toLowerCase()+"-"+toISO(new Date())+".pdf"; document.body.appendChild(a); a.click(); document.body.removeChild(a); setTimeout(function(){URL.revokeObjectURL(a.href);},2000);
       toast(t("recordDone",{n:n}),3500);
@@ -2164,7 +2164,7 @@
     toast(t("exporting"));
     try{
       var res=await fetch("/api/export",{headers:{"x-admin-password":state.password},cache:"no-store"});
-      if(!res.ok){toast(res.status===503?t("exportNeedsDb"):t("exportFail"));return;}
+      if(!res.ok){ var why=""; try{ why=(await res.text()).slice(0,140); }catch(e){} toast((res.status===503?t("exportNeedsDb"):t("exportFail"))+(why?" ("+why+")":""),6000); return; }
       var blob=await res.blob(); var a=document.createElement("a"); a.href=URL.createObjectURL(blob);
       a.download="bar-lento-schedule-archive-"+toISO(new Date())+".pdf"; document.body.appendChild(a); a.click(); document.body.removeChild(a); setTimeout(function(){URL.revokeObjectURL(a.href);},2000);
     }catch(e){toast(t("exportFail"));}

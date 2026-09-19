@@ -75,6 +75,10 @@ async function checkSite() {
   for (const p of ["/sw.js", "/manifest.webmanifest", "/rules.html", "/docs.html", "/legal.html"].concat(DOCS.list.map((d) => "/docs.html?id=" + d.id))) {
     try { const x = await get(SITE + p); if (x.status === 200) ok(`page ok: ${p}`); else fail(`page ${p}: HTTP ${x.status}`); } catch (e) { fail(`page ${p}: ${e.message}`); }
   }
+  try { // the PDF report engine (fonts bundled, permissions) works on the live server
+    const x = await get(SITE + "/api/export?selftest=1"); const head = Buffer.from(await x.arrayBuffer()).slice(0, 5).toString();
+    if (x.status === 200 && head === "%PDF-") ok("PDF export engine works on the live site"); else fail(`PDF export self-test: HTTP ${x.status} (${head})`);
+  } catch (e) { fail(`PDF export self-test: ${e.message}`); }
   // the texts the live site serves must be the ones in the repo (a deploy that did not go through would show here)
   try {
     const live = await (await get(SITE + "/documents.js?v=hc" + Date.now())).text();

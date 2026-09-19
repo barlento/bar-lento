@@ -266,6 +266,11 @@ async function personPdfFile(name, fromISO, toISO) {
 module.exports = async (req, res) => {
   try {
     if (req.method !== "GET") { res.setHeader("Allow", "GET"); return res.status(405).send("method_not_allowed"); }
+    if (new URL(req.url, "http://x").searchParams.get("selftest") === "1") { // public, no data: proves the PDF engine works on this server
+      const out = await pdf.selfTestPdf(nyParts(new Date().toISOString()).stamp);
+      res.setHeader("Cache-Control", "no-store"); res.setHeader("Content-Type", "application/pdf");
+      return res.status(200).send(Buffer.from(out.buf));
+    }
     if (!auth.adminEnabled()) return res.status(503).send("admin_disabled");
     if (!auth.checkPassword(auth.passwordFrom(req))) return res.status(401).send("unauthorized");
     if (!store.hasStorage()) return res.status(503).send("storage_missing");
