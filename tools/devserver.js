@@ -38,9 +38,9 @@ function nyInstant(dateISO, hh, mm) { // approximate: use offset -4 (EDT) — en
 }
 const seed = JSON.parse(fs.readFileSync(path.join(ROOT, "data.json"), "utf8"));
 const EMPS = seed.staff.filter((n) => n !== "Pietro").map((n, i) => ({ guid: "guid-" + n.toLowerCase(), firstName: n, lastName: "Test" + i, email: n.toLowerCase() + "@example.com", createdDate: "2025-01-01T00:00:00.000Z", deleted: false }));
-EMPS.push({ guid: "guid-luca-rossi-0001", firstName: "Luca", lastName: "Rossi", email: "luca.rossi@example.com", createdDate: "2026-09-10T00:00:00.000Z", deleted: false });
+EMPS.push({ guid: "guid-luca-rossi-0001", firstName: "Luca", lastName: "Rossi", email: "luca.rossi@example.com", createdDate: "2026-09-10T00:00:00.000Z", deleted: false, deletedDate: "1970-01-01T00:00:00.000+0000" });
 EMPS.push({ guid: "guid-joe-second-0002", firstName: "Joe", lastName: "Bianchi", email: "joe.b@example.com", createdDate: "2026-09-01T00:00:00.000Z", deleted: false });
-EMPS.push({ guid: "guid-old-gone-0003", firstName: "Old", lastName: "Gone", email: "old@example.com", deleted: true });
+EMPS.push({ guid: "guid-old-gone-0003", firstName: "Old", lastName: "Gone", email: "old@example.com", deleted: true, deletedDate: "2026-08-01T10:00:00.000+0000" });
 const MAILS = [];
 // time entries: for every scheduled shift in the current week whose date <= today, a punch 3 min late, out 10 min after end (open if today & ongoing)
 function fakeEntries() {
