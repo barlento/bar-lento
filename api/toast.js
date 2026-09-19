@@ -25,7 +25,7 @@ module.exports = async (req, res) => {
     const action = url.searchParams.get("action") || "status";
 
     if (action === "status") {
-      try { const r = await toast.restaurant(); const all = await toast.employees(true); const active = all.filter((e) => !e.archived); return send(res, 200, { ok: true, restaurant: r, employees: active.length, archived: all.length - active.length, names: active.map((e) => e.name) }); }
+      try { const r = await toast.restaurant(); const all = await toast.employees(true); const active = all.filter((e) => !e.archived); const jobs = await toast.jobs().catch((e) => ({ error: String(e && e.message || e).slice(0, 120) })); return send(res, 200, { ok: true, restaurant: r, employees: active.length, archived: all.length - active.length, names: active.map((e) => e.name), jobs: active.map((e) => ({ name: e.name, jobs: e.jobs || [] })), jobTitles: jobs }); }
       catch (e) { return send(res, 200, { ok: false, error: String(e.message || e) }); }
     }
     if (action === "employees") {
