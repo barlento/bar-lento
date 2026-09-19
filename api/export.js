@@ -256,6 +256,14 @@ async function personWorkbook(name, fromISO, toISO) {
   ], r.events);
   return { wb, filename: `bar-lento-record-${name.replace(/[^A-Za-z0-9]+/g, "-").toLowerCase()}-${fromISO}-to-${toISO}.xlsx` };
 }
+// Employee's own report (hours only): used by the "My report" button and by the Sunday-night email.
+async function employeeReport(name, fromISO, toISO, periodLabel) {
+  const [doc, confirmations] = await Promise.all([store.getSchedule(), store.getConfirmations()]);
+  const r = await collectPerson(name, doc, confirmations, fromISO, toISO);
+  const out = await pdf.personRecordPdf(r, nyParts(new Date().toISOString()).stamp, { employee: true, periodLabel });
+  const totals = r.months.reduce((a, m) => ({ worked: a.worked + m.worked, scheduled: a.scheduled + m.scheduled, clockins: a.clockins + m.clockins, shifts: a.shifts + m.shifts }), { worked: 0, scheduled: 0, clockins: 0, shifts: 0 });
+  return { buf: out.buf, filename: `bar-lento-my-report-${fromISO}-to-${toISO}.pdf`, totals, email: r.email, fullName: r.fullName, guid: r.guid };
+}
 async function personPdfFile(name, fromISO, toISO) {
   const [doc, confirmations] = await Promise.all([store.getSchedule(), store.getConfirmations()]);
   const r = await collectPerson(name, doc, confirmations, fromISO, toISO);
@@ -271,11 +279,27 @@ module.exports = async (req, res) => {
       res.setHeader("Cache-Control", "no-store"); res.setHeader("Content-Type", "application/pdf");
       return res.status(200).send(Buffer.from(out.buf));
     }
+    const url = new URL(req.url, "http://x");
+    if (url.searchParams.get("mine") === "1") { // an employee's own report, identified by the PIN device token; period = one schedule week by default
+      if (!store.hasStorage()) return res.status(503).send("storage_missing");
+      const doc0 = await store.getSchedule();
+      const who = await accounts.whoIs(String(req.headers["x-staff-token"] || ""), doc0.data.staff);
+      if (!who) return res.status(401).send("unauthorized");
+      const isD = (v) => /^\d{4}-\d{2}-\d{2}$/.test(v || "");
+      let from = url.searchParams.get("from"), to = url.searchParams.get("to");
+      if (!isD(from)) { const t = todayNY(); const d = new Date(t + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7)); from = d.toISOString().slice(0, 10); }
+      if (!isD(to)) { const d = new Date(from + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + 6); to = d.toISOString().slice(0, 10); }
+      if (to < from) to = from;
+      const maxTo = new Date(from + "T12:00:00Z"); maxTo.setUTCMonth(maxTo.getUTCMonth() + 12); if (to > maxTo.toISOString().slice(0, 10)) to = maxTo.toISOString().slice(0, 10);
+      const out = await employeeReport(who, from, to, `Week ${from} to ${to}`.replace(/^Week (\S+) to (\S+)$/, (m, a, b) => (Date.parse(b) - Date.parse(a) === 6 * 86400000 ? `Week of ${a} to ${b}` : `Period ${a} to ${b}`)));
+      res.setHeader("Cache-Control", "no-store"); res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `attachment; filename="${out.filename}"`);
+      return res.status(200).send(Buffer.from(out.buf));
+    }
     if (!auth.adminEnabled()) return res.status(503).send("admin_disabled");
     if (!auth.checkPassword(auth.passwordFrom(req))) return res.status(401).send("unauthorized");
     if (!store.hasStorage()) return res.status(503).send("storage_missing");
 
-    const url = new URL(req.url, "http://x");
     const person = String(url.searchParams.get("person") || "").trim().slice(0, 60);
     const format = url.searchParams.get("format") === "xlsx" ? "xlsx" : "pdf"; // PDF by default: opens everywhere, not editable
     let out;
@@ -297,3 +321,5 @@ module.exports = async (req, res) => {
     return res.status(500).send("server_error: " + String(err && err.message || err));
   }
 };
+module.exports.employeeReport = employeeReport;
+module.exports.todayNY = todayNY;
