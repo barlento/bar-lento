@@ -5,6 +5,7 @@ const push = require("../lib/push");
 const toast = require("../lib/toast");
 const accounts = require("../lib/accounts");
 const staffsync = require("../lib/staffsync");
+const punch = require("../lib/punch");
 
 function send(res, status, body) {
   res.setHeader("Cache-Control", "no-store");
@@ -50,11 +51,12 @@ module.exports = async (req, res) => {
       const ignore = new Set(data.toastIgnore || []);
       gone.forEach((n) => { const g = (current.data.toastMap || {})[n]; if (g) ignore.add(g); delete data.toastMap[n]; });
       data.toastIgnore = Array.from(ignore);
+      data.appClock = (data.appClock || []).filter((n) => data.staff.includes(n)); // app clock only for people still here
       const doc = { version: (current.version || 0) + 1, data, updatedAt: new Date().toISOString() };
       await store.saveSchedule(doc);
       await store.removeConfirmations(resetKeys).catch(() => {});
       await store.pruneConfirmations(data).catch(() => {});
-      if (gone.length) await accounts.removeAccounts(gone).catch(() => {});
+      if (gone.length) { await accounts.removeAccounts(gone).catch(() => {}); await punch.archive(gone).catch(() => {}); }
       if (changes.length) {
         await store.appendLog({ at: doc.updatedAt, version: doc.version, changes: changes.slice(0, 200) }).catch(() => {});
         // Only what matters to employees accumulates for ONE summary push later

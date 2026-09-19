@@ -742,7 +742,7 @@
 
   <div class="mestrip" id="meStrip" role="region" aria-label="Your shifts">
     <div class="hi"><span class="av" id="meAv">?</span><div class="txt"><b id="meHi">Hi!</b><span id="meNextShift"></span></div></div>
-    <div class="mebtns"><button class="btn primary" id="meOpenBtn" type="button" data-t="myWeek">My week</button><button class="btn" id="meStatsBtn" type="button" data-t="myStats">My stats</button></div>
+    <div class="mebtns"><button class="btn primary" id="meOpenBtn" type="button" data-t="myWeek">My week</button><button class="btn" id="meStatsBtn" type="button" data-t="myStats">My stats</button><button class="btn good" id="mePunchBtn" type="button" style="display:none">Clock in</button></div>
   </div>
 
   <div class="hero" id="heroStatus" aria-live="polite"></div>
@@ -889,6 +889,20 @@
       <button class="btn" id="dayCancel" type="button" data-t="cancel">Cancel</button>
       <span class="spacer"></span>
       <button class="btn primary" id="daySave" type="button" data-t="save" style="display:none">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- App time clock (only for people the manager marked "clocks in from the app") -->
+<div class="overlay" id="punchOverlay">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="punchTitle">
+    <h2 id="punchTitle">Clock in?</h2>
+    <div class="shiftcard"><div class="n" id="punchName"></div><div class="d" id="punchWhen"></div></div>
+    <p class="lead" id="punchLead"></p>
+    <div class="err" id="punchErr"></div>
+    <div class="actions">
+      <button class="btn" id="punchCancel" type="button">Cancel</button>
+      <button class="btn good" id="punchGo" type="button">Clock in</button>
     </div>
   </div>
 </div>
@@ -1123,7 +1137,7 @@
       holidayNote:"This day is <b>{h}</b>. You decide whether to open or close.",
       pOpen:"Open · regular hours", pClosedFor:"Closed for {h}", pFullDay:"Full day", pHalfFor:"Half day for {h}", pHalf:"Half day", pHalfSub:"Choose the hours below", pEvent:"Private event", pEventSub:"Bar reserved · shifts still shown", pOther:"Closed — other reason", pOtherSub:"Enter the reason below; the team will see it",
       reasonPh2:"Reason, e.g. Renovation · Staff training · Bad weather", errReason:"Please enter the reason; the team will see it.", errClose:"Closing time must be after opening time.", dayOpenSet:"Day set to open",
-      staffTitle:"Staff", staffLead:"Tap a name for birthday, PIN and documents. Removing a name never deletes past weeks.", staffLeadToast:"New Toast employees appear here by themselves. Tap a name for birthday, PIN and documents. Removing a name never deletes past weeks.", fromToast:"Added from Toast: {n}", phToast:"Toast", toastActive:"Toast: {n} active employees", toastMissing:"Not in the app:", toastRemoved:"removed here", toastPending:"waiting", toastNoName:"no name in Toast", toastErr:"Toast not reachable right now ({e})",
+      staffTitle:"Staff", staffLead:"Tap a name for birthday, PIN and documents. Removing a name never deletes past weeks.", staffLeadToast:"New Toast employees appear here by themselves. Tap a name for birthday, PIN and documents. Removing a name never deletes past weeks.", fromToast:"Added from Toast: {n}", phToast:"Toast", phClock:"Time clock", appClockRow:"Clocks in from the app (not in Toast)", onWord:"On", offWord:"Off", punchTotal:"{h} · {n} {d}", dayWord:"day", daysWord:"days", punchNone:"No clock-ins this month", stillIn:"still in", autoOut:"auto-closed", hoursFromApp:"Hours from your clock-ins in this app · updated {t}", weekLeadApp:"Your shifts and your clock-ins from this app.", toastActive:"Toast: {n} active employees", toastMissing:"Not in the app:", toastRemoved:"removed here", toastPending:"waiting", toastNoName:"no name in Toast", toastErr:"Toast not reachable right now ({e})",
       newNamePh:"New name", noNames:"No names yet.", nameExists:"That name is already on the list", removeQ:"Remove?", bdaySaved:"Birthday saved for {n}", bdayRemoved:"Birthday removed",
       removeTap:"Tap again to remove {n}{s}. Past weeks are kept.", upcoming1:" and 1 upcoming shift", upcomingN:" and {k} upcoming shifts", removed:"{n} removed{s}. Past shifts kept in the archive.", deleted1:" · 1 upcoming shift deleted", deletedN:" · {k} upcoming shifts deleted",
       historyTitle:"Change history", historyLead:"Every edit made from manager mode, newest first. Confirmation times are included in the CSV export.", loading:"Loading…", historyFail:"Couldn't load the history.", noChanges:"No changes recorded yet.", historyNeedsDb:"History is available once the database is connected.",
@@ -1180,7 +1194,7 @@
       holidayNote:"Questo giorno è <b>{h}</b>. Decidi tu se aprire o chiudere.",
       pOpen:"Aperto · orario normale", pClosedFor:"Chiuso per {h}", pFullDay:"Tutto il giorno", pHalfFor:"Mezza giornata per {h}", pHalf:"Mezza giornata", pHalfSub:"Scegli gli orari qui sotto", pEvent:"Evento privato", pEventSub:"Locale riservato · i turni restano visibili", pOther:"Chiuso — altro motivo", pOtherSub:"Scrivi il motivo qui sotto: il team lo vedrà",
       reasonPh2:"Motivo, es. Lavori · Formazione · Maltempo", errReason:"Scrivi il motivo: il team lo vedrà.", errClose:"L'orario di chiusura deve essere dopo l'apertura.", dayOpenSet:"Giorno impostato su aperto",
-      staffTitle:"Staff", staffLead:"Tocca un nome per compleanno, PIN e documenti. Togliere un nome non cancella mai le settimane passate.", staffLeadToast:"I nuovi dipendenti di Toast compaiono qui da soli. Tocca un nome per compleanno, PIN e documenti. Togliere un nome non cancella mai le settimane passate.", fromToast:"Aggiunto da Toast: {n}", phToast:"Toast", toastActive:"Toast: {n} dipendenti attivi", toastMissing:"Non nell'app:", toastRemoved:"tolto qui", toastPending:"in attesa", toastNoName:"senza nome su Toast", toastErr:"Toast non raggiungibile adesso ({e})",
+      staffTitle:"Staff", staffLead:"Tocca un nome per compleanno, PIN e documenti. Togliere un nome non cancella mai le settimane passate.", staffLeadToast:"I nuovi dipendenti di Toast compaiono qui da soli. Tocca un nome per compleanno, PIN e documenti. Togliere un nome non cancella mai le settimane passate.", fromToast:"Aggiunto da Toast: {n}", phToast:"Toast", phClock:"Timbrature", appClockRow:"Timbra dall'app (non è su Toast)", onWord:"Sì", offWord:"No", punchTotal:"{h} · {n} {d}", dayWord:"giorno", daysWord:"giorni", punchNone:"Nessuna timbratura questo mese", stillIn:"ancora dentro", autoOut:"chiusa in automatico", hoursFromApp:"Ore dalle timbrature in questa app · aggiornato {t}", weekLeadApp:"I tuoi turni e le tue timbrature da questa app.", toastActive:"Toast: {n} dipendenti attivi", toastMissing:"Non nell'app:", toastRemoved:"tolto qui", toastPending:"in attesa", toastNoName:"senza nome su Toast", toastErr:"Toast non raggiungibile adesso ({e})",
       newNamePh:"Nuovo nome", noNames:"Nessun nome ancora.", nameExists:"Nome già presente", removeQ:"Rimuovi?", bdaySaved:"Compleanno salvato per {n}", bdayRemoved:"Compleanno rimosso",
       removeTap:"Tocca di nuovo per rimuovere {n}{s}. Le settimane passate restano.", upcoming1:" e 1 turno futuro", upcomingN:" e {k} turni futuri", removed:"{n} rimosso/a{s}. I turni passati restano in archivio.", deleted1:" · 1 turno futuro cancellato", deletedN:" · {k} turni futuri cancellati",
       historyTitle:"Cronologia modifiche", historyLead:"Ogni modifica fatta dalla modalità manager, dalla più recente. Le ore di conferma sono nell'esportazione CSV.", loading:"Caricamento…", historyFail:"Impossibile caricare la cronologia.", noChanges:"Nessuna modifica registrata.", historyNeedsDb:"La cronologia è disponibile quando il database è collegato.",
@@ -1781,6 +1795,30 @@
       else toast(r.status===404?"This shift was just changed — please reload.":"Couldn't save your confirmation. Please try again."); }
   }
 
+  // ---------- app time clock (people not in Toast, enabled per person by the manager) ----------
+  function openPunch(){
+    if(!state.me.name||!state.me.appClock) return;
+    var on=!state.me.open, now=new Date();
+    $("punchTitle").textContent=on?"Clock in now?":"Clock out now?";
+    $("punchName").textContent=state.me.fullName||state.me.name;
+    $("punchWhen").textContent=fmtClock(now.toISOString())+" · "+dateLabel(now);
+    $("punchLead").textContent=on?"Your clock-in is recorded with the exact time and shows in your week and in the time clock.":"You have been on the clock for "+durText(Date.now()-Date.parse(state.me.open.in))+".";
+    $("punchErr").textContent=""; var g=$("punchGo"); g.textContent=on?"Clock in":"Clock out"; g.className="btn "+(on?"good":"danger"); g.disabled=false;
+    $("punchOverlay").classList.add("show");
+  }
+  async function doPunch(){
+    var on=!state.me.open; var g=$("punchGo"); g.disabled=true;
+    var r=await api("/api/me",{method:"POST",body:{action:"punch",on:on}});
+    if(r.ok){
+      state.me.open=r.json.open||null; $("punchOverlay").classList.remove("show"); renderMe();
+      var e=r.json.entry; toast(on?"Clocked in at "+fmtClock(e.in)+".":"Clocked out at "+fmtClock(e.out)+" · "+durText(Date.parse(e.out)-Date.parse(e.in))+".",4200);
+      delete tc.cache[nyTodayISO()]; loadToastToday(); if(me.name===state.me.name) delete me.hours[me.week];
+    } else if(r.status===409){ state.me.open=r.json.entry&&!r.json.entry.out?{in:r.json.entry.in}:null; $("punchOverlay").classList.remove("show"); renderMe(); toast(r.json.error==="already_in"?"You are already clocked in.":"You are not clocked in."); }
+    else if(r.status===401){ $("punchOverlay").classList.remove("show"); meSet(null,null); renderMe(); maybeWhoPopup(); }
+    else if(r.status===403){ $("punchOverlay").classList.remove("show"); state.me.appClock=false; renderMe(); toast("Your clock-ins are on Toast. Ask the manager."); }
+    else { $("punchErr").textContent="Could not save. Check your connection and try again."; g.disabled=false; }
+  }
+
   // ---------- login ----------
   function openLogin(){
     if(state.admin){logout(false);return;}
@@ -2002,6 +2040,12 @@
     var accTxt=acc.pin?t("pinSet")+(acc.devices?" · "+t("devicesShort",{k:acc.devices,p:lang==="it"?(acc.devices===1?"o":"i"):(acc.devices===1?"":"s")}):""):t("pinNone");
     if(acc.toast) html+='<div class="pcard"><div class="ph">'+h(t("phToast"))+'</div><div class="pr"><span>'+h(acc.toast.fullName||"")+'</span><span class="dim" style="font-size:.78rem">'+h(acc.toast.email||"")+'</span></div></div>';
     html+='<div class="pcard"><div class="ph">'+h(t("phAccess"))+'</div><div class="pr"><span class="'+(acc.pin?"ok":"dim")+'">'+h(accTxt)+'</span><button type="button" class="pinbtn reset"'+(acc.pin||acc.devices?"":" disabled")+'>'+h(t("pinReset"))+'</button></div></div>';
+    var ac=(state.data.appClock||[]).indexOf(n)!==-1;
+    if(ac||!acc.toast){ // only people who are not in Toast can clock in from the app
+      html+='<div class="pcard"><div class="ph">'+h(t("phClock"))+'</div><div class="pr"><span class="'+(ac?"ok":"dim")+'">'+h(t("appClockRow"))+'</span><button type="button" class="pinbtn appclock">'+h(ac?t("onWord"):t("offWord"))+'</button></div>';
+      if(ac) html+='<div class="me-tabs" style="margin-top:8px"><button class="navbtn pm-prev" type="button" aria-label="Previous month">‹</button><div class="lbl"><b class="pm-lbl"></b><span class="pm-sub"></span></div><button class="navbtn pm-next" type="button" aria-label="Next month">›</button></div><div id="personPunches"><div class="hint">'+h(t("loadingWord"))+'</div></div>';
+      html+='</div>';
+    }
     if(rulesActive()||(DOCS.list||[]).length){
       var ra=acc.rules, okR=!!(ra&&rulesActive()&&ra.version===RULES.version); var anyAck=!!ra;
       html+='<div class="pcard"><div class="ph">'+h(t("phDocs"))+'</div>';
@@ -2021,6 +2065,15 @@
       else if(r.status===503) toast(t("mailOff"),4000);
       else toast(t("mailFail",{r:(r.json&&r.json.detail)||r.status}),4500);
     });});
+    body.querySelectorAll(".pinbtn.appclock").forEach(function(b){b.addEventListener("click",function(){
+      state.data.appClock=state.data.appClock||[]; var i=state.data.appClock.indexOf(n);
+      if(i===-1) state.data.appClock.push(n); else state.data.appClock.splice(i,1);
+      scheduleSave(); renderPerson();
+    });});
+    if(ac){ if(!person.month) person.month=nyTodayISO().slice(0,7); renderPersonPunches(n);
+      body.querySelector(".pm-prev").addEventListener("click",function(){ person.month=shiftMonth(person.month,-1); renderPersonPunches(n); });
+      body.querySelector(".pm-next").addEventListener("click",function(){ person.month=shiftMonth(person.month,1); renderPersonPunches(n); });
+    }
     body.querySelectorAll(".pinbtn.view").forEach(function(b){b.addEventListener("click",function(){ $("personOverlay").classList.remove("show"); $("staffOverlay").classList.remove("show"); openMe(n); });});
     body.querySelectorAll(".pinbtn.reset").forEach(function(b){b.addEventListener("click",async function(){
       if(!b.dataset.arm){ b.dataset.arm="1"; b.classList.add("arm"); b.textContent=t("pinResetSure"); setTimeout(function(){ if(b.isConnected&&b.dataset.arm){ b.dataset.arm=""; b.classList.remove("arm"); b.textContent=""+t("pinReset"); } },4000); return; }
@@ -2030,6 +2083,24 @@
       else { toast(t("pinResetFail")); b.disabled=false; b.dataset.arm=""; b.classList.remove("arm"); b.textContent=""+t("pinReset"); }
     });});
     body.querySelectorAll('input[type="date"]').forEach(function(inp){inp.addEventListener("change",function(){ if(inp.value) state.data.birthdays[n]=inp.value; else delete state.data.birthdays[n]; renderDays(); scheduleSave(); toast(inp.value?t("bdaySaved",{n:n}):t("bdayRemoved")); renderPerson(); renderRoster(); });});
+  }
+  function shiftMonth(ym,d){ var y=Number(ym.slice(0,4)), m=Number(ym.slice(5,7))-1+d; var dt=new Date(y,m,1); return dt.getFullYear()+"-"+pad(dt.getMonth()+1); }
+  var punchCache={};
+  async function renderPersonPunches(n){
+    var ym=person.month, body=$("personBody"), box=body.querySelector("#personPunches"); if(!box) return;
+    var y=Number(ym.slice(0,4)), mi=Number(ym.slice(5,7))-1, cur=nyTodayISO().slice(0,7);
+    body.querySelector(".pm-lbl").textContent=MONTHS[mi]+" "+y; body.querySelector(".pm-sub").textContent="";
+    body.querySelector(".pm-next").disabled=ym>=cur;
+    var key=n+"|"+ym, d=punchCache[key];
+    if(!d||ym===cur){ var r=await api("/api/me?action=punches&month="+ym+"&name="+encodeURIComponent(n),{auth:true}); if(!r.ok){ box.innerHTML='<div class="hint">'+h(t("toastDownShort"))+'</div>'; return; } d=punchCache[key]=r.json; }
+    if(person.name!==n||person.month!==ym) return;
+    var now=Date.now(), es=d.entries||[];
+    if(!es.length){ box.innerHTML='<div class="hint" style="margin-top:6px">'+h(t("punchNone"))+'</div>'; return; }
+    var days={}; es.forEach(function(e){days[e.date]=1;});
+    box.innerHTML=es.slice().reverse().map(function(e){
+      var on=!e.out, ms=(on?now:Date.parse(e.out))-Date.parse(e.in); var dt=fromISO(e.date);
+      return '<div class="pr"><span class="dim">'+h(DAY_SHORT[DAY_KEY_BY_JSDAY[dt.getDay()]]+" "+dt.getDate()+" "+MONTHS[dt.getMonth()])+'</span><span class="mono" style="font-family:var(--mono);font-weight:500">'+fmtClock(e.in)+' → '+(on?'<span class="ok">'+h(t("nowWord"))+'</span>':fmtClock(e.out))+'</span><span class="'+(on?"ok":"")+'">'+durText(ms)+(on?' · '+h(t("stillIn")):(e.auto?' · '+h(t("autoOut")):''))+'</span></div>';
+    }).join("")+'<div class="pr" style="margin-top:10px;border-top:1px solid var(--border);padding-top:8px"><span class="dim">'+h(t("totalHours"))+'</span><span>'+h(t("punchTotal",{h:durText(d.totalMinutes*60000),n:Object.keys(days).length,d:t(Object.keys(days).length===1?"dayWord":"daysWord")}))+'</span></div>';
   }
   function removePerson(){
     var b=$("personRemove"), n=b.dataset.name; var i=state.data.staff.indexOf(n); if(i===-1) return;
@@ -2133,6 +2204,10 @@
   $("clockBtn").addEventListener("click",openClock);
   $("lbBtn").addEventListener("click",openLb);
   $("meStatsBtn").addEventListener("click",function(){ openStats(null); });
+  $("mePunchBtn").addEventListener("click",openPunch);
+  $("punchCancel").addEventListener("click",function(){ $("punchOverlay").classList.remove("show"); });
+  $("punchGo").addEventListener("click",doPunch);
+  setInterval(function(){ if(state.me.appClock&&state.me.open&&!anyModalOpen()) renderMe(); },60000);
   $("statsClose").addEventListener("click",function(){ $("statsOverlay").classList.remove("show"); });
   $("statsWeekBtn").addEventListener("click",function(){ $("statsOverlay").classList.remove("show"); openMe(st.name===state.me.name?null:st.name); });
   $("statsRefresh").addEventListener("click",function(){ loadStats(false); });
@@ -2200,7 +2275,7 @@
   async function meWhoAmI(){
     if(!state.me.token) return;
     var r; try{ r=await api("/api/me?action=who"); }catch(e){ r={ok:false,status:0,json:{}}; }
-    if(r.ok&&r.json.name){ meSet(r.json.name,state.me.token); state.me.rulesAck=r.json.rulesAck||null; state.me.docAcks=r.json.docAcks||undefined; state.me.since=r.json.since||null; state.me.email=r.json.email||""; state.me.fullName=r.json.fullName||""; }
+    if(r.ok&&r.json.name){ meSet(r.json.name,state.me.token); state.me.rulesAck=r.json.rulesAck||null; state.me.docAcks=r.json.docAcks||undefined; state.me.since=r.json.since||null; state.me.email=r.json.email||""; state.me.fullName=r.json.fullName||""; state.me.appClock=!!r.json.appClock; state.me.open=r.json.open||null; }
     else if(r.status===401||r.status===404){ meSet(null,null); state.me.rulesAck=undefined; state.me.docAcks=undefined; }
     else { state.me.rulesAck=undefined; state.me.docAcks=undefined; } // server hiccup: unknown → never force the rules on a guess
     renderMe();
@@ -2238,8 +2313,12 @@
     b.className="mebtn on"; b.innerHTML='<span class="mav" style="background:'+col+'">'+ini+'</span>'+h(n.split(/\s+/)[0]);
     $("meAv").textContent=initials(n); $("meAv").style.background=col;
     $("meHi").textContent=t("hi",{n:n.split(/\s+/)[0]});
+    var pb=$("mePunchBtn"), sb=$("meStatsBtn");
+    if(state.me.appClock){ sb.style.display="none"; pb.style.display=""; pb.textContent=state.me.open?"Clock out":"Clock in"; pb.className="btn "+(state.me.open?"danger":"good"); }
+    else { sb.style.display=""; pb.style.display="none"; }
     var nx=nextShiftOf(n), el=$("meNextShift"); el.className="";
-    if(!nx){ el.textContent=t("noUpcoming"); }
+    if(state.me.appClock&&state.me.open){ el.textContent="Clocked in since "+fmtClock(state.me.open.in)+" · "+durText(Date.now()-Date.parse(state.me.open.in)); }
+    else if(!nx){ el.textContent=t("noUpcoming"); }
     else {
       var now=new Date(), todayISO=toISO(now), m=now.getHours()*60+now.getMinutes(), tomorrowISO=toISO(addDays(now,1));
       var on=nx.iso===todayISO&&m>=mins(nx.s.start);
@@ -2533,7 +2612,7 @@
   function meTitles(){
     var name=me.name, mine=name===state.me.name;
     $("meTitle").textContent=mine?t("myWeekTitle"):t("weekOfName",{n:lang==="it"?name:possessive(name)});
-    $("meLead").textContent=mine?t("weekLeadMine"):t("weekLeadOf",{n:lang==="it"?name:possessive(name.split(/\s+/)[0])});
+    $("meLead").textContent=mine?t(state.me.appClock?"weekLeadApp":"weekLeadMine"):t("weekLeadOf",{n:lang==="it"?name:possessive(name.split(/\s+/)[0])});
   }
   function openMe(asName){
     var name=asName||state.me.name; if(!name) return;
@@ -2598,8 +2677,9 @@
       +'<div class="tile diff'+(showWorked?(diff>=0?" plus":" minus"):"")+'"><b>'+(showWorked?diffTxt:"—")+'</b><span>'+t("difference")+(isCur&&showWorked?t("soFar"):"")+'</span></div>';
     list.innerHTML=rows.length?rows.join(""):'<div class="me-empty">'+(me.name===state.me.name?t("noShiftsMine"):t("noShiftsPerson"))+'</div>';
     list.querySelectorAll(".me-row[data-id]").forEach(function(b){ b.addEventListener("click",function(){ if(me.name!==state.me.name) return; var d=b.getAttribute("data-day"); var isPastRow=b.classList.contains("past"); if(isPastRow) return; $("meOverlay").classList.remove("show"); state.activeWeek=wk; renderTabs(); renderDays(); onShiftTap(wk,d,b.getAttribute("data-id")); }); });
-    if(!state.features.toast) note.textContent=t("hoursNeedToast");
+    if(!state.features.toast&&!(hrs&&hrs.appClock)) note.textContent=t("hoursNeedToast");
     else if(!hrs) note.textContent=me.hours[hk]&&me.hours[hk].error?t("toastDownShort"):t("loadingHours");
+    else if(hrs.appClock) note.textContent=t("hoursFromApp",{t:fmtClock(hrs.fetchedAt)});
     else if(!hrs.linked) note.textContent=t("notLinked");
     else note.textContent=t("hoursFromToast",{t:fmtClock(hrs.fetchedAt)});
   }

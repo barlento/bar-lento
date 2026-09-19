@@ -1,6 +1,7 @@
 const store = require("../lib/store");
 const auth = require("../lib/auth");
 const toast = require("../lib/toast");
+const punch = require("../lib/punch");
 
 function todayNY() { return new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" }).format(new Date()); }
 
@@ -37,6 +38,9 @@ module.exports = async (req, res) => {
       const [doc, emps] = await Promise.all([store.getSchedule(), toast.employees(true)]);
       const map = toast.autoMap(doc.data.staff, doc.data.toastMap, emps);
       const status = await toast.dayStatus(date, map);
+      // people who clock in from the app (not in Toast) join the same day view
+      const b = toast.dayBounds(date);
+      for (const n of doc.data.appClock || []) { const l = await punch.between(n, b.start, b.end).catch(() => []); if (l.length) status.byName[n] = l.map((e) => ({ in: e.in, out: e.out })); }
       return send(res, 200, status);
     }
     // Public time clock: everyone who punched in on that day (Toast names), newest day first. Last 31 days only.
@@ -54,8 +58,9 @@ module.exports = async (req, res) => {
       const guidToShort = {}; Object.keys(map).forEach((n) => { guidToShort[map[n]] = n; });
       const list = entries
         .filter((t) => byGuid[t.employeeGuid] && !/^test\b/i.test(byGuid[t.employeeGuid].name))
-        .map((t) => ({ name: guidToShort[t.employeeGuid] || byGuid[t.employeeGuid].name, full: byGuid[t.employeeGuid].name, in: t.in, out: t.out }))
-        .sort((a, b) => String(a.in).localeCompare(String(b.in)));
+        .map((t) => ({ name: guidToShort[t.employeeGuid] || byGuid[t.employeeGuid].name, full: byGuid[t.employeeGuid].name, in: t.in, out: t.out }));
+      for (const n of doc.data.appClock || []) { const l = await punch.between(n, b.start, b.end).catch(() => []); l.forEach((e) => list.push({ name: n, full: n, in: e.in, out: e.out, app: true })); }
+      list.sort((a, b) => String(a.in).localeCompare(String(b.in)));
       return send(res, 200, { date, today, entries: list, fetchedAt: new Date().toISOString() });
     }
     // Ranking of the whole team — MANAGER ONLY (the owner/manager use it privately; staff never see comparisons).

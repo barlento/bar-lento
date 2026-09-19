@@ -3,6 +3,7 @@ const auth = require("../lib/auth");
 const accounts = require("../lib/accounts");
 const toast = require("../lib/toast");
 const staffsync = require("../lib/staffsync");
+const punch = require("../lib/punch");
 const crypto = require("crypto");
 const RULES = require("../rules.js");
 const DOCS = require("../documents.js");
@@ -192,7 +193,9 @@ module.exports = async (req, res) => {
         if (!name) return send(res, 401, { error: "unauthorized" });
         const [ack, ident, docAcks, pinRec] = await Promise.all([accounts.getRulesAck(name).catch(() => null), toastIdentity(doc.data, name), accounts.docAcksFor(name, DOC_IDS).catch(() => null), accounts.getPinRecord(name).catch(() => null)]);
         const docsOut = {}; if (docAcks) DOC_IDS.forEach((id) => { docsOut[id] = ackView(docAcks[id]); });
-        return send(res, 200, { name, rulesAck: ackView(ack), rulesVersion: RULES.version || null, docAcks: docAcks ? docsOut : undefined, docsVersions: docVersions(), since: pinRec && pinRec.createdAt || null, fullName: ident ? ident.fullName : null, email: ident ? ident.email : null, mail: mail.enabled() });
+        const appClock = punch.isAppClock(doc.data, name);
+        const openP = appClock ? await punch.openEntry(name).catch(() => null) : null;
+        return send(res, 200, { name, appClock, open: openP ? { in: openP.in } : null, rulesAck: ackView(ack), rulesVersion: RULES.version || null, docAcks: docAcks ? docsOut : undefined, docsVersions: docVersions(), since: pinRec && pinRec.createdAt || null, fullName: ident ? ident.fullName : null, email: ident ? ident.email : null, mail: mail.enabled() });
       }
       if (action === "hours") {
         const asked = String(url.searchParams.get("name") || "");
@@ -200,6 +203,10 @@ module.exports = async (req, res) => {
         if (!name) return send(res, 401, { error: "unauthorized" });
         const week = String(url.searchParams.get("week") || "");
         if (!/^\d{4}-\d{2}-\d{2}$/.test(week)) return send(res, 400, { error: "bad_week" });
+        if (punch.isAppClock(doc.data, name)) {
+          const entries = await punch.weekEntries(name, week);
+          return send(res, 200, { name, week, toast: false, appClock: true, linked: true, entries, workedMinutes: Math.round(sumMinutes(entries)), fetchedAt: new Date().toISOString() });
+        }
         if (!toast.enabled()) return send(res, 200, { name, week, toast: false, linked: false, entries: [] });
         const emps = await toast.employees(true);
         const map = toast.autoMap(doc.data.staff, doc.data.toastMap, emps);
@@ -207,6 +214,16 @@ module.exports = async (req, res) => {
         if (!guid) return send(res, 200, { name, week, toast: true, linked: false, entries: [] });
         const entries = await toast.weekEntriesFor(guid, week);
         return send(res, 200, { name, week, toast: true, linked: true, entries, workedMinutes: Math.round(sumMinutes(entries)), fetchedAt: new Date().toISOString() });
+      }
+      // App time clock record for one month: the person's own, or any person for the manager.
+      if (action === "punches") {
+        const asked = String(url.searchParams.get("name") || "");
+        if (isAdmin && asked) name = doc.data.staff.includes(asked) ? asked : null;
+        if (!name) return send(res, 401, { error: "unauthorized" });
+        const ym = String(url.searchParams.get("month") || "");
+        if (!/^\d{4}-\d{2}$/.test(ym)) return send(res, 400, { error: "bad_month" });
+        const entries = await punch.month(name, ym);
+        return send(res, 200, { name, month: ym, appClock: punch.isAppClock(doc.data, name), entries, totalMinutes: Math.round(punch.minutes(entries)), open: entries.find((e) => !e.out) || null, fetchedAt: new Date().toISOString() });
       }
       // Personal week in review: last completed week vs the one before (hours, punctuality, early/late minutes).
       if (action === "recap") {
@@ -226,6 +243,17 @@ module.exports = async (req, res) => {
     if (req.method !== "POST") { res.setHeader("Allow", "GET, POST"); return send(res, 405, { error: "method_not_allowed" }); }
 
     if (action === "logout") { await accounts.logout(tokenFrom(req)); return send(res, 200, { ok: true }); }
+
+    // Clock in / out from the app — only for people the manager marked "clocks in from the app" (not in Toast).
+    if (action === "punch") {
+      const doc0 = await store.getSchedule();
+      const who = await accounts.whoIs(tokenFrom(req), doc0.data.staff);
+      if (!who) return send(res, 401, { error: "unauthorized" });
+      if (!punch.isAppClock(doc0.data, who)) return send(res, 403, { error: "not_app_clock" });
+      const r = await punch.punch(who, body.on === true, req.headers["user-agent"]);
+      if (r.error) return send(res, 409, { error: r.error, entry: r.entry || null });
+      return send(res, 200, { ok: true, entry: r.entry, open: r.entry.out ? null : { in: r.entry.in } });
+    }
 
     // House Rules read & acknowledged (once per version). Recorded with the email the person typed, the time, and the device.
     if (action === "ackRules") {
