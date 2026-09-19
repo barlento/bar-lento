@@ -7,8 +7,8 @@ const j=async(u,o)=>{const r=await fetch(B+u,o); let x=null; try{x=await r.json(
   // Joe opens the app on his phone and creates a PIN (the poll carries his token → presence)
   const c=await b.newContext({...devices["iPhone 13"]}); const p=await c.newPage(); p.on("pageerror",e=>errors.push("pageerror: "+e.message));
   await p.goto(B+"/?v=pr1"); await p.waitForSelector("#whoOverlay.show");
-  const icons=await p.evaluate(()=>({n:document.querySelectorAll('.who-name .dept svg').length, mariia:document.querySelector('.who-name[data-name="Mariia"] .dept')?.getAttribute("title"), joe:document.querySelector('.who-name[data-name="Joe"] .dept')?.getAttribute("title")}));
-  console.log("1 who-grid department icons:", icons); if(icons.mariia!=="Kitchen"||icons.joe!=="Floor") errors.push("department icons wrong on Who are you");
+  const icons=await p.evaluate(()=>({n:document.querySelectorAll('.who-name .dept svg').length, mariia:document.querySelector('.who-name[data-name="Mariia"] .dept')?.getAttribute("title"), joe:document.querySelector('.who-name[data-name="Joe"] .dept')?.getAttribute("title"), marta:document.querySelector('.who-name[data-name="Marta"] .dept')?.getAttribute("title")}));
+  console.log("1 who-grid department icons:", icons); if(icons.mariia!=="Kitchen"||icons.joe!=="Floor"||icons.marta!=="Management") errors.push("department icons wrong on Who are you");
   await p.click('.who-name[data-name="Joe"]'); await p.waitForFunction(()=>/PIN/.test(document.getElementById("pinTitle").textContent));
   for(const k of "2222") await p.click(`#pinPad button[data-k="${k}"]`); await p.waitForTimeout(500); if((await p.textContent("#pinTitle"))==="Confirm your PIN") for(const k of "2222") await p.click(`#pinPad button[data-k="${k}"]`);
   await p.waitForTimeout(1500);
@@ -24,7 +24,10 @@ const j=async(u,o)=>{const r=await fetch(B+u,o); let x=null; try{x=await r.json(
   await m.click('.person[data-name="Joe"]'); await m.waitForSelector("#personOverlay.show"); await m.waitForTimeout(300);
   const before=await m.evaluate(()=>document.querySelector('.dept-pick.sel')?.getAttribute("data-d")); await m.click('.dept-pick[data-d="kitchen"]'); await m.waitForTimeout(1500);
   const r=await j("/api/data"); console.log("3 dept toggle: before", before, "| saved:", r.j.data.dept);
-  if(r.j.data.dept.Joe!=="kitchen"||r.j.data.dept.Mariia!=="kitchen") errors.push("dept not saved as expected: "+JSON.stringify(r.j.data.dept));
+  if(r.j.data.dept.Joe!=="kitchen"||r.j.data.dept.Mariia!=="kitchen"||r.j.data.dept.Marta!=="management") errors.push("dept not saved as expected: "+JSON.stringify(r.j.data.dept));
+  if((r.j.data.deptManual||[]).indexOf("Joe")===-1) errors.push("manual choice not recorded");
+  // a forced sync (opening Staff) must NOT undo the manager's choice
+  await j("/api/me?action=list",{headers:{"x-admin-password":"segreta"}}); const r2=await j("/api/data"); console.log("3b after a forced Toast sync Joe is still:", r2.j.data.dept.Joe); if(r2.j.data.dept.Joe!=="kitchen") errors.push("Toast sync overrode the manager's choice");
   // list returns jobs from Toast
   const l=await j("/api/me?action=list",{headers:{"x-admin-password":"segreta"}}); console.log("4 jobs for Mariia:", l.j.accounts.Mariia&&l.j.accounts.Mariia.toast&&l.j.accounts.Mariia.toast.jobs, "| presence Joe online:", l.j.presence.Joe.online);
   if(!l.j.presence.Joe.online) errors.push("API presence says Joe offline");
