@@ -1,5 +1,5 @@
 // Bar Lento — staff documents besides the House Rules: legal policies each person reads and acknowledges in the app
-// (📂 Documents), like the House Rules. Dual-mode: `window.BL_DOCS` in the browser, `require()` on the server.
+// (Documents), like the House Rules. Dual-mode: `window.BL_DOCS` in the browser, `require()` on the server.
 // Each document has its own `version` (YYYY-MM-DD; the annual training uses the calendar year "YYYY"): change it and everyone
 // is asked to read and acknowledge that document again. Text fixes that do not change the substance may keep the version
 // (the server stores a fingerprint of the exact text each person acknowledged).
@@ -30,7 +30,7 @@ var DOCS = {
     {
       "id": "harassment",
       "version": "2026-09-18",
-      "icon": "🛡",
+      "icon": "",
       "kind": "policy",
       "title": "Sexual Harassment Prevention Policy",
       "short": "Harassment policy",
@@ -343,7 +343,7 @@ var DOCS = {
       "id": "training",
       "version": "2026",
       "yearly": true,
-      "icon": "🎓",
+      "icon": "",
       "kind": "training",
       "title": "Sexual Harassment Prevention Training",
       "short": "Annual training",
@@ -376,15 +376,15 @@ var DOCS = {
       ],
       "links": [
         {
-          "label": "▶ Training video — English (New York State)",
+          "label": "Training video — English (New York State)",
           "url": "https://www.youtube.com/watch?v=A9gudpiQ40M"
         },
         {
-          "label": "▶ Video di formazione — Italiano (New York State)",
+          "label": "Video di formazione — Italiano (New York State)",
           "url": "https://youtu.be/sdMlIwc5Nj8"
         },
         {
-          "label": "▶ Casi di studio — Italiano (optional)",
+          "label": "Casi di studio — Italiano (optional)",
           "url": "https://www.youtube.com/watch?v=DslsQ_Mklyw"
         },
         {
@@ -397,7 +397,7 @@ var DOCS = {
     {
       "id": "pto",
       "version": "2026-09-18",
-      "icon": "🩺",
+      "icon": "",
       "kind": "policy",
       "title": "Protected Time Off (Safe and Sick Leave) Policy",
       "short": "Sick leave policy",
@@ -528,7 +528,7 @@ var DOCS = {
     {
       "id": "tips",
       "version": "2026-09-18",
-      "icon": "💵",
+      "icon": "",
       "kind": "policy",
       "title": "Tips Policy",
       "short": "Tips policy",
@@ -601,7 +601,7 @@ var DOCS = {
     {
       "id": "lactation",
       "version": "2026-09-18",
-      "icon": "🍼",
+      "icon": "",
       "kind": "policy",
       "title": "Policy on the Rights of Employees to Express Breast Milk in the Workplace",
       "short": "Lactation policy",
