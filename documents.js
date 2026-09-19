@@ -648,10 +648,6 @@ var DOCS = {
           "url": "https://dol.ny.gov/expressing-breast-milk-workplace"
         },
         {
-          "label": "Your rights as an employee to express breast milk at work (NYS DOL, PDF)",
-          "url": "https://dol.ny.gov/system/files/documents/2024/06/p690-your-rights-as-an-employee-to-express-breast-milk-at-work-.pdf"
-        },
-        {
           "label": "U.S. Department of Labor — PUMP Act",
           "url": "https://www.dol.gov/agencies/whd/pump-at-work"
         }

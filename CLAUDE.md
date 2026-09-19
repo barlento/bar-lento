@@ -50,5 +50,5 @@ Weekly view with tabs; today hero with LED; typed confirmation; manager mode (ad
 5. Weather on day cards (Open-Meteo, no key).
 6. Printable week + monthly hours summary for the owner.
 
-## Local testing
-`_devserver.js` (not deployed) fakes Redis + Toast and serves `/api/*` on :4173; Playwright scripts live outside the repo. Password in dev: `segreta`.
+## Local testing and the weekly check
+`tools/` (excluded from Vercel via `.vercelignore`): `tools/devserver.js` fakes Redis + Toast (+ mail captured at `/__mail`, one Toast employee not on staff, Pietro absent from Toast) on :4173, password `segreta`; `tools/tests/*.test.js` are the Playwright end-to-end suites (ui, docs, rules, mail, it, punch, sync) — run them ALL with `./tools/run-tests.sh` (fresh server each run; `NODE_PATH=/opt/node22/lib/node_modules`); `tools/healthcheck.js` is the read-only production check (every link in the legal texts incl. YouTube via oEmbed, live features on, Toast reachable, time clock, printable pages, live texts = repo versions; exit 1 when something needs attention). **Owner's standing request (2026-09-19): once a week run the health check + the suites, fix what is broken (a dead link, a page that does not render) and push, and tell the owner in Italian only what needs attention.** A Routine fires it every Monday 9:00 New York; keep it alive.
