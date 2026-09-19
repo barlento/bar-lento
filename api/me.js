@@ -10,7 +10,17 @@ const mail = require("../lib/mail");
 const DOC_IDS = DOCS.list.map((d) => d.id);
 function docById(id) { return DOCS.list.find((d) => d.id === id) || null; }
 // What the client needs to know about a person's acknowledgment of a document (never the device or the hash).
-function ackView(a) { return a ? { version: a.version, at: a.at, emailed: Boolean(a.emailedAt) } : null; }
+function ackView(a) { return a ? { version: a.version, at: a.at, emailed: Boolean(a.emailedAt), email: a.email || undefined } : null; }
+// The email a person signs with: typed once at the House Rules, reused for every document afterwards (the client sends none).
+async function signingEmail(who, typed) {
+  const e = String(typed || "").trim().toLowerCase().slice(0, 120);
+  if (e) return e;
+  const r = await accounts.getRulesAck(who).catch(() => null);
+  if (r && r.email) return String(r.email).toLowerCase();
+  const acks = await accounts.docAcksFor(DOC_IDS, who).catch(() => ({}));
+  const last = Object.values(acks || {}).filter(Boolean).sort((p, q) => String(q.at).localeCompare(String(p.at)))[0];
+  return last && last.email ? String(last.email).toLowerCase() : "";
+}
 function docVersions() { const v = {}; DOCS.list.forEach((d) => { v[d.id] = d.version; }); return v; }
 
 // The person's Toast record (full legal-ish name + email), when Toast is connected and the name is linked.
@@ -241,7 +251,7 @@ module.exports = async (req, res) => {
       if (!who) return send(res, 401, { error: "unauthorized" });
       const docDef = docById(String(body.id || ""));
       if (!docDef) return send(res, 404, { error: "unknown_doc" });
-      const email = String(body.email || "").trim().toLowerCase().slice(0, 120);
+      const email = await signingEmail(who, body.email);
       const version = String(body.version || "").trim().slice(0, 20);
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return send(res, 400, { error: "bad_request" });
       if (!docDef.version || version !== docDef.version) return send(res, 400, { error: "bad_version", current: docDef.version || null });
@@ -269,7 +279,7 @@ module.exports = async (req, res) => {
       const ids = Array.isArray(body.ids) ? body.ids.map(String).slice(0, 20) : [];
       const defs = ids.map(docById).filter(Boolean);
       if (!defs.length || defs.length !== ids.length) return send(res, 404, { error: "unknown_doc" });
-      const email = String(body.email || "").trim().toLowerCase().slice(0, 120);
+      const email = await signingEmail(who, body.email);
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return send(res, 400, { error: "bad_request" });
       const versions = body.versions && typeof body.versions === "object" ? body.versions : {};
       const stale = defs.filter((d) => !d.version || String(versions[d.id] || "") !== d.version).map((d) => d.id);

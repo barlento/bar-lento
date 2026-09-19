@@ -994,7 +994,8 @@
     <div class="rules-body" id="rulesBody"></div>
     <div class="rules-scrollhint" id="rulesScrollHint">↓ Scroll to the end to continue</div>
     <div class="rules-ack" id="rulesAckForm">
-      <div class="field"><label for="rulesEmail">Your email <span class="opt" id="rulesSigning"></span></label><input id="rulesEmail" type="email" autocomplete="email" inputmode="email" autocapitalize="none" placeholder="name@example.com"></div>
+      <div class="field" id="rulesEmailField"><label for="rulesEmail">Your email <span class="opt" id="rulesSigning"></span></label><input id="rulesEmail" type="email" autocomplete="email" inputmode="email" autocapitalize="none" placeholder="name@example.com"></div>
+      <div class="hint" id="rulesSignAs" style="display:none"></div>
       <label class="rules-check dis" id="rulesCheckRow"><input type="checkbox" id="rulesCheck" disabled><span id="rulesAckText"></span></label>
       <div class="err" id="rulesErr"></div>
     </div>
@@ -1154,11 +1155,11 @@
       m0:"Your statistics will appear after your first clocked shift.", m1:"Your punctuality will appear after 3 scheduled shifts.", m90:"Excellent punctuality: you are almost always on time.", m80:"Good punctuality. Keep it up.", m60:"A few minutes earlier at clock-in would bring you above 80% on time.", mLow:"Please aim to clock in within 5 minutes of your scheduled start.",
       hi:"Hi {n}", nextShift:"Next shift: {w} · ", onShiftNow:"On shift now · ", noUpcoming:"No upcoming shifts on the schedule.",
       histEntry:"{d} · {t} · v{v}",
-      packetTitle:"Your documents", packetLead:"New York law requires Bar Lento to give you these documents. Read them to the end (about 15 minutes, paid working time), then confirm once with your email: one signed copy with everything is emailed to you and to the owner.", packetPill:"{n} documents · one signature", packetAck:"I confirm that I have received and read all the documents above: {list}.",
+      packetTitle:"Your documents", packetCheck:"I have received and read all {n} documents above.", packetLead:"New York law requires Bar Lento to give you these documents. Read them to the end (about 15 minutes, paid working time), then confirm once with your email: one signed copy with everything is emailed to you and to the owner.", packetLeadSigned:"New York law requires Bar Lento to give you these documents. Read them to the end (about 15 minutes, paid working time), tick the box and tap Sign: one signed copy with everything is emailed to you and to the owner.", packetPill:"{n} documents · one signature", packetAck:"I confirm that I have received and read all the documents above: {list}.",
       docsBtn:"Documents", docsTitle:"Documents", docsLead:"Everything Bar Lento has given you to read and sign, with the date you signed it. Tap a document to read it again or to print it.", docsMail:"Email my copies", docsMailed:"Your signed copies have been sent to {e}.", docsMailSoon:"Already sent a few minutes ago. Check your inbox (and spam).", docsMailNone:"Nothing signed yet", docOf:"document {i} of {n}",
       docSigned:"✓ Signed {d}", docToSign:"To sign · by {d}", docLate:"Overdue · please sign now", trainDone:"✓ Completed {d}", trainTodo:"To complete this year · by {d}", trainLate:"Overdue · please complete now", later:"Later",
-      readLead:"Please read this document to the end, then confirm with your email: your signed copy is emailed to you and to the owner.", readLeadNoMail:"Please read this document to the end, then confirm with your email.", readLeadDone:"You acknowledged this document on {d}.", readLeadDoneTrain:"You completed this training on {d}.", readLeadTrain:"Watch the video (links at the end), then confirm with your email: your training record is emailed to you and to the owner.",
-      agreeTrain:"Done", agree:"I agree", thanksDoc:"Documents acknowledged. A signed copy has been sent to {e}.", thanksDocNoMail:"Documents acknowledged.", thanksTrain:"Training recorded. A confirmation has been sent to {e}.", thanksTrainNoMail:"Training recorded.",
+      readLead:"Please read this document to the end, then confirm with your email: your signed copy is emailed to you and to the owner.", readLeadSigned:"Please read this document to the end, tick the box and tap Sign: your signed copy is emailed to you and to the owner.", readLeadNoMail:"Please read this document to the end, then confirm with your email.", readLeadDone:"You acknowledged this document on {d}.", readLeadDoneTrain:"You completed this training on {d}.", readLeadTrain:"Watch the video (links at the end), then confirm with your email: your training record is emailed to you and to the owner.",
+      agreeTrain:"Done", sign:"Sign", agree:"I agree", thanksDoc:"Documents acknowledged. A signed copy has been sent to {e}.", thanksDocNoMail:"Documents acknowledged.", thanksTrain:"Training recorded. A confirmation has been sent to {e}.", thanksTrainNoMail:"Training recorded.",
       rosterDocs:"Documents {k}/{n}", copiesSent:"Signed copies sent to {e}: {k}", sendCopies:"Re-send copies", linksHead:"Links", contactsHead:"Contacts (write to all)",
       rulesOk:"Rules ✓ {d} · {e}", rulesNo:"Rules not acknowledged yet", rulesLink:"Print documents", stNotIn:"Hasn't signed in yet", stLine:"PIN ✓ · Rules {r} · Docs {k}/{n}", stLineNoDocs:"PIN ✓ · Rules {r}", phBirthday:"Birthday", phAccess:"Access", phDocs:"Documents", phWeek:"Shifts and hours", viewWeekBtn:"View week", removeName:"Remove {n}", noBirthday:"not set", devicesShort:"{k} device{p}", personLead:"Birthday, personal PIN and signed documents.", trainingRow:"Training {y}", copyNotSent:"copy not emailed yet", sendCopy:"Send signed copy by email", copySent:"Signed copy sent to {e}", mailFail:"Could not send the email ({r})", mailOff:"Email isn't configured yet on the server (Vercel settings).",
       pinSet:"PIN set", pinDevices:"{k} device{p}", pinNone:"No PIN yet", pinReset:"Reset PIN", pinResetSure:"Tap again to reset", pinResetDone:"PIN reset for {n} — they'll create a new one next time", pinResetFail:"Couldn't reset the PIN. Try again.", viewWeek:"View {n}'s week",
@@ -1211,11 +1212,11 @@
       m0:"Le statistiche compaiono dopo il primo turno timbrato.", m1:"La puntualità compare dopo 3 turni previsti.", m90:"Puntualità eccellente: sei quasi sempre in orario.", m80:"Buona puntualità. Continua così.", m60:"Qualche minuto prima alla timbratura ti porterebbe sopra l'80% di puntualità.", mLow:"Cerca di timbrare entro 5 minuti dall'inizio del turno.",
       hi:"Ciao {n}", nextShift:"Prossimo turno: {w} · ", onShiftNow:"In turno adesso · ", noUpcoming:"Nessun turno in programma.",
       histEntry:"{d} · {t} · v{v}",
-      packetTitle:"I tuoi documenti", packetLead:"La legge di New York obbliga Bar Lento a consegnarti questi documenti. Leggili fino alla fine (circa 15 minuti, tempo di lavoro pagato), poi conferma una volta con la tua email: una sola copia firmata con tutto arriva a te e al titolare.", packetPill:"{n} documenti · una firma", packetAck:"Confermo di aver ricevuto e letto tutti i documenti qui sopra: {list}.",
+      packetTitle:"I tuoi documenti", packetCheck:"Ho ricevuto e letto tutti i {n} documenti qui sopra.", packetLead:"La legge di New York obbliga Bar Lento a consegnarti questi documenti. Leggili fino alla fine (circa 15 minuti, tempo di lavoro pagato), poi conferma una volta con la tua email: una sola copia firmata con tutto arriva a te e al titolare.", packetLeadSigned:"La legge di New York obbliga Bar Lento a consegnarti questi documenti. Leggili fino alla fine (circa 15 minuti, tempo di lavoro pagato), spunta la casella e tocca Firma: una sola copia firmata con tutto arriva a te e al titolare.", packetPill:"{n} documenti · una firma", packetAck:"Confermo di aver ricevuto e letto tutti i documenti qui sopra: {list}.",
       docsBtn:"Documenti", docsTitle:"Documenti", docsLead:"Tutto quello che Bar Lento ti ha consegnato da leggere e firmare, con la data della firma. Tocca un documento per rileggerlo o stamparlo.", docsMail:"Inviami le copie", docsMailed:"Le tue copie firmate sono state inviate a {e}.", docsMailSoon:"Già inviate pochi minuti fa. Controlla la posta (anche lo spam).", docsMailNone:"Nessun documento firmato ancora", docOf:"documento {i} di {n}",
       docSigned:"✓ Firmato {d}", docToSign:"Da firmare · entro {d}", docLate:"In ritardo · firma ora", trainDone:"✓ Completata {d}", trainTodo:"Da completare quest'anno · entro {d}", trainLate:"In ritardo · completa ora", later:"Più tardi",
-      readLead:"Leggi il documento fino alla fine, poi conferma con la tua email: la copia firmata arriva a te e al titolare.", readLeadNoMail:"Leggi il documento fino alla fine, poi conferma con la tua email.", readLeadDone:"Hai firmato questo documento il {d}.", readLeadDoneTrain:"Hai completato questa formazione il {d}.", readLeadTrain:"Guarda il video (link in fondo), poi conferma con la tua email: l'attestato arriva a te e al titolare.",
-      agreeTrain:"Fatto", agree:"Accetto", thanksDoc:"Documenti firmati. Copia inviata a {e}.", thanksDocNoMail:"Documenti firmati.", thanksTrain:"Formazione registrata. Conferma inviata a {e}.", thanksTrainNoMail:"Formazione registrata.",
+      readLead:"Leggi il documento fino alla fine, poi conferma con la tua email: la copia firmata arriva a te e al titolare.", readLeadSigned:"Leggi il documento fino alla fine, spunta la casella e tocca Firma: la copia firmata arriva a te e al titolare.", readLeadNoMail:"Leggi il documento fino alla fine, poi conferma con la tua email.", readLeadDone:"Hai firmato questo documento il {d}.", readLeadDoneTrain:"Hai completato questa formazione il {d}.", readLeadTrain:"Guarda il video (link in fondo), poi conferma con la tua email: l'attestato arriva a te e al titolare.",
+      agreeTrain:"Fatto", sign:"Firma", agree:"Accetto", thanksDoc:"Documenti firmati. Copia inviata a {e}.", thanksDocNoMail:"Documenti firmati.", thanksTrain:"Formazione registrata. Conferma inviata a {e}.", thanksTrainNoMail:"Formazione registrata.",
       rosterDocs:"Documenti {k}/{n}", copiesSent:"Copie firmate inviate a {e}: {k}", sendCopies:"Reinvia copie", linksHead:"Link", contactsHead:"Contatti (scrivi a tutti)",
       rulesOk:"Regolamento ✓ {d} · {e}", rulesNo:"Regolamento non ancora firmato", rulesLink:"Stampa documenti", stNotIn:"Non è ancora entrato/a", stLine:"PIN ✓ · Regolamento {r} · Documenti {k}/{n}", stLineNoDocs:"PIN ✓ · Regolamento {r}", phBirthday:"Compleanno", phAccess:"Accesso", phDocs:"Documenti", phWeek:"Turni e ore", viewWeekBtn:"Vedi settimana", removeName:"Rimuovi {n}", noBirthday:"non impostato", devicesShort:"{k} dispositiv{p}", personLead:"Compleanno, PIN personale e documenti firmati.", trainingRow:"Formazione {y}", copyNotSent:"copia non ancora inviata", sendCopy:"Invia copia firmata via email", copySent:"Copia firmata inviata a {e}", mailFail:"Invio email non riuscito ({r})", mailOff:"Email non ancora configurata sul server (impostazioni Vercel).",
       pinSet:"PIN creato", pinDevices:"{k} dispositiv{p}", pinNone:"Nessun PIN", pinReset:"Azzera PIN", pinResetSure:"Tocca di nuovo per azzerare", pinResetDone:"PIN azzerato per {n} — ne creerà uno nuovo al prossimo accesso", pinResetFail:"Impossibile azzerare il PIN. Riprova.", viewWeek:"Vedi la settimana di {n}",
@@ -2310,11 +2311,11 @@
     var contacts=DOCS.contacts||[]; if(contacts.length) html+='<div class="contacts"><b>'+h(t("contactsHead"))+'</b>'+contacts.map(function(c){return h(c.name)+' · <a href="mailto:'+h(c.email)+'">'+h(c.email)+'</a>';}).join("<br>")+'</div>';
     html+='<div class="ackq">'+h(packet.ack)+'</div>'; b.innerHTML=html; b.scrollTop=0;
     var o=$("rulesOverlay"); if(opts.lock) o.dataset.lock="1"; else delete o.dataset.lock;
-    $("rulesTitle").textContent=packet.title+" ("+docs.length+")"; $("rulesVer").textContent=t("packetPill",{n:docs.length}); $("rulesAckText").textContent=packet.ack;
-    $("rulesPrint").href="/docs.html"; $("rulesLead").textContent=t("packetLead");
-    $("rulesAckForm").style.display=opts.sign?"":"none"; $("rulesAgree").style.display=opts.sign?"":"none"; $("rulesAgree").textContent=t("agree");
+    $("rulesTitle").textContent=packet.title+" ("+docs.length+")"; $("rulesVer").textContent=t("packetPill",{n:docs.length}); $("rulesAckText").textContent=t("packetCheck",{n:docs.length});
+    $("rulesPrint").href="/docs.html"; $("rulesLead").textContent=t(signedEmail()?"packetLeadSigned":"packetLead");
+    $("rulesAckForm").style.display=opts.sign?"":"none"; $("rulesAgree").style.display=opts.sign?"":"none"; $("rulesAgree").textContent=t("sign");
     $("rulesLater").style.display=opts.later?"":"none"; $("rulesClose").style.display=opts.lock?"none":""; $("rulesScrollHint").style.display=opts.sign?"":"none";
-    $("rulesSigning").textContent=state.me.name?"· signing as "+(state.me.fullName||state.me.name):""; $("rulesEmail").value=state.me.email||""; $("rulesCheck").checked=false; $("rulesCheck").disabled=true; $("rulesCheckRow").classList.add("dis"); $("rulesErr").textContent=""; $("rulesAgree").disabled=true;
+    setupSignForm(rules.doc); $("rulesCheck").checked=false; $("rulesCheck").disabled=true; $("rulesCheckRow").classList.add("dis"); $("rulesErr").textContent=""; $("rulesAgree").disabled=true;
     o.classList.add("show"); setTimeout(rulesScrolled,300);
   }
   function docsProgress(doc){ var all=[{id:"rules"}].concat(DOCS.list||[]); var i=all.findIndex(function(d){return d.id===doc.id;}); return i>=0?t("docOf",{i:i+1,n:all.length}):""; }
@@ -2326,13 +2327,13 @@
     var o=$("rulesOverlay"); if(opts.lock) o.dataset.lock="1"; else delete o.dataset.lock;
     $("rulesTitle").textContent=(isRules?"House Rules":doc.title);
     $("rulesPrint").href=doc.printUrl||("/docs.html?id="+encodeURIComponent(doc.id));
-    $("rulesAckForm").style.display=opts.sign?"":"none"; $("rulesAgree").style.display=opts.sign?"":"none"; $("rulesAgree").textContent=training?t("agreeTrain"):t("agree");
+    $("rulesAckForm").style.display=opts.sign?"":"none"; $("rulesAgree").style.display=opts.sign?"":"none"; $("rulesAgree").textContent=training?t("agreeTrain"):(isRules?t("agree"):t("sign"));
     $("rulesLater").style.display=opts.later?"":"none"; $("rulesLater").textContent=t("later"); $("rulesClose").style.display=opts.lock?"none":"";
     $("rulesScrollHint").style.display=opts.sign?"":"none";
     var ack=isRules?state.me.rulesAck:((state.me.docAcks||{})[doc.id]||null);
-    if(opts.sign) $("rulesLead").textContent=isRules?(state.features.mail?"Please read the Bar Lento House Rules to the end, then confirm with your email: your signed copy is emailed to you and to the owner. You'll be asked again only when the rules change.":"Please read the Bar Lento House Rules to the end, then confirm with your email. You'll be asked again only when the rules change."):training?t("readLeadTrain"):(state.features.mail?t("readLead"):t("readLeadNoMail"));
+    if(opts.sign) $("rulesLead").textContent=isRules?(state.features.mail?"Please read the Bar Lento House Rules to the end, then confirm with your email: your signed copy is emailed to you and to the owner. You'll be asked again only when the rules change.":"Please read the Bar Lento House Rules to the end, then confirm with your email. You'll be asked again only when the rules change."):training?t("readLeadTrain"):(state.features.mail?t(signedEmail()?"readLeadSigned":"readLead"):t("readLeadNoMail"));
     else $("rulesLead").textContent=isRules?("The Bar Lento House Rules you acknowledged"+(ack&&ack.at?" on "+ackDate(ack.at)+".":".")):ack&&ack.at?t(training?"readLeadDoneTrain":"readLeadDone",{d:ackDate(ack.at)}):(doc.subtitle||"");
-    $("rulesSigning").textContent=state.me.name?"· signing as "+(state.me.fullName||state.me.name):""; $("rulesEmail").value=state.me.email||""; $("rulesCheck").checked=false; $("rulesCheck").disabled=true; $("rulesCheckRow").classList.add("dis"); $("rulesErr").textContent=""; $("rulesAgree").disabled=true;
+    setupSignForm(rules.doc); $("rulesCheck").checked=false; $("rulesCheck").disabled=true; $("rulesCheckRow").classList.add("dis"); $("rulesErr").textContent=""; $("rulesAgree").disabled=true;
     if(opts.sign&&opts.lock&&(DOCS.list||[]).length) $("rulesVer").textContent="Version "+doc.version+" · "+docsProgress(doc);
     o.classList.add("show"); setTimeout(rulesScrolled,300);
   }
@@ -2341,7 +2342,15 @@
     if(!rules.mandatory||rules.scrolled) return; var b=$("rulesBody");
     if(b.scrollHeight-b.scrollTop-b.clientHeight<24){ rules.scrolled=true; $("rulesScrollHint").style.display="none"; $("rulesCheck").disabled=false; $("rulesCheckRow").classList.remove("dis"); rulesFormCheck(); }
   }
-  function rulesEmailOk(){ return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test($("rulesEmail").value.trim()); }
+  function signedEmail(){ return (state.me.rulesAck&&state.me.rulesAck.email)||""; }
+  // House Rules = the one time the email is typed; every document afterwards is signed with that email (no field, just the checkbox and Sign)
+  function setupSignForm(doc){
+    var known=doc.id!=="rules"&&signedEmail(); var who=state.me.fullName||state.me.name||"";
+    $("rulesEmailField").style.display=known?"none":""; $("rulesSignAs").style.display=known?"":"none";
+    $("rulesSignAs").textContent=known?"Signing as "+who+" · "+known:""; $("rulesSigning").textContent=who?"· signing as "+who:"";
+    $("rulesEmail").value=known||state.me.email||"";
+  }
+  function rulesEmailOk(){ var v=$("rulesEmail").value.trim(); return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v); }
   function rulesFormCheck(){ $("rulesErr").textContent=""; $("rulesAgree").disabled=!(rules.scrolled&&$("rulesCheck").checked&&rulesEmailOk()); }
   async function agreeRules(){
     var doc=rules.doc; if(!doc) return; var isRules=doc.id==="rules", isPacket=doc.id==="packet", training=doc.kind==="training", email=$("rulesEmail").value.trim();
@@ -2351,7 +2360,7 @@
     var body; if(isRules) body={action:"ackRules",email:email,version:doc.version}; else if(isPacket){ var vs={}; doc.docs.forEach(function(d){vs[d.id]=d.version;}); body={action:"ackDocs",ids:doc.docs.map(function(d){return d.id;}),versions:vs,email:email}; } else body={action:"ackDoc",id:doc.id,email:email,version:doc.version};
     var r; try{ r=await api("/api/me",{method:"POST",body:body}); }catch(e){ r={ok:false,status:0,json:{}}; }
     if(r.ok){
-      if(isRules) state.me.rulesAck=r.json.rulesAck||{version:doc.version,at:new Date().toISOString()};
+      if(isRules){ state.me.rulesAck=r.json.rulesAck||{version:doc.version,at:new Date().toISOString()}; state.me.rulesAck.email=email; state.me.email=email; }
       else if(isPacket){ state.me.docAcks=state.me.docAcks||{}; doc.docs.forEach(function(d){ state.me.docAcks[d.id]=(r.json.acks&&r.json.acks[d.id])||{version:d.version,at:new Date().toISOString()}; }); }
       else { state.me.docAcks=state.me.docAcks||{}; state.me.docAcks[doc.id]=r.json.ack||{version:doc.version,at:new Date().toISOString()}; }
       var o=$("rulesOverlay"); delete o.dataset.lock; o.classList.remove("show");
