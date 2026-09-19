@@ -88,7 +88,7 @@ const toastServer = http.createServer((req, res) => {
   if (u.pathname.endsWith("/authentication/login")) return res.end(JSON.stringify({ token: { accessToken: "tok", expiresIn: 3600 } }));
   if (u.pathname === "/partners/v1/restaurants") return res.end(JSON.stringify([{ restaurantGuid: "rest-1", restaurantName: "Bar Lento" }]));
   if (u.pathname === "/labor/v1/employees") return res.end(JSON.stringify(EMPS));
-  if (u.pathname === "/labor/v1/jobs") return res.end(JSON.stringify([{ guid: "job-server", title: "Server" }, { guid: "job-cook", title: "Line Cook" }, { guid: "job-bar", title: "Bartender" }, { guid: "job-fm", title: "Floor Manager" }]));
+  if (u.pathname === "/labor/v1/jobs") return res.end(JSON.stringify([{ guid: "job-server", title: "Server", wageFrequency: "HOURLY" }, { guid: "job-cook", title: "Line Cook", wageFrequency: "HOURLY" }, { guid: "job-bar", title: "Bartender", wageFrequency: "HOURLY" }, { guid: "job-fm", title: "Floor Manager", wageFrequency: "SALARY" }]));
   if (u.pathname === "/labor/v1/timeEntries") {
     if (u.searchParams.get("businessDate")) return res.end("[]"); // the fake Toast files nothing by business date
     const s = Date.parse(u.searchParams.get("startDate")), e = Date.parse(u.searchParams.get("endDate"));

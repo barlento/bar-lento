@@ -10,7 +10,7 @@ const j=async(u,o)=>{const r=await fetch(B+u,o); let x=null; try{x=await r.json(
   const icons=await p.evaluate(()=>({n:document.querySelectorAll('.who-name .dept svg').length, mariia:document.querySelector('.who-name[data-name="Mariia"] .dept')?.getAttribute("title"), joe:document.querySelector('.who-name[data-name="Joe"] .dept')?.getAttribute("title"), marta:document.querySelector('.who-name[data-name="Marta"] .dept')?.getAttribute("title")}));
   console.log("1 who-grid department icons:", icons); if(icons.mariia!=="Kitchen"||icons.joe!=="Floor"||icons.marta!=="Management") errors.push("department icons wrong on Who are you");
   await p.click('.who-name[data-name="Joe"]'); await p.waitForFunction(()=>/PIN/.test(document.getElementById("pinTitle").textContent));
-  for(const k of "2222") await p.click(`#pinPad button[data-k="${k}"]`); await p.waitForTimeout(500); if((await p.textContent("#pinTitle"))==="Confirm your PIN") for(const k of "2222") await p.click(`#pinPad button[data-k="${k}"]`);
+  for(const k of "9090") await p.click(`#pinPad button[data-k="${k}"]`); await p.waitForTimeout(500); if((await p.textContent("#pinTitle"))==="Confirm your PIN") for(const k of "9090") await p.click(`#pinPad button[data-k="${k}"]`);
   await p.waitForTimeout(1500);
   // manager opens Staff
   const m=await (await b.newContext({viewport:{width:1200,height:900}})).newPage(); m.on("pageerror",e=>errors.push("mgr pageerror: "+e.message));
@@ -31,5 +31,12 @@ const j=async(u,o)=>{const r=await fetch(B+u,o); let x=null; try{x=await r.json(
   // list returns jobs from Toast
   const l=await j("/api/me?action=list",{headers:{"x-admin-password":"segreta"}}); console.log("4 jobs for Mariia:", l.j.accounts.Mariia&&l.j.accounts.Mariia.toast&&l.j.accounts.Mariia.toast.jobs, "| presence Joe online:", l.j.presence.Joe.online);
   if(!l.j.presence.Joe.online) errors.push("API presence says Joe offline");
+  // Joe sets his own birthday from My week
+  let opened=false; for(let i=0;i<4&&!opened;i++){ await p.evaluate(()=>{document.querySelectorAll(".overlay.show").forEach(o=>o.classList.remove("show")); document.body.classList.remove("modal-open");}); await p.waitForTimeout(400); await p.evaluate(()=>document.getElementById("meOpenBtn").click()); opened=await p.waitForSelector("#meOverlay.show",{timeout:4000}).then(()=>true).catch(()=>false); if(!opened) console.log("   My week did not open, state:", await p.evaluate(()=>({open:[...document.querySelectorAll(".overlay.show")].map(o=>o.id), me:localStorage.getItem("bl_me_name"), strip:document.getElementById("meStrip").className}))); }
+  if(!opened) throw new Error("My week never opened"); await p.waitForTimeout(500);
+  const bd0=await p.textContent("#meBdayLbl"); await p.fill("#meBdayInput","1994-03-12"); await p.click("#meBdaySave"); await p.waitForTimeout(900);
+  const bd=await j("/api/data"); console.log("5 my birthday:", bd0.slice(0,20), "→ saved:", bd.j.data.birthdays.Joe, "| label:", await p.textContent("#meBdayLbl"));
+  if(bd.j.data.birthdays.Joe!=="1994-03-12") errors.push("birthday not saved by the person");
+  const bad=await j("/api/me",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"birthday",date:"1994-03-12"})}); if(bad.s!==401) errors.push("birthday without token accepted");
   await b.close(); console.log("ERRORS:", errors.length?errors:"none"); process.exit(errors.length?1:0);
 })().catch(e=>{console.log("ERR",e.message.split("\n")[0]);process.exit(1)});

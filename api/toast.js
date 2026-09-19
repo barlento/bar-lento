@@ -25,7 +25,7 @@ module.exports = async (req, res) => {
     const action = url.searchParams.get("action") || "status";
 
     if (action === "status") {
-      try { const r = await toast.restaurant(); const all = await toast.employees(true); const active = all.filter((e) => !e.archived); const jobs = await toast.jobs().catch((e) => ({ error: String(e && e.message || e).slice(0, 120) })); return send(res, 200, { ok: true, restaurant: r, employees: active.length, archived: all.length - active.length, names: active.map((e) => e.name), jobs: active.map((e) => ({ name: e.name, jobs: e.jobs || [] })), jobTitles: jobs }); }
+      try { const r = await toast.restaurant(); const all = await toast.employees(true); const active = all.filter((e) => !e.archived); const jobs = await toast.jobs().catch((e) => ({ error: String(e && e.message || e).slice(0, 120) })); return send(res, 200, { ok: true, restaurant: r, employees: active.length, archived: all.length - active.length, names: active.map((e) => e.name), jobs: active.map((e) => ({ name: e.name, jobs: e.jobs || [], salaried: !!e.salaried })), jobTitles: jobs }); }
       catch (e) { return send(res, 200, { ok: false, error: String(e.message || e) }); }
     }
     if (action === "employees") {
@@ -65,10 +65,13 @@ module.exports = async (req, res) => {
     }
     // Ranking of the whole team — MANAGER ONLY (the owner/manager use it privately; staff never see comparisons).
     if (action === "leaderboard") {
-      if (!auth.checkPassword(auth.passwordFrom(req))) return send(res, 401, { error: "unauthorized" });
+      const role = await auth.roleFrom(req);
+      if (!role) return send(res, 401, { error: "unauthorized" });
       const lb = require("../lib/leaderboard");
       const period = url.searchParams.get("period") || "week";
-      return send(res, 200, await lb.leaderboard(period));
+      const full = await lb.leaderboard(period);
+      if (role === "chef") { const k = new Set(auth.kitchenNames((await store.getSchedule()).data)); full.rows = (full.rows || []).filter((r) => k.has(r.name)); full.scope = "kitchen"; } // the chef ranks the kitchen only
+      return send(res, 200, full);
     }
     // Personal stats — public, but returns ONLY that person's numbers plus anonymous team totals.
     if (action === "mystats") {
@@ -79,7 +82,7 @@ module.exports = async (req, res) => {
       const doc = await store.getSchedule();
       const asked = String(url.searchParams.get("name") || "").trim().slice(0, 60);
       let name = await accounts.whoIs(req.headers["x-staff-token"], doc.data.staff);
-      if (asked && auth.checkPassword(auth.passwordFrom(req))) name = asked;
+      if (asked) { const role = await auth.roleFrom(req); if (role === "manager" || (role === "chef" && auth.kitchenNames(doc.data).includes(asked))) name = asked; }
       if (!name) return send(res, 401, { error: "unauthorized" });
       const full = await lb.leaderboard(period);
       const me = full.rows.find((r) => r.name === name);

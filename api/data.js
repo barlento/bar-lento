@@ -50,16 +50,18 @@ module.exports = async (req, res) => {
         data: doc1.data,
         confirmations,
         announcement,
-        features: { storage: store.hasStorage(), admin: auth.adminEnabled(), push: push.pushEnabled(), toast: toast.enabled(), mail: require("../lib/mail").enabled() },
+        features: { storage: store.hasStorage(), admin: auth.adminEnabled(), chef: await auth.chefEnabled().catch(() => false), push: push.pushEnabled(), toast: toast.enabled(), mail: require("../lib/mail").enabled() },
       });
     }
 
     if (req.method === "POST") {
       if (!auth.adminEnabled()) return send(res, 503, { error: "admin_disabled" });
-      if (!auth.checkPassword(auth.passwordFrom(req))) return send(res, 401, { error: "unauthorized" });
+      const role = await auth.roleFrom(req);
+      if (!role) return send(res, 401, { error: "unauthorized" });
       if (!store.hasStorage()) return send(res, 503, { error: "storage_missing" });
 
       const body = req.body || {};
+      if (role === "chef" && body.action) return send(res, 403, { error: "chef_forbidden" });
       if (body.action === "backfillToast") { // manager: past weeks from the clock-ins already in Toast (idempotent)
         const from = /^\d{4}-\d{2}-\d{2}$/.test(body.from || "") ? body.from : (() => { const d = new Date(); d.setUTCMonth(d.getUTCMonth() - 12); return d.toISOString().slice(0, 10); })();
         const r = await backfill.backfillFromToast(await store.getSchedule(), from);
@@ -73,6 +75,13 @@ module.exports = async (req, res) => {
         return send(res, 409, { error: "version_conflict", version: current.version, data: current.data, updatedAt: current.updatedAt });
       }
 
+      // The chef may change kitchen shifts only: with those stripped from both sides, old and new must be identical
+      // (no new weeks, no day settings, no staff/birthday/department changes, no shift of a floor person, no free-typed name).
+      if (role === "chef") {
+        const kitchen = new Set(auth.kitchenNames(current.data));
+        const strip = (d) => { const c = JSON.parse(JSON.stringify(d)); Object.keys(c.weeks || {}).forEach((wk) => { ["mon", "tue", "wed", "thu", "fri", "sat", "sun"].forEach((k) => { c.weeks[wk][k] = (c.weeks[wk][k] || []).filter((sh) => !kitchen.has(sh.name)); }); }); return c; };
+        if (JSON.stringify(strip(current.data)) !== JSON.stringify(strip(data))) return send(res, 403, { error: "chef_forbidden", detail: "Kitchen shifts only" });
+      }
       const { changes, resetKeys, notable, newWeeks } = diffData(current.data, data);
       // Someone removed from staff loses their personal access (PIN + devices). Past shifts stay in the archive,
       // and their Toast employee must not come back at the next sync.

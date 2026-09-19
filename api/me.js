@@ -162,12 +162,16 @@ module.exports = async (req, res) => {
     const url = new URL(req.url, "http://x");
     const body = req.body || {};
     const action = req.method === "GET" ? (url.searchParams.get("action") || "who") : String(body.action || "");
-    const isAdmin = auth.adminEnabled() && auth.checkPassword(auth.passwordFrom(req));
+    const role = await auth.roleFrom(req); // "manager" | "chef" | null
+    const isAdmin = role === "manager", isChef = role === "chef";
+    const doc0 = await store.getSchedule();
+    const kitchen = new Set(auth.kitchenNames(doc0.data));
+    const mayManage = (n) => isAdmin || (isChef && kitchen.has(n)); // the chef manages kitchen people only
 
     if (req.method === "GET") {
       let doc = await store.getSchedule();
       if (action === "list") {
-        if (!isAdmin) return send(res, 401, { error: "unauthorized" });
+        if (!isAdmin && !isChef) return send(res, 401, { error: "unauthorized" });
         // Opening Staff = fresh from Toast right now (new employees appear at once, not after the next 10-minute check).
         let synced = [];
         try { const r = await staffsync.syncFromToast(doc, { force: true }); doc = r.doc; synced = r.added.map((a) => a.name); } catch (e) {}
@@ -178,7 +182,7 @@ module.exports = async (req, res) => {
         let toastReport = null;
         if (toast.enabled()) { // Toast identity (full name · email) of every linked person + who in Toast is not in the app, and why
           try { const emps = await toast.employees(true); const map = toast.autoMap(doc.data.staff, doc.data.toastMap, emps);
-            doc.data.staff.forEach((n) => { const e = map[n] && emps.find((x) => x.guid === map[n]); if (e) { summary[n] = summary[n] || { pin: false, devices: 0 }; summary[n].toast = { fullName: e.name, email: e.email, jobs: e.jobs || [] }; } });
+            doc.data.staff.forEach((n) => { const e = map[n] && emps.find((x) => x.guid === map[n]); if (e) { summary[n] = summary[n] || { pin: false, devices: 0 }; summary[n].toast = { fullName: e.name, email: e.email, jobs: e.jobs || [], salaried: !!e.salaried }; } });
             const linked = new Set(doc.data.staff.map((n) => map[n]).filter(Boolean)), ignore = new Set(doc.data.toastIgnore || []);
             const active = emps.filter((e) => !e.archived);
             const missing = active.filter((e) => !linked.has(e.guid)).map((e) => ({ name: e.name, reason: ignore.has(e.guid) ? "removed" : (!e.first && !e.name ? "noname" : "pending") }));
@@ -190,7 +194,12 @@ module.exports = async (req, res) => {
         const formerStaff = (await former.all().catch(() => [])).filter((r) => !doc.data.staff.includes(r.name)).map((r) => ({ name: r.name, fullName: r.fullName || null, removedAt: r.removedAt, by: r.by || null }));
         const seen = await presence.all().catch(() => ({})); const presenceOut = {}; const now = Date.now();
         doc.data.staff.forEach((n) => { presenceOut[n] = { lastSeen: seen[n] || null, online: presence.isOnline(seen[n], now) }; });
-        return send(res, 200, { accounts: summary, formerAcks, formerDocAcks, rulesVersion: RULES.version || null, docsVersions: docVersions(), mail: mail.enabled(), toastReport, formerStaff, presence: presenceOut, dept: doc.data.dept || {}, version: doc.version });
+        if (isChef) { // kitchen only, nothing about the floor, no archives
+          const k = new Set(auth.kitchenNames(doc.data));
+          Object.keys(summary).forEach((n) => { if (!k.has(n)) delete summary[n]; }); Object.keys(presenceOut).forEach((n) => { if (!k.has(n)) delete presenceOut[n]; });
+          return send(res, 200, { accounts: summary, formerAcks: [], formerDocAcks: [], rulesVersion: RULES.version || null, docsVersions: docVersions(), mail: mail.enabled(), toastReport: null, formerStaff: [], presence: presenceOut, dept: doc.data.dept || {}, role: "chef", version: doc.version });
+        }
+        return send(res, 200, { accounts: summary, formerAcks, formerDocAcks, rulesVersion: RULES.version || null, docsVersions: docVersions(), mail: mail.enabled(), toastReport, formerStaff, presence: presenceOut, dept: doc.data.dept || {}, chef: await auth.chefEnabled().catch(() => false), role: "manager", version: doc.version });
       }
       // Who is on this device? (also used by "hours" below)
       let name = await accounts.whoIs(tokenFrom(req), doc.data.staff);
@@ -205,7 +214,7 @@ module.exports = async (req, res) => {
       }
       if (action === "hours") {
         const asked = String(url.searchParams.get("name") || "");
-        if (isAdmin && asked) name = doc.data.staff.includes(asked) ? asked : null;
+        if (asked && mayManage(asked)) name = doc.data.staff.includes(asked) ? asked : null;
         if (!name) return send(res, 401, { error: "unauthorized" });
         const week = String(url.searchParams.get("week") || "");
         if (!/^\d{4}-\d{2}-\d{2}$/.test(week)) return send(res, 400, { error: "bad_week" });
@@ -224,7 +233,7 @@ module.exports = async (req, res) => {
       // App time clock record for one month: the person's own, or any person for the manager.
       if (action === "punches") {
         const asked = String(url.searchParams.get("name") || "");
-        if (isAdmin && asked) name = doc.data.staff.includes(asked) ? asked : null;
+        if (asked && mayManage(asked)) name = doc.data.staff.includes(asked) ? asked : null;
         if (!name) return send(res, 401, { error: "unauthorized" });
         const ym = String(url.searchParams.get("month") || "");
         if (!/^\d{4}-\d{2}$/.test(ym)) return send(res, 400, { error: "bad_month" });
@@ -249,6 +258,19 @@ module.exports = async (req, res) => {
     if (req.method !== "POST") { res.setHeader("Allow", "GET, POST"); return send(res, 405, { error: "method_not_allowed" }); }
 
     if (action === "logout") { await accounts.logout(tokenFrom(req)); return send(res, 200, { ok: true }); }
+    if (action === "birthday") { // a person sets their own birthday (identity = PIN token); the manager never has to
+      const who = await accounts.whoIs(tokenFrom(req), doc0.data.staff);
+      if (!who) return send(res, 401, { error: "unauthorized" });
+      const date = String(body.date || "").trim();
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(Date.parse(date + "T12:00:00Z")) || date > new Date().toISOString().slice(0, 10)) return send(res, 400, { error: "bad_date" });
+      const cur = await store.getSchedule();
+      if ((cur.data.birthdays || {})[who] === date) return send(res, 200, { ok: true, version: cur.version, date });
+      const data = Object.assign({}, cur.data, { birthdays: Object.assign({}, cur.data.birthdays || {}, { [who]: date }) });
+      const next = { version: (cur.version || 0) + 1, data: store.normalizeData(data), updatedAt: cur.updatedAt };
+      await store.saveSchedule(next);
+      await store.appendLog({ at: new Date().toISOString(), version: next.version, changes: [`Birthday: ${who} → ${date} (set by ${who})`] }).catch(() => {});
+      return send(res, 200, { ok: true, version: next.version, date });
+    }
 
     // Clock in / out from the app — only for people the manager marked "clocks in from the app" (not in Toast).
     if (action === "punch") {
@@ -351,7 +373,7 @@ module.exports = async (req, res) => {
     // or a signed-in person for themselves (`myCopies`, from 📂 My documents). Copies go only to the emails they signed with.
     if (action === "sendCopies" || action === "myCopies") {
       let name;
-      if (action === "sendCopies") { if (!isAdmin) return send(res, 401, { error: "unauthorized" }); name = String(body.name || "").trim().slice(0, 60); }
+      if (action === "sendCopies") { name = String(body.name || "").trim().slice(0, 60); if (!mayManage(name)) return send(res, 401, { error: "unauthorized" }); }
       else { const doc0 = await store.getSchedule(); name = await accounts.whoIs(tokenFrom(req), doc0.data.staff); if (!name) return send(res, 401, { error: "unauthorized" }); }
       if (!mail.enabled()) return send(res, 503, { error: "mail_not_configured" });
       if (!name) return send(res, 400, { error: "bad_request" });
@@ -396,8 +418,16 @@ module.exports = async (req, res) => {
       return mailed.sent ? send(res, 200, { ok: true, email: ack.email }) : send(res, 502, { error: "mail_failed", detail: mailed.reason });
     }
 
-    if (action === "reset") {
+    if (action === "setChefPassword") { // manager only: the chef's password (empty = switch the chef login off)
       if (!isAdmin) return send(res, 401, { error: "unauthorized" });
+      const pw = String(body.password || "").trim();
+      if (pw && pw.length < 6) return send(res, 400, { error: "too_short" });
+      const on = await auth.setChefPassword(pw);
+      await store.appendLog({ at: new Date().toISOString(), changes: [on ? "Chef login: password set by the manager" : "Chef login switched off"] }).catch(() => {});
+      return send(res, 200, { ok: true, chef: on });
+    }
+    if (action === "reset") {
+      if (!mayManage(String(body.name || "").trim().slice(0, 60))) return send(res, 401, { error: "unauthorized" });
       const name = String(body.name || "").trim().slice(0, 60);
       if (!name) return send(res, 400, { error: "bad_request" });
       const devices = await accounts.resetPin(name);

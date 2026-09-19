@@ -289,10 +289,12 @@ module.exports = async (req, res) => {
       return res.status(200).send(Buffer.from(out.buf));
     }
     if (!auth.adminEnabled()) return res.status(503).send("admin_disabled");
-    if (!auth.checkPassword(auth.passwordFrom(req))) return res.status(401).send("unauthorized");
+    const role = await auth.roleFrom(req);
+    if (!role) return res.status(401).send("unauthorized");
     if (!store.hasStorage()) return res.status(503).send("storage_missing");
 
     const person = String(url.searchParams.get("person") || "").trim().slice(0, 60);
+    if (role === "chef" && (!person || !auth.kitchenNames((await store.getSchedule()).data).includes(person))) return res.status(403).send("chef_forbidden"); // kitchen people only, no schedule archive
     const format = url.searchParams.get("format") === "xlsx" ? "xlsx" : "pdf"; // PDF by default: opens everywhere, not editable
     let out;
     if (person) {
