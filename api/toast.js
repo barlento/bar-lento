@@ -51,7 +51,7 @@ module.exports = async (req, res) => {
       const ageDays = Math.round((Date.parse(today) - Date.parse(date)) / 86400000);
       if (ageDays > 31) return send(res, 400, { error: "too_old" });
       const b = toast.dayBounds(date);
-      const [entries, emps, doc] = await Promise.all([toast.timeEntries(b.start, b.end), toast.employees(true), store.getSchedule()]);
+      const [entries, emps, doc] = await Promise.all([toast.timeEntriesDay(date), toast.employees(true), store.getSchedule()]);
       const byGuid = Object.fromEntries(emps.map((e) => [e.guid, e]));
       // Prefer the short name used on the schedule when it is linked (Joe rather than Joseph Ricciardi).
       const map = toast.autoMap(doc.data.staff, doc.data.toastMap, emps);

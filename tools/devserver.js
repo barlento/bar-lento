@@ -87,6 +87,7 @@ const toastServer = http.createServer((req, res) => {
   if (u.pathname === "/partners/v1/restaurants") return res.end(JSON.stringify([{ restaurantGuid: "rest-1", restaurantName: "Bar Lento" }]));
   if (u.pathname === "/labor/v1/employees") return res.end(JSON.stringify(EMPS));
   if (u.pathname === "/labor/v1/timeEntries") {
+    if (u.searchParams.get("businessDate")) return res.end("[]"); // the fake Toast files nothing by business date
     const s = Date.parse(u.searchParams.get("startDate")), e = Date.parse(u.searchParams.get("endDate"));
     return res.end(JSON.stringify(fakeEntries().filter((t) => Date.parse(t.inDate) >= s && Date.parse(t.inDate) <= e)));
   }
