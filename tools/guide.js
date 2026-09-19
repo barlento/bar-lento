@@ -53,51 +53,51 @@ heading("1. Your first time: three taps");
 bullets([
   "Tap your name. You are already there: the list comes from Toast.",
   "Choose a 4-digit PIN. Only you know it. You will need it on a new phone or computer; the one you use is remembered.",
-  "Read the House Rules and the documents New York law asks every employer to give you. Your email is already filled in (the same one you use in Toast): tick the box, tap Sign, done. Your signed copies arrive by email.",
+  "Read the House Rules and the documents New York law asks every employer to give you (section 5 explains each one). Your email is already filled in, the same one you use in Toast: tick the box, tap Sign, done. Your signed copies arrive by email.",
 ]);
 shots([{ file: "01-who.png", caption: "Tap your name" }, { file: "02-pin.png", caption: "Choose your PIN" }, { file: "03-rules.png", caption: "Read, tick, sign" }, { file: "04-packet.png", caption: "One signature for all documents" }]);
 callout("Use your Toast email, always", "The email in the app is the one Bar Lento has in Toast. Please keep it the same everywhere. If you ever change it in Toast, the app follows automatically; still, tell Simone so nothing gets lost.");
 
-// ---------- 2. every week ----------
-heading("2. Every week");
+// ---------- 2. home screen ----------
+heading("2. The home screen, top to bottom");
 bullets([
-  "Home shows today at a glance: open or closed, the hours, who is working. When the bar is closed for a holiday or a private event is on, it says so.",
-  "The week below lists every shift. Your shifts are marked YOU. Tap yours and confirm: it tells the manager you have seen it.",
-  "A new week is published on the app; you get one notification. Changes that affect you arrive as one summary, never spam, never at night.",
-  "Time clock shows who is on the clock right now and past days, straight from Toast.",
+  "Your name (top left): you are signed in. Tap it to open My week.",
+  "Time clock: who is on the clock right now and on past days, live from Toast. Green dot = somebody is clocked in.",
+  "Notify me: turn on notifications. You get one when a new week is published and one summary when something that concerns you changes. Never spam, never at night.",
+  "Hi \u2026 / Next shift: your next shift at a glance, with the buttons My week and My stats.",
+  "Today: Open now or Closed now with the hours, who is working today, and the reason when the bar is closed (a holiday, a private event, a half day).",
+  "This week / Archive: the week tabs. Archive shows past weeks; they are kept and never change.",
+  "The days: every shift of the week with name, station and times. Yours carry the YOU tag.",
+  "Tap your shift, then Confirm shift: it tells the manager you have seen it. Only you can confirm your own shifts.",
+  "Copy as text (bottom): the week as plain text, handy to paste anywhere.",
 ]);
-shots([{ file: "05-home.png", caption: "Home: today and the week" }, { file: "07-timeclock.png", caption: "Time clock, live from Toast" }]);
+shots([{ file: "05-home.png", caption: "Home: today and the week" }, { file: "10-confirm.png", caption: "Tap your shift, then Confirm shift" }, { file: "07-timeclock.png", caption: "Time clock, live from Toast" }]);
 
-// ---------- 3. your hours ----------
-heading("3. Your hours and your report");
+// ---------- 3. my week ----------
+heading("3. My week: your shifts, your hours");
 bullets([
-  "My week shows your scheduled shifts next to your real clock-ins from Toast, day by day, with the hours worked.",
-  "Week report downloads a PDF of your week: every clock-in and clock-out with the exact times, hours per day, weekly total. Times and hours only — nothing about pay.",
-  "Every Sunday night the same report arrives by email, automatically. The owners see exactly the same numbers: if something does not match, say so right away.",
-  "My stats shows your own numbers only. Nobody sees anybody else’s.",
+  "Three tiles: hours scheduled, hours worked so far (from your Toast clock-ins) and the difference.",
+  "One row per shift: scheduled times, station, and under it your real clock-in and clock-out with the hours. Tap a row to confirm it.",
+  "\u2039 \u203a: move to the previous or next week.",
+  "Documents: the House Rules and every policy you signed, with the date (section 5).",
+  "My stats: your own numbers only \u2014 hours, punctuality, streaks. Nobody sees anybody else\u2019s.",
+  "Week report: downloads a PDF of the week shown: every clock-in and clock-out with the exact times, hours per day, weekly total. Times and hours only, nothing about pay. The same PDF arrives by email every Sunday night, automatically.",
+  "Switch: on a shared phone, go back to the name list and let a colleague sign in. Log out: forget this phone.",
 ]);
-shots([{ file: "06-myweek.png", caption: "My week: shifts, clock-ins, hours" }, { file: "08-documents.png", caption: "Documents: everything you signed" }]);
-heading("4. The documents you sign, explained");
-para("New York State and New York City require every employer to give employees a set of written policies and to keep proof that each person received them. Bar Lento does this in the app: you read, tick and sign once; your signed copy arrives by email and the record is kept. Nothing to print, nothing to bring back.", { after: 8 });
+shots([{ file: "06-myweek.png", caption: "My week" }, { file: "11-stats.png", caption: "My stats: only yours" }, { file: "08-documents.png", caption: "Documents: everything you signed" }]);
+callout("Same numbers on both sides", "Your Week report and the record the owners see are built from the same clock-ins. If a time or an hour does not look right, say so right away: records are checked together, never rewritten.");
+
+// ---------- 4. once in a while ----------
+heading("4. Once in a while");
 bullets([
-  "House Rules \u2014 how we work together at Bar Lento: schedule and confirmations, being on time, uniform, breaks, guests, safety, phones, tips, time off, who to talk to. Written for Bar Lento and checked against New York law.",
-  "Sexual Harassment Prevention Policy \u2014 the official New York State model policy, adopted in full, with a complaint form. Required by NY Labor Law \u00a7201-g for every employer.",
-  "Sexual Harassment Prevention Training \u2014 once a year, the free 30-minute video from New York State (in English, or English with Italian subtitles). Watch it, tick, sign. No test, nothing to hand in. Required every year by the same law.",
-  "Protected Time Off (Safe and Sick Leave) Policy \u2014 how paid sick and safe time is earned and used under the New York City Earned Safe and Sick Time Act and New York State Paid Sick Leave Law, with the official NYC Notice of Employee Rights in English and Italian.",
-  "Tips Policy \u2014 how tips work at Bar Lento (no tip pool; card tips through payroll; cash tips declared in Toast), under NY Labor Law \u00a7196-d.",
-  "Lactation Policy \u2014 the New York State Department of Labor model policy on the right to express breast milk at work (NY Labor Law \u00a7206-c).",
-]);
-callout("What signing means", "Signing confirms that you received and read the document. It does not take away any right the law gives you: where a policy and the law differ, the law wins. Every version you sign is kept with the date, your email and a fingerprint of the exact text, so nobody can change it afterwards. You can reread or print any document at any time from My week, then Documents.");
-heading("5. Your privacy");
-bullets([
-  "What is stored: your name, your PIN (only as a cryptographic hash, never the PIN itself), the phones you signed in from, the email you sign with, your shifts and confirmations, your clock-ins mirrored from Toast, your signed documents, your birthday if the manager entered it.",
-  "Why: to organize shifts, verify hours and comply with New York labor law. Nothing else. No advertising, no tracking, no sale of data.",
-  "Who sees it: you see your own data; the time clock is visible to signed-in colleagues because it is operational; the manager and the owners see what they need to run the business. Nobody else.",
-  "Everything is written in plain words at bar-lento.vercel.app/legal.html. You can ask the owners for a copy of your records at any time.",
+  "Week in review: after a week of work you get a short recap of your week \u2014 for you only, always encouraging.",
+  "New week: when the manager publishes the schedule, the app shows it once and sends the notification.",
+  "New version of a document: when a policy changes, the app asks you to read and sign the new version once. Every January the State training video is asked again (free, 30 minutes, nothing to hand in).",
+  "New phone: open the link, tap your name, enter your PIN. Forgot it? The manager can reset it from Staff.",
 ]);
 
 // ---------- 6. good to know ----------
-heading("6. Good to know");
+heading("7. Good to know");
 bullets([
   "Records that the law requires (schedules, hours, signed policies) are kept as long as the law requires, also after someone leaves.",
   "Questions about the app, your hours or a document: ask the manager or an owner.",
