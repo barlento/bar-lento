@@ -2,6 +2,8 @@ const B="http://127.0.0.1:4173";
 (async()=>{
   const j=async(p,o)=>{const r=await fetch(B+p,o);return {s:r.status,j:await r.json()};};
   let r=await j("/api/data"); console.log("1 staff after first GET:",r.j.data.staff.join(", "));
+  console.log("  Kayla (archived in Toast) removed:",!r.j.data.staff.includes("Kayla"),"| her past shifts kept:",Object.keys(r.j.data.weeks).sort().slice(0,1).map(w=>JSON.stringify(r.j.data.weeks[w]).includes("Kayla")),"| ignore has Kayla:",JSON.stringify(r.j.data.toastIgnore).includes("kayla"));
+  const lg=await j("/api/log?limit=5",{headers:{"x-admin-password":"segreta"}}); console.log("  log:",JSON.stringify((lg.j.entries||[]).map(e=>e.changes).flat()).slice(0,300));
   console.log("  toastMap Luca:",r.j.data.toastMap["Luca"],"| Joe B.:",r.j.data.toastMap["Joe B."],"| Old present:",r.j.data.staff.includes("Old"));
   const log=await j("/api/log?limit=5"); console.log("  log:",JSON.stringify(log.j).slice(0,300));
   // manager removes Luca
