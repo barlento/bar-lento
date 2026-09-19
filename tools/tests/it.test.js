@@ -29,7 +29,7 @@ const OUT=require("path").join(__dirname,"..","out"); require("fs").mkdirSync(OU
   await p.reload(); await p.waitForSelector("#adminBar.show"); await p.waitForTimeout(500);
   console.log("after reload lang IT?", /Aperto|Chiuso/.test(await txt("#heroStatus")), "| tabs:", await txt("#weekTabs"));
   // logout → English
-  await p.click("#logoutBtn"); await p.waitForTimeout(500);
+  await p.click("#managerLink"); await p.waitForTimeout(500);
   console.log("after logout: hero", /Open|Closed/.test(await txt("#heroStatus")), "| who popup:", await p.locator("#whoOverlay.show").count(), "| lead:", (await txt("#whoLead")).slice(0,30));
   // re-login → Italian again
   await p.click("#whoManager"); await p.fill("#pwInput","segreta"); await p.click("#loginGo"); await p.waitForSelector("#adminBar.show"); await p.waitForTimeout(400);
