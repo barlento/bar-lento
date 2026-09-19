@@ -4,6 +4,7 @@ const { diffData } = require("../lib/diff");
 const push = require("../lib/push");
 const toast = require("../lib/toast");
 const accounts = require("../lib/accounts");
+const staffsync = require("../lib/staffsync");
 
 function send(res, status, body) {
   res.setHeader("Cache-Control", "no-store");
@@ -16,7 +17,9 @@ module.exports = async (req, res) => {
     if (req.method === "GET") {
       // Lazy delivery: if the manager closed the app without notifying, the next visitor triggers the summary push.
       const flushed = store.hasStorage() ? await push.flushPending(false).catch(() => null) : null;
-      const [doc, confirmations, announcement] = await Promise.all([store.getSchedule(), store.getConfirmations(), store.getAnnouncement().catch(() => null)]);
+      const [doc0, confirmations, announcement] = await Promise.all([store.getSchedule(), store.getConfirmations(), store.getAnnouncement().catch(() => null)]);
+      // New Toast employees appear in Staff by themselves (never throws, never while the manager is editing).
+      const doc = await staffsync.syncFromToast(doc0).then((r) => r.doc).catch(() => doc0);
       return send(res, 200, {
         version: doc.version,
         updatedAt: doc.updatedAt,
@@ -41,12 +44,16 @@ module.exports = async (req, res) => {
       }
 
       const { changes, resetKeys, notable, newWeeks } = diffData(current.data, data);
+      // Someone removed from staff loses their personal access (PIN + devices). Past shifts stay in the archive,
+      // and their Toast employee must not come back at the next sync.
+      const gone = (current.data.staff || []).filter((n) => !data.staff.includes(n));
+      const ignore = new Set(data.toastIgnore || []);
+      gone.forEach((n) => { const g = (current.data.toastMap || {})[n]; if (g) ignore.add(g); });
+      data.toastIgnore = Array.from(ignore);
       const doc = { version: (current.version || 0) + 1, data, updatedAt: new Date().toISOString() };
       await store.saveSchedule(doc);
       await store.removeConfirmations(resetKeys).catch(() => {});
       await store.pruneConfirmations(data).catch(() => {});
-      // Someone removed from staff loses their personal access (PIN + devices). Past shifts stay in the archive.
-      const gone = (current.data.staff || []).filter((n) => !data.staff.includes(n));
       if (gone.length) await accounts.removeAccounts(gone).catch(() => {});
       if (changes.length) {
         await store.appendLog({ at: doc.updatedAt, version: doc.version, changes: changes.slice(0, 200) }).catch(() => {});

@@ -1122,7 +1122,7 @@
       holidayNote:"This day is <b>{h}</b>. You decide whether to open or close.",
       pOpen:"Open · regular hours", pClosedFor:"Closed for {h}", pFullDay:"Full day", pHalfFor:"Half day for {h}", pHalf:"Half day", pHalfSub:"Choose the hours below", pEvent:"Private event", pEventSub:"Bar reserved · shifts still shown", pOther:"Closed — other reason", pOtherSub:"Enter the reason below; the team will see it",
       reasonPh2:"Reason, e.g. Renovation · Staff training · Bad weather", errReason:"Please enter the reason; the team will see it.", errClose:"Closing time must be after opening time.", dayOpenSet:"Day set to open",
-      staffTitle:"Staff", staffLead:"Tap a name for birthday, PIN and documents. Removing a name never deletes past weeks.",
+      staffTitle:"Staff", staffLead:"Tap a name for birthday, PIN and documents. Removing a name never deletes past weeks.", staffLeadToast:"New Toast employees appear here by themselves. Tap a name for birthday, PIN and documents. Removing a name never deletes past weeks.", fromToast:"Added from Toast: {n}", phToast:"Toast",
       newNamePh:"New name", noNames:"No names yet.", nameExists:"That name is already on the list", removeQ:"Remove?", bdaySaved:"Birthday saved for {n}", bdayRemoved:"Birthday removed",
       removeTap:"Tap again to remove {n}{s}. Past weeks are kept.", upcoming1:" and 1 upcoming shift", upcomingN:" and {k} upcoming shifts", removed:"{n} removed{s}. Past shifts kept in the archive.", deleted1:" · 1 upcoming shift deleted", deletedN:" · {k} upcoming shifts deleted",
       historyTitle:"Change history", historyLead:"Every edit made from manager mode, newest first. Confirmation times are included in the CSV export.", loading:"Loading…", historyFail:"Couldn't load the history.", noChanges:"No changes recorded yet.", historyNeedsDb:"History is available once the database is connected.",
@@ -1179,7 +1179,7 @@
       holidayNote:"Questo giorno è <b>{h}</b>. Decidi tu se aprire o chiudere.",
       pOpen:"Aperto · orario normale", pClosedFor:"Chiuso per {h}", pFullDay:"Tutto il giorno", pHalfFor:"Mezza giornata per {h}", pHalf:"Mezza giornata", pHalfSub:"Scegli gli orari qui sotto", pEvent:"Evento privato", pEventSub:"Locale riservato · i turni restano visibili", pOther:"Chiuso — altro motivo", pOtherSub:"Scrivi il motivo qui sotto: il team lo vedrà",
       reasonPh2:"Motivo, es. Lavori · Formazione · Maltempo", errReason:"Scrivi il motivo: il team lo vedrà.", errClose:"L'orario di chiusura deve essere dopo l'apertura.", dayOpenSet:"Giorno impostato su aperto",
-      staffTitle:"Staff", staffLead:"Tocca un nome per compleanno, PIN e documenti. Togliere un nome non cancella mai le settimane passate.",
+      staffTitle:"Staff", staffLead:"Tocca un nome per compleanno, PIN e documenti. Togliere un nome non cancella mai le settimane passate.", staffLeadToast:"I nuovi dipendenti di Toast compaiono qui da soli. Tocca un nome per compleanno, PIN e documenti. Togliere un nome non cancella mai le settimane passate.", fromToast:"Aggiunto da Toast: {n}", phToast:"Toast",
       newNamePh:"Nuovo nome", noNames:"Nessun nome ancora.", nameExists:"Nome già presente", removeQ:"Rimuovi?", bdaySaved:"Compleanno salvato per {n}", bdayRemoved:"Compleanno rimosso",
       removeTap:"Tocca di nuovo per rimuovere {n}{s}. Le settimane passate restano.", upcoming1:" e 1 turno futuro", upcomingN:" e {k} turni futuri", removed:"{n} rimosso/a{s}. I turni passati restano in archivio.", deleted1:" · 1 turno futuro cancellato", deletedN:" · {k} turni futuri cancellati",
       historyTitle:"Cronologia modifiche", historyLead:"Ogni modifica fatta dalla modalità manager, dalla più recente. Le ore di conferma sono nell'esportazione CSV.", loading:"Caricamento…", historyFail:"Impossibile caricare la cronologia.", noChanges:"Nessuna modifica registrata.", historyNeedsDb:"La cronologia è disponibile quando il database è collegato.",
@@ -1391,7 +1391,9 @@
     var j=r.json;
     if(state.saving || state.dirtyTimer){ state.confirmations=j.confirmations||{}; renderDays(); return true; }
     var changedRemotely = silent && state.version && j.version!==state.version;
+    var newStaff=(changedRemotely&&state.admin&&j.data)?(j.data.staff||[]).filter(function(n){return state.data.staff.indexOf(n)===-1;}):[];
     state.version=j.version; state.updatedAt=j.updatedAt; state.data=j.data||{staff:[],weeks:{}};
+    if(newStaff.length){ setTimeout(function(){ toast(t("fromToast",{n:newStaff.join(", ")}),5000); },800); if($("staffOverlay").classList.contains("show")) renderRoster(); }
     if(changedRemotely){ setTimeout(function(){ var u=$("updatedNote"); u.classList.remove("flashnew"); void u.offsetWidth; u.classList.add("flashnew"); toast(t("scheduleUpdated")); },50); }
     state.confirmations=j.confirmations||{}; state.features=j.features||state.features; state.pendingNotify=j.pendingNotify||0; state.announcement=j.announcement||null;
     ensureActiveWeek(); renderAll(); return true;
@@ -1973,6 +1975,7 @@
   }
   function renderRoster(){
     var el=$("rosterList"); if(!state.data.birthdays) state.data.birthdays={}; if(!state.data.toastMap) state.data.toastMap={};
+    $("staffOverlay").querySelector(".lead").textContent=t(state.features.toast?"staffLeadToast":"staffLead");
     el.innerHTML=state.data.staff.length?state.data.staff.map(function(n){
       var st=personStatus(n), b=state.data.birthdays[n]||"";
       return '<button type="button" class="person" data-name="'+h(n)+'"><span class="av" style="background:'+avColor(n)+'">'+h(initials(n))+'</span><span class="nm">'+h(n)+(st.txt?'<small class="'+(st.ok?"ok":"")+'">'+h(st.txt)+'</small>':'')+'</span><span class="bd">'+(b?''+h(bdayShort(b)):'')+'</span><span class="go">›</span></button>';
@@ -1989,6 +1992,7 @@
     $("personLead").textContent=t("personLead");
     var html='<div class="pcard"><div class="ph">'+h(t("phBirthday"))+'</div><div class="pr"><span class="dim">'+(b?h(bdayShort(b)+", "+b.slice(0,4)):h(t("noBirthday")))+'</span><input type="date" value="'+h(b)+'" aria-label="Birthday of '+h(n)+'"></div></div>';
     var accTxt=acc.pin?t("pinSet")+(acc.devices?" · "+t("devicesShort",{k:acc.devices,p:lang==="it"?(acc.devices===1?"o":"i"):(acc.devices===1?"":"s")}):""):t("pinNone");
+    if(acc.toast) html+='<div class="pcard"><div class="ph">'+h(t("phToast"))+'</div><div class="pr"><span>'+h(acc.toast.fullName||"")+'</span><span class="dim" style="font-size:.78rem">'+h(acc.toast.email||"")+'</span></div></div>';
     html+='<div class="pcard"><div class="ph">'+h(t("phAccess"))+'</div><div class="pr"><span class="'+(acc.pin?"ok":"dim")+'">'+h(accTxt)+'</span><button type="button" class="pinbtn reset"'+(acc.pin||acc.devices?"":" disabled")+'>'+h(t("pinReset"))+'</button></div></div>';
     if(rulesActive()||(DOCS.list||[]).length){
       var ra=acc.rules, okR=!!(ra&&rulesActive()&&ra.version===RULES.version); var anyAck=!!ra;

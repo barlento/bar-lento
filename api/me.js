@@ -168,6 +168,10 @@ module.exports = async (req, res) => {
         Object.keys(acks).forEach((n) => { summary[n] = summary[n] || { pin: false, devices: 0 }; summary[n].rules = { version: acks[n].version, at: acks[n].at, email: acks[n].email, fullName: acks[n].fullName || null, emailedAt: acks[n].emailedAt || null, history: acks[n].history || [] }; });
         DOC_IDS.forEach((id, i) => { Object.keys(perDoc[i]).forEach((n) => { const a = perDoc[i][n]; summary[n] = summary[n] || { pin: false, devices: 0 }; summary[n].docs = summary[n].docs || {}; summary[n].docs[id] = { version: a.version, at: a.at, email: a.email, emailedAt: a.emailedAt || null }; }); });
         // Acknowledgments of people no longer on staff (legal archive), for the manager's records.
+        if (toast.enabled()) { // Toast identity (full name · email) of every linked person
+          try { const emps = await toast.employees(true); const map = toast.autoMap(doc.data.staff, doc.data.toastMap, emps);
+            doc.data.staff.forEach((n) => { const e = map[n] && emps.find((x) => x.guid === map[n]); if (e) { summary[n] = summary[n] || { pin: false, devices: 0 }; summary[n].toast = { fullName: e.name, email: e.email }; } }); } catch (e) {}
+        }
         const formerAcks = Object.keys(former).map((k) => Object.assign({ key: k }, former[k]));
         const formerDocAcks = Object.keys(formerDocs).map((k) => Object.assign({ key: k }, formerDocs[k]));
         return send(res, 200, { accounts: summary, formerAcks, formerDocAcks, rulesVersion: RULES.version || null, docsVersions: docVersions(), mail: mail.enabled() });
