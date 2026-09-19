@@ -392,11 +392,11 @@ var DOCS = {
     },
     {
       "id": "pto",
-      "version": "2026-09-18",
+      "version": "2026-09-19",
       "kind": "policy",
       "title": "Protected Time Off (Safe and Sick Leave) Policy",
       "short": "Sick leave policy",
-      "subtitle": "New York City Earned Safe and Sick Time Act (as amended February 22, 2026) · New York State Paid Sick Leave Law (Labor Law §196-b) · Paid Prenatal Leave",
+      "subtitle": "New York City Earned Safe and Sick Time Act (as amended February 22, 2026) · New York State Paid Sick Leave Law (Labor Law §196-b)",
       "intro": "This policy explains the time off the law guarantees you when you are sick, need to care for someone, or need to deal with a safety issue, and how to use it at Bar Lento. Bar Lento has between 5 and 99 employees, so the amounts below apply. The law is a minimum: nothing in this policy takes away any right the law gives you, and where this policy and the law differ, the law prevails. Bar Lento’s calendar year for this policy is January 1 – December 31. Ask an Owner or the Manager if anything is unclear, or if you would prefer it explained in Italian.",
       "sections": [
         {
@@ -405,9 +405,8 @@ var DOCS = {
             [
               "Paid protected time off: you earn 1 hour of paid protected time off for every 30 hours you work, from your first day, up to 40 hours per calendar year (this is also your New York State paid sick leave: the two laws overlap, and you get the better of the two). You can use it as soon as you have earned it: there is no waiting period, probation period or blackout period.",
               "Unpaid protected time off: 32 hours are available immediately, on your first day and again on January 1 of every year. Use them when you have not yet earned enough paid hours, or after your paid hours are used up. Unused unpaid hours do not carry over to the next year.",
-              "Paid prenatal leave: a separate bank of 20 hours of paid leave per 52-week period for health care during your own pregnancy (exams, tests, procedures, monitoring, consultations, fertility treatment, end-of-pregnancy care). The 52 weeks start the first time you use it. This is in addition to the hours above, and you choose which bank to use for a prenatal appointment.",
               "Carryover: up to 40 hours of unused earned paid protected time off carry over to the next calendar year. You can still use at most 40 hours of paid protected time off per calendar year.",
-              "Accrual counts every hour you work, rounded to the nearest 15 minutes, and appears on every pay statement (see section 6)."
+              "Accrual counts every hour you work and appears on every pay statement (see section 6)."
             ]
           ]
         },
@@ -424,15 +423,15 @@ var DOCS = {
               "Staying home when a public official closes Bar Lento, or your child’s school or child care, because of a public health emergency, extreme weather or another public disaster."
             ],
             "“Family member” is broad: your child (biological, adopted, foster, legal ward, or a child you care for as a parent), spouse, registered domestic partner, parent (including step, foster, adoptive, legal guardian, or someone who raised you), the child or parent of your spouse or partner, grandchild, grandparent, sibling (including half, adopted or step), anyone else related to you by blood, and anyone whose close relationship with you is the equivalent of family.",
-            "Paid prenatal leave is only for health care during your own pregnancy. To accompany a partner to a prenatal appointment, use protected time off."
+            "Prenatal appointments for your own pregnancy, or to accompany a partner, are a health reason: use protected time off (see also section 10 for New York State paid prenatal leave)."
           ]
         },
         {
           "h": "3. How to tell us",
           "blocks": [
             [
-              "Planned absence (you know 7 or more days ahead: a doctor’s appointment, a court date, a school closure announced in advance): tell us as early as you can — at least 7 days before when you know that far ahead — by email to all the contacts at the end of this policy, or by text to the work phone number posted in the staff area. Say how many hours or which shifts you need. Bar Lento cannot ask for more than 7 days’ notice.",
-              "Unplanned absence (you wake up sick, your child’s school closes suddenly): tell us as soon as you reasonably can, before your shift if possible, by text or call to the work phone number, or by email. No advance notice is required for an unplanned need.",
+              "Planned absence (you know 7 or more days ahead: a doctor’s appointment, a court date, a school closure announced in advance): tell us as early as you can — at least 7 days before when you know that far ahead — by email to all the contacts at the end of this policy, or by text or call to the Manager. Say how many hours or which shifts you need. Bar Lento cannot ask for more than 7 days’ notice.",
+              "Unplanned absence (you wake up sick, your child’s school closes suddenly): tell us as soon as you reasonably can, before your shift if possible, by text or call to the Manager, or by email to all the contacts at the end. No advance notice is required for an unplanned need.",
               "You never have to tell us the reason: saying “protected time off” or “sick” is enough. You never have to find your own replacement, and you never have to make up the hours.",
               "Bar Lento may ask you to confirm in writing (an email or a text is enough) that you used protected time off for a purpose allowed by law, without stating which one."
             ]
@@ -454,9 +453,9 @@ var DOCS = {
           "h": "5. How you are paid, and in what increments",
           "blocks": [
             [
-              "Paid protected time off and paid prenatal leave are paid at your regular hourly wage at the time you take them, and never less than the full New York City minimum wage ($17.00 per hour in 2026), without any tip credit. Overtime rates do not apply, and tips you would have earned are not owed for hours not worked.",
+              "Paid protected time off is paid at your regular hourly wage at the time you take them, and never less than the full New York City minimum wage ($17.00 per hour in 2026), without any tip credit. Overtime rates do not apply, and tips you would have earned are not owed for hours not worked.",
               "It is paid on your regular pay date through Toast Payroll and shown on your pay statement.",
-              "You can use protected time off for a whole shift or for any part of a shift: Bar Lento does not require a minimum amount of time (payroll records it to the nearest 15 minutes). The same applies to paid prenatal leave.",
+              "You can use protected time off for a whole shift or for part of a shift: Bar Lento does not require a minimum amount of time.",
               "If you leave Bar Lento, unused protected time off is not paid out (the law does not require it). If you are rehired within 6 months, your previous balance is restored and available immediately."
             ]
           ]
@@ -466,7 +465,6 @@ var DOCS = {
           "blocks": [
             [
               "Every pay statement shows: the protected time off you earned during the pay period; the paid and unpaid protected time off you used during the pay period; the unpaid hours still available this calendar year; and the earned paid hours still available this calendar year.",
-              "In any pay period in which you use paid prenatal leave, it also shows the prenatal leave used and the hours left in your 52-week period.",
               "If a figure looks wrong, tell the Manager or an Owner: we check the payroll record with you and correct any error in the next payroll."
             ]
           ]
@@ -475,7 +473,7 @@ var DOCS = {
           "h": "7. No retaliation, and where to get help",
           "blocks": [
             [
-              "It is illegal to punish, threaten, discipline, reduce the hours of, or fire anyone for requesting or using protected time off or paid prenatal leave, or for reporting a violation. Using this leave is never counted as an attendance problem at Bar Lento, and it is never a factor in scheduling, promotion or discipline.",
+              "It is illegal to punish, threaten, discipline, reduce the hours of, or fire anyone for requesting or using protected time off, or for reporting a violation. Using this leave is never counted as an attendance problem at Bar Lento, and it is never a factor in scheduling, promotion or discipline.",
               "You have these rights regardless of your immigration status.",
               "If you believe your rights were not respected, talk to an Owner. You can also contact the NYC Department of Consumer and Worker Protection: nyc.gov/workers, or call 311 and ask for “Protected Time Off” (you may also leave an anonymous tip). For New York State paid sick leave: dol.ny.gov/paid-sick-leave or 1-888-469-7365."
             ]
@@ -490,13 +488,13 @@ var DOCS = {
         {
           "h": "9. Notice of Employee Rights (New York City)",
           "blocks": [
-            "The City’s official “Notice of Employee Rights: Protected Time Off” (dated February 22, 2026) is linked below in English and in Italian, and is posted in the staff area. On Bar Lento’s Notice the calendar year is January 1 – December 31. By acknowledging this policy you also confirm that you received the Notice; Bar Lento keeps the date and your confirmation, as the law requires. If your primary language is neither English nor Italian, ask an Owner: the City publishes the Notice in many other languages."
+            "The City’s official “Notice of Employee Rights: Protected Time Off” (dated February 22, 2026) is linked below in English and in Italian, and is available at any time from Documents in the app. On Bar Lento’s Notice the calendar year is January 1 – December 31. By acknowledging this policy you also confirm that you received the Notice; Bar Lento keeps the date and your confirmation, as the law requires. If your primary language is neither English nor Italian, ask an Owner: the City publishes the Notice in many other languages."
           ]
         },
         {
           "h": "10. Other laws that may give you more time off",
           "blocks": [
-            "New York Paid Family Leave (paid weeks to bond with a new child, care for a seriously ill family member, or handle a family member’s military deployment, paid through insurance), New York disability benefits and workers’ compensation, and job-protected time for jury duty, voting, blood donation, bone marrow donation and military service. These are separate from protected time off. Ask an Owner: we help you with the forms."
+            "New York State paid prenatal leave: 20 hours of paid leave per year for health care during your own pregnancy (exams, tests, procedures, consultations, fertility treatment), separate from protected time off, as provided by New York Labor Law §196-b. Tell an Owner when you need it: we arrange it with you and through payroll. New York Paid Family Leave (paid weeks to bond with a new child, care for a seriously ill family member, or handle a family member’s military deployment, paid through insurance), New York disability benefits and workers’ compensation, and job-protected time for jury duty, voting, blood donation, bone marrow donation and military service. These are separate from protected time off. Ask an Owner: we help you with the forms."
           ]
         }
       ],
