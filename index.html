@@ -440,7 +440,7 @@
   .dept svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
   .who-name .dept{margin-left:auto}
   .roster .person .nm .dept{vertical-align:-3px;margin-left:6px}
-  .dept-tiles{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px}
+  .dept-tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
   .dept-tiles button{display:flex;align-items:center;justify-content:center;gap:8px;padding:10px;border-radius:12px;border:1px solid var(--border);background:var(--surface);font:inherit;font-weight:700;color:inherit;cursor:pointer}
   .dept-tiles button.sel{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
   .pcard{border:1px solid var(--border);border-radius:12px;background:var(--surface);padding:10px 12px;margin-bottom:8px}
@@ -551,7 +551,9 @@
   .btn.boss::before{content:"";position:absolute;left:6%;right:6%;top:2px;height:45%;border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,.42),rgba(255,255,255,.04));pointer-events:none}
   .btn.boss::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.45) 50%,transparent 70%);transform:translateX(-120%);animation:btnshine 5s ease-in-out infinite;pointer-events:none}
   .btn.boss:hover{filter:brightness(1.05)}
-  #whoManager{flex:1;padding:12px 16px;font-size:.95rem;letter-spacing:.01em}
+  .who-logins{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:2px 0 14px}
+  .who-logins .btn{padding:12px 10px;font-size:.95rem;letter-spacing:.01em;white-space:nowrap;width:100%}
+  .who-logins .btn[style*="display:none"]+.btn,.who-logins .btn:only-child{grid-column:1/-1}
   .bellbtn:not(.on){animation:nudge 8s ease-in-out infinite}
   @keyframes nudge{0%,90%,100%{transform:rotate(0)}92%{transform:rotate(-10deg)}94%{transform:rotate(9deg)}96%{transform:rotate(-6deg)}98%{transform:rotate(4deg)}}
 
@@ -1089,9 +1091,10 @@
 <div class="overlay" id="whoOverlay">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="whoTitle">
     <h2 id="whoTitle">Who are you?</h2>
+    <div class="who-logins"><button class="btn primary boss" id="whoManager" type="button">Manager login</button><button class="btn primary boss" id="whoChef" type="button" style="display:none">Chef login</button></div>
     <p class="lead" id="whoLead">Tap your name to open the schedule, your shifts and your hours. The first time you'll create a 4-digit PIN — only you know it.</p>
     <div class="who-grid" id="whoGrid"></div>
-    <div class="actions"><button class="btn primary boss" id="whoManager" type="button">Manager login</button><button class="btn primary boss" id="whoChef" type="button" style="display:none">Chef login</button><span class="spacer"></span><button class="btn" id="whoCancel" type="button" style="display:none">Cancel</button></div>
+    <div class="actions" id="whoActions" style="display:none"><span class="spacer"></span><button class="btn" id="whoCancel" type="button" style="display:none">Cancel</button></div>
   </div>
 </div>
 
@@ -1222,7 +1225,7 @@
       rosterDocs:"Documents {k}/{n}", copiesSent:"Signed copies sent to {e}: {k}", sendCopies:"Re-send copies", linksHead:"Links", contactsHead:"Contacts (write to all)",
       rulesOk:"Rules ✓ {d} · {e}", rulesNo:"Rules not acknowledged yet",
       onlineNow:"Online now", lastSeen:"Last seen {t}", neverOnline:"Not seen yet", onlineCount:"{k} of {n} online now", justNow:"just now", minAgo:"{m} min ago", hAgo:"{h} h ago", dAgo:"{d} d ago",
-      phDept:"Department", deptFloor:"Floor", deptKitchen:"Kitchen", deptManagement:"Management", deptFromToast:"From Toast: {j}", deptSet:"{n} is now in {d}.", deptManualNote:"Chosen by hand: the Toast job no longer changes it.", rulesLink:"Print documents", stNotIn:"Hasn't signed in yet", stLine:"PIN ✓ · Rules {r} · Docs {k}/{n}", stLineNoDocs:"PIN ✓ · Rules {r}", phBirthday:"Birthday", phAccess:"Access", phDocs:"Documents", phWeek:"Shifts and hours", viewWeekBtn:"View week", removeName:"Remove {n}", noBirthday:"not set", devicesShort:"{k} device{p}", personLead:"Birthday, personal PIN and signed documents.", trainingRow:"Training {y}", copyNotSent:"copy not emailed yet", sendCopy:"Send signed copy by email", copySent:"Signed copy sent to {e}", mailFail:"Could not send the email ({r})", mailOff:"Email isn't configured yet on the server (Vercel settings).",
+      phDept:"Department", deptFloor:"Floor", deptKitchen:"Kitchen", deptManagement:"Management", deptOwner:"Owner", deptTest:"Test account", deptFromToast:"From Toast: {j}", deptSet:"{n} is now in {d}.", deptManualNote:"Chosen by hand: the Toast job no longer changes it.", rulesLink:"Print documents", stNotIn:"Hasn't signed in yet", stLine:"PIN ✓ · Rules {r} · Docs {k}/{n}", stLineNoDocs:"PIN ✓ · Rules {r}", phBirthday:"Birthday", phAccess:"Access", phDocs:"Documents", phWeek:"Shifts and hours", viewWeekBtn:"View week", removeName:"Remove {n}", noBirthday:"not set", devicesShort:"{k} device{p}", personLead:"Birthday, personal PIN and signed documents.", trainingRow:"Training {y}", copyNotSent:"copy not emailed yet", sendCopy:"Send signed copy by email", copySent:"Signed copy sent to {e}", mailFail:"Could not send the email ({r})", mailOff:"Email isn't configured yet on the server (Vercel settings).",
       pinSet:"PIN set", pinDevices:"{k} device{p}", pinNone:"No PIN yet", pinReset:"Reset PIN", pinResetSure:"Tap again to reset", pinResetDone:"PIN reset for {n} — they'll create a new one next time", pinResetFail:"Couldn't reset the PIN. Try again.", viewWeek:"View {n}'s week",
       toastPick:"— Toast employee —", toastLoading:"Loading Toast…", toastLinked:"{n} linked to Toast", toastUnlinked:"{n} unlinked from Toast", notified:"Team notified ({k} phone{p})", notifiedNone:"Changes noted — nobody has notifications turned on yet.", notifyFail:"Couldn't send the notification. It will go out automatically later.", markedClosed:"{h} ✓"
     },
@@ -1282,7 +1285,7 @@
       agreeTrain:"Fatto", sign:"Firma", agree:"Accetto", thanksDoc:"Documenti firmati. Copia inviata a {e}.", thanksDocNoMail:"Documenti firmati.", thanksTrain:"Formazione registrata. Conferma inviata a {e}.", thanksTrainNoMail:"Formazione registrata.",
       rosterDocs:"Documenti {k}/{n}", copiesSent:"Copie firmate inviate a {e}: {k}", sendCopies:"Reinvia copie", linksHead:"Link", contactsHead:"Contatti (scrivi a tutti)",
       onlineNow:"Online adesso", lastSeen:"Visto {t}", neverOnline:"Mai visto finora", onlineCount:"{k} su {n} online adesso", justNow:"adesso", minAgo:"{m} min fa", hAgo:"{h} h fa", dAgo:"{d} g fa",
-      phDept:"Reparto", deptFloor:"Sala", deptKitchen:"Cucina", deptManagement:"Direzione", deptFromToast:"Da Toast: {j}", deptSet:"{n} ora è in {d}.", deptManualNote:"Scelto a mano: il ruolo su Toast non lo cambia più.",
+      phDept:"Reparto", deptFloor:"Sala", deptKitchen:"Cucina", deptManagement:"Direzione", deptOwner:"Titolare", deptTest:"Account di prova", deptFromToast:"Da Toast: {j}", deptSet:"{n} ora è in {d}.", deptManualNote:"Scelto a mano: il ruolo su Toast non lo cambia più.",
       rulesOk:"Regolamento ✓ {d} · {e}", rulesNo:"Regolamento non ancora firmato", rulesLink:"Stampa documenti", stNotIn:"Non è ancora entrato/a", stLine:"PIN ✓ · Regolamento {r} · Documenti {k}/{n}", stLineNoDocs:"PIN ✓ · Regolamento {r}", phBirthday:"Compleanno", phAccess:"Accesso", phDocs:"Documenti", phWeek:"Turni e ore", viewWeekBtn:"Vedi settimana", removeName:"Rimuovi {n}", noBirthday:"non impostato", devicesShort:"{k} dispositiv{p}", personLead:"Compleanno, PIN personale e documenti firmati.", trainingRow:"Formazione {y}", copyNotSent:"copia non ancora inviata", sendCopy:"Invia copia firmata via email", copySent:"Copia firmata inviata a {e}", mailFail:"Invio email non riuscito ({r})", mailOff:"Email non ancora configurata sul server (impostazioni Vercel).",
       pinSet:"PIN creato", pinDevices:"{k} dispositiv{p}", pinNone:"Nessun PIN", pinReset:"Azzera PIN", pinResetSure:"Tocca di nuovo per azzerare", pinResetDone:"PIN azzerato per {n} — ne creerà uno nuovo al prossimo accesso", pinResetFail:"Impossibile azzerare il PIN. Riprova.", viewWeek:"Vedi la settimana di {n}",
       toastPick:"— dipendente Toast —", toastLoading:"Carico Toast…", toastLinked:"{n} collegato/a a Toast", toastUnlinked:"{n} scollegato/a da Toast", notified:"Team avvisato ({k} telefon{p})", notifiedNone:"Modifiche registrate — nessuno ha ancora attivato le notifiche.", notifyFail:"Invio non riuscito. Partirà automaticamente più tardi.", markedClosed:"{h} ✓"
@@ -1696,12 +1699,12 @@
   function initials(n){ return String(n||"?").split(/\s+/).slice(0,2).map(function(w){return w.charAt(0).toUpperCase();}).join(""); }
   var AV_COLORS=["#1D1D1F"]; // one neutral tone for every avatar: no colour coding of people
   // Department icons (floor = wine glass, kitchen = chef hat): one grey line icon, no emoji.
-  var DEPT_LABEL={floor:"deptFloor",kitchen:"deptKitchen",management:"deptManagement"};
-  var DEPT_SVG={management:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 12h18"/></svg>',floor:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10l-1 7a4 4 0 0 1-8 0L7 3z"/><path d="M12 14v6M8 21h8"/></svg>',kitchen:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 20V12a5 5 0 0 1-1-9.9A4 4 0 0 1 12 3a4 4 0 0 1 6 -.9A5 5 0 0 1 17 12v8z"/><path d="M7 16h10"/></svg>'};
+  var DEPT_LABEL={floor:"deptFloor",kitchen:"deptKitchen",management:"deptManagement",owner:"deptOwner",test:"deptTest"};
+  var DEPT_SVG={owner:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5L3 8z"/><path d="M5 19h14"/></svg>',test:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>',management:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 12h18"/></svg>',floor:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10l-1 7a4 4 0 0 1-8 0L7 3z"/><path d="M12 14v6M8 21h8"/></svg>',kitchen:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 20V12a5 5 0 0 1-1-9.9A4 4 0 0 1 12 3a4 4 0 0 1 6 -.9A5 5 0 0 1 17 12v8z"/><path d="M7 16h10"/></svg>'};
   function isChef(){ return !!state.admin&&state.role==="chef"; }
   function kitchenNames(){ var d=state.data.dept||{}; return (state.data.staff||[]).filter(function(n){return d[n]==="kitchen";}); }
   function canSee(n){ return !isChef()||kitchenNames().indexOf(n)!==-1; } // the chef sees kitchen people only
-  function deptOf(n){ var d=(state.data.dept||{})[n]; return DEPT_SVG[d]?d:"floor"; }
+  function deptOf(n){ if(/^test\b/i.test(String(n||""))) return "test"; var d=(state.data.dept||{})[n]; return DEPT_SVG[d]?d:"floor"; } // test accounts always get the gear
   function deptIcon(n){ var d=deptOf(n); return '<span class="dept" title="'+h(t(DEPT_LABEL[d]))+'" aria-label="'+h(t(DEPT_LABEL[d]))+'">'+DEPT_SVG[d]+'</span>'; }
   function agoText(iso){ if(!iso) return ""; var m=Math.round((Date.now()-Date.parse(iso))/60000); if(m<1) return t("justNow"); if(m<60) return t("minAgo",{m:m}); if(m<48*60) return t("hAgo",{h:Math.round(m/60)}); return t("dAgo",{d:Math.round(m/1440)}); }
   function avColor(n){ var x=0; for(var i=0;i<n.length;i++) x=(x*31+n.charCodeAt(i))>>>0; return AV_COLORS[x%AV_COLORS.length]; }
@@ -2104,7 +2107,7 @@
     var accTxt=acc.pin?t("pinSet")+(acc.devices?" · "+t("devicesShort",{k:acc.devices,p:lang==="it"?(acc.devices===1?"o":"i"):(acc.devices===1?"":"s")}):""):t("pinNone");
     if(acc.toast) html+='<div class="pcard"><div class="ph">'+h(t("phToast"))+'</div><div class="pr"><span>'+h(acc.toast.fullName||"")+'</span><span class="dim" style="font-size:.78rem">'+h(acc.toast.email||"")+'</span></div></div>';
     { var d=deptOf(n); var jobs=acc.toast&&acc.toast.jobs&&acc.toast.jobs.length?t("deptFromToast",{j:acc.toast.jobs.join(", ")}):"";
-      html+='<div class="pcard"><div class="ph">'+h(t("phDept"))+'</div>'+(jobs?'<div class="pr"><span class="dim" style="font-size:.78rem">'+h(jobs)+'</span></div>':'')+(isChef()?'<div class="pr"><span class="dept">'+DEPT_SVG[d]+'</span><span>'+h(t(DEPT_LABEL[d]))+'</span></div>':'<div class="dept-tiles">'+["floor","kitchen","management"].map(function(k){ return '<button type="button" class="dept-pick'+(d===k?" sel":"")+'" data-d="'+k+'"><span class="dept">'+DEPT_SVG[k]+'</span>'+h(t(DEPT_LABEL[k]))+'</button>'; }).join("")+'</div>'+((state.data.deptManual||[]).indexOf(n)!==-1?'<div class="hint" style="margin-top:6px">'+h(t("deptManualNote"))+'</div>':''))+'</div>'; }
+      html+='<div class="pcard"><div class="ph">'+h(t("phDept"))+'</div>'+(jobs?'<div class="pr"><span class="dim" style="font-size:.78rem">'+h(jobs)+'</span></div>':'')+(isChef()?'<div class="pr"><span class="dept">'+DEPT_SVG[d]+'</span><span>'+h(t(DEPT_LABEL[d]))+'</span></div>':'<div class="dept-tiles">'+["floor","kitchen","management","owner"].map(function(k){ return '<button type="button" class="dept-pick'+(d===k?" sel":"")+'" data-d="'+k+'"><span class="dept">'+DEPT_SVG[k]+'</span>'+h(t(DEPT_LABEL[k]))+'</button>'; }).join("")+'</div>'+((state.data.deptManual||[]).indexOf(n)!==-1?'<div class="hint" style="margin-top:6px">'+h(t("deptManualNote"))+'</div>':''))+'</div>'; }
     html+='<div class="pcard"><div class="ph">'+h(t("phAccess"))+'</div><div class="pr"><span class="'+(acc.pin?"ok":"dim")+'">'+h(accTxt)+'</span><button type="button" class="pinbtn reset"'+(acc.pin||acc.devices?"":" disabled")+'>'+h(t("pinReset"))+'</button></div></div>';
     var explicit=(state.data.appClock||[]).indexOf(n)!==-1; var salaried=!!(acc.toast&&acc.toast.salaried); var ac=!acc.toast||explicit||salaried; // not in Toast or salaried in Toast → app clock automatically; hourly Toast people → only if the manager chose it
     {
