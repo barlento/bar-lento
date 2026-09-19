@@ -23,10 +23,12 @@ module.exports = async (req, res) => {
       const [doc0, confirmations, announcement] = await Promise.all([store.getSchedule(), store.getConfirmations(), store.getAnnouncement().catch(() => null)]);
       // New Toast employees appear in Staff by themselves (never throws, never while the manager is editing).
       const doc = await staffsync.syncFromToast(doc0).then((r) => r.doc).catch(() => doc0);
+      // Past weeks follow Toast by themselves (real clock-ins replace the plan; last 8 weeks, every 6 h).
+      const doc1 = await backfill.auto(doc, doc0.updatedAt).catch(() => doc);
       return send(res, 200, {
-        version: doc.version,
-        updatedAt: doc.updatedAt,
-        data: doc.data,
+        version: doc1.version,
+        updatedAt: doc1.updatedAt,
+        data: doc1.data,
         confirmations,
         announcement,
         pendingNotify: flushed && flushed.pending ? flushed.pending : 0,
@@ -45,7 +47,7 @@ module.exports = async (req, res) => {
         const r = await backfill.backfillFromToast(await store.getSchedule(), from);
         if (r.error) return send(res, 503, { error: r.error });
         const confirmations = await store.getConfirmations();
-        return send(res, 200, { ok: true, added: r.added, weeks: r.weeks, seen: r.seen, skippedOpen: r.skippedOpen, unknown: r.unknown, version: r.doc.version, updatedAt: r.doc.updatedAt, data: r.doc.data, confirmations });
+        return send(res, 200, { ok: true, clockIns: r.clockIns, added: r.added, replaced: r.replaced, changed: r.changed || [], weeks: r.weeks, seen: r.seen, skippedOpen: r.skippedOpen, unknown: r.unknown, from: r.from, to: r.to, firstIn: r.firstIn, lastIn: r.lastIn, version: r.doc.version, updatedAt: r.doc.updatedAt, data: r.doc.data, confirmations });
       }
       const data = store.normalizeData(body.data || {});
       const current = await store.getSchedule();

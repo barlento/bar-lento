@@ -8,7 +8,7 @@ export NODE_PATH="${NODE_PATH:-/opt/node22/lib/node_modules}"
 node devserver.js > out.devserver.log 2>&1 &
 DEV=$!; sleep 2
 status=0
-for t in ui docs rules mail it punch sync; do
+for t in ui docs rules mail it punch sync backfill; do
   echo "=== $t"
   if ! timeout 300 node "tests/$t.test.js" 2>&1 | grep -v 'Failed to load resource\|fonts.googleapis' | tail -3; then status=1; fi
 done
