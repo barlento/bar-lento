@@ -6,6 +6,7 @@ const toast = require("../lib/toast");
 const accounts = require("../lib/accounts");
 const staffsync = require("../lib/staffsync");
 const punch = require("../lib/punch");
+const former = require("../lib/former");
 
 function send(res, status, body) {
   res.setHeader("Cache-Control", "no-store");
@@ -56,7 +57,10 @@ module.exports = async (req, res) => {
       await store.saveSchedule(doc);
       await store.removeConfirmations(resetKeys).catch(() => {});
       await store.pruneConfirmations(data).catch(() => {});
-      if (gone.length) { await accounts.removeAccounts(gone).catch(() => {}); await punch.archive(gone).catch(() => {}); }
+      if (gone.length) {
+        for (const n of gone) await former.note(n, { guid: (current.data.toastMap || {})[n] || null, by: "manager" }).catch(() => {});
+        await accounts.removeAccounts(gone).catch(() => {}); await punch.archive(gone).catch(() => {});
+      }
       if (changes.length) {
         await store.appendLog({ at: doc.updatedAt, version: doc.version, changes: changes.slice(0, 200) }).catch(() => {});
         // Only what matters to employees accumulates for ONE summary push later

@@ -4,6 +4,7 @@ const accounts = require("../lib/accounts");
 const toast = require("../lib/toast");
 const staffsync = require("../lib/staffsync");
 const punch = require("../lib/punch");
+const former = require("../lib/former");
 const crypto = require("crypto");
 const RULES = require("../rules.js");
 const DOCS = require("../documents.js");
@@ -169,7 +170,7 @@ module.exports = async (req, res) => {
         // Opening Staff = fresh from Toast right now (new employees appear at once, not after the next 10-minute check).
         let synced = [];
         try { const r = await staffsync.syncFromToast(doc, { force: true }); doc = r.doc; synced = r.added.map((a) => a.name); } catch (e) {}
-        const [summary, acks, former, formerDocs, ...perDoc] = await Promise.all([accounts.summary(), accounts.allRulesAck().catch(() => ({})), accounts.allRulesAckArchive().catch(() => ({})), accounts.allDocAckArchive().catch(() => ({}))].concat(DOC_IDS.map((id) => accounts.allDocAck(id).catch(() => ({})))));
+        const [summary, acks, former0, formerDocs, ...perDoc] = await Promise.all([accounts.summary(), accounts.allRulesAck().catch(() => ({})), accounts.allRulesAckArchive().catch(() => ({})), accounts.allDocAckArchive().catch(() => ({}))].concat(DOC_IDS.map((id) => accounts.allDocAck(id).catch(() => ({})))));
         Object.keys(acks).forEach((n) => { summary[n] = summary[n] || { pin: false, devices: 0 }; summary[n].rules = { version: acks[n].version, at: acks[n].at, email: acks[n].email, fullName: acks[n].fullName || null, emailedAt: acks[n].emailedAt || null, history: acks[n].history || [] }; });
         DOC_IDS.forEach((id, i) => { Object.keys(perDoc[i]).forEach((n) => { const a = perDoc[i][n]; summary[n] = summary[n] || { pin: false, devices: 0 }; summary[n].docs = summary[n].docs || {}; summary[n].docs[id] = { version: a.version, at: a.at, email: a.email, emailedAt: a.emailedAt || null }; }); });
         // Acknowledgments of people no longer on staff (legal archive), for the manager's records.
@@ -183,9 +184,10 @@ module.exports = async (req, res) => {
             toastReport = { active: active.length, archived: emps.length - active.length, missing, synced };
           } catch (e) { toastReport = { error: String(e && e.message || e).slice(0, 120) }; }
         }
-        const formerAcks = Object.keys(former).map((k) => Object.assign({ key: k }, former[k]));
+        const formerAcks = Object.keys(former0).map((k) => Object.assign({ key: k }, former0[k]));
         const formerDocAcks = Object.keys(formerDocs).map((k) => Object.assign({ key: k }, formerDocs[k]));
-        return send(res, 200, { accounts: summary, formerAcks, formerDocAcks, rulesVersion: RULES.version || null, docsVersions: docVersions(), mail: mail.enabled(), toastReport, version: doc.version });
+        const formerStaff = (await former.all().catch(() => [])).filter((r) => !doc.data.staff.includes(r.name)).map((r) => ({ name: r.name, fullName: r.fullName || null, removedAt: r.removedAt, by: r.by || null }));
+        return send(res, 200, { accounts: summary, formerAcks, formerDocAcks, rulesVersion: RULES.version || null, docsVersions: docVersions(), mail: mail.enabled(), toastReport, formerStaff, version: doc.version });
       }
       // Who is on this device? (also used by "hours" below)
       let name = await accounts.whoIs(tokenFrom(req), doc.data.staff);
