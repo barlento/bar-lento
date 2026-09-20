@@ -1788,7 +1788,7 @@
     $("tcPrev").disabled=date<=toISO(addDays(fromISO(today),-31));
     var data=tc.cache[date]; var list=$("tcList"), sum=$("tcSum");
     if(!data){ list.innerHTML='<div class="tc-empty">'+t("loadingWord")+'</div>'; sum.innerHTML=""; $("tcUpdated").textContent=""; return; }
-    var now=Date.now(); var entries=data.entries.filter(function(e){return canSee(e.name);});
+    var now=Date.now(); var entries=data.entries.slice(); // the Time clock shows EVERYONE, floor and kitchen: who is on shift and when they clocked (owner's rule 2026-09-20)
     var onNow=entries.filter(function(e){return !e.out;}).length;
     var totalMs=entries.reduce(function(a,e){ return a+((e.out?Date.parse(e.out):now)-Date.parse(e.in)); },0);
     var people=Object.keys(entries.reduce(function(m,e){m[e.name]=1;return m;},{})).length;
