@@ -51,9 +51,15 @@ async function pinLogin(p,name,pin){ await p.goto(B+"/?v=r"+Math.random()); awai
   r=await j("/api/data"); const dm=JSON.parse(JSON.stringify(r.j.data)); dm.dept.Joe="management"; dm.deptManual=(dm.deptManual||[]).concat(["Joe"]);
   r=await j("/api/data",{method:"POST",headers:{"Content-Type":"application/json","x-staff-token":mtok},body:JSON.stringify({version:(await j("/api/data")).j.version,data:dm})}); console.log("19 Marta promotes Joe to Management:",r.s,r.j&&r.j.error); if(r.s!==403) errors.push("manager could promote to management");
   const o=await (await b.newContext({viewport:{width:1200,height:900}})).newPage(); o.on("pageerror",e=>errors.push("owner pageerror: "+e.message));
-  const otok=await pinLogin(o,"Sierrah","7777");
+  const otok=await pinLogin(o,"Joe B.","8080");
   const ou=await o.evaluate(()=>({admin:document.body.classList.contains("admin"), owner:document.body.classList.contains("owner"), mode:document.querySelector("#adminBar [data-t=adminMode]").textContent}));
-  console.log("20 Sierrah (Owner) after her PIN:",ou); if(!ou.admin||!ou.owner||!/Owner mode/.test(ou.mode)) errors.push("owner mode after PIN wrong");
+  console.log("20 Joe B. (Owner) after his PIN:",ou); if(!ou.admin||!ou.owner||!/Owner mode/.test(ou.mode)) errors.push("owner mode after PIN wrong");
+  // the owner signs nothing: no rules/documents popup, no Documents button in My week, roster line = PIN only
+  await o.evaluate(()=>document.getElementById("meOpenBtn").click()); await o.waitForSelector("#meOverlay.show"); await o.waitForTimeout(400);
+  const ox=await o.evaluate(()=>({rulesShown:document.getElementById("rulesOverlay").classList.contains("show"), docsBtn:getComputedStyle(document.getElementById("meRules")).display}));
+  await o.evaluate(()=>{document.querySelectorAll(".overlay.show").forEach(x=>x.classList.remove("show"))}); await o.click("#staffBtn"); await o.waitForSelector("#staffOverlay.show"); await o.waitForTimeout(900);
+  const oline=await o.evaluate(()=>document.querySelector('.person[data-name="Joe B."] small')?.textContent||""); await o.evaluate(()=>{document.querySelectorAll(".overlay.show").forEach(x=>x.classList.remove("show"))});
+  console.log("20b owner exempt from documents:",ox,"| roster line:",oline); if(ox.rulesShown||ox.docsBtn!=="none"||/Rules|Docs/.test(oline)) errors.push("owner not exempt from the documents flow");
   r=await j("/api/data"); const dm2=JSON.parse(JSON.stringify(r.j.data)); dm2.dept.Joe="management"; dm2.deptManual=(dm2.deptManual||[]).concat(["Joe"]);
   r=await j("/api/data",{method:"POST",headers:{"Content-Type":"application/json","x-staff-token":otok},body:JSON.stringify({version:r.j.version,data:dm2})}); console.log("21 owner promotes Joe to Management:",r.s); if(r.s!==200) errors.push("owner could not promote");
   const dm3=JSON.parse(JSON.stringify(r.j.data)); dm3.dept.Joe="floor"; await j("/api/data",{method:"POST",headers:{"Content-Type":"application/json","x-staff-token":otok},body:JSON.stringify({version:r.j.version,data:dm3})});

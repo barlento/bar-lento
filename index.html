@@ -2092,6 +2092,7 @@
   function personStatus(n){
     var acc=(state.accounts||{})[n]; if(!state.accounts) return {txt:"",ok:false};
     if(!acc||(!acc.pin&&!acc.devices&&!acc.rules&&!acc.docs)) return {txt:t("stNotIn"),ok:false};
+    if(docsExempt(n)) return {txt:acc.pin?t("pinSet"):t("pinNoneShort"),ok:!!acc.pin}; // the owner: PIN only, no documents
     var ra=acc.rules, okR=!!(ra&&rulesActive()&&ra.version===RULES.version); var nDocs=(DOCS.list||[]).length, kOk=0;
     (DOCS.list||[]).forEach(function(d){ var a=acc.docs&&acc.docs[d.id]; if(a&&a.version===d.version) kOk++; });
     var allOk=(!rulesActive()||okR)&&kOk===nDocs;
@@ -2148,7 +2149,7 @@
       if(ac) html+='<div class="me-tabs" style="margin-top:8px"><button class="navbtn pm-prev" type="button" aria-label="Previous month">‹</button><div class="lbl"><b class="pm-lbl"></b><span class="pm-sub"></span></div><button class="navbtn pm-next" type="button" aria-label="Next month">›</button></div><div id="personPunches"><div class="hint">'+h(t("loadingWord"))+'</div></div>';
       html+='</div>';
     }
-    if(rulesActive()||(DOCS.list||[]).length){
+    if((rulesActive()||(DOCS.list||[]).length)&&!docsExempt(n)){
       var ra=acc.rules, okR=!!(ra&&rulesActive()&&ra.version===RULES.version); var anyAck=!!ra;
       html+='<div class="pcard"><div class="ph">'+h(t("phDocs"))+'</div>';
       if(rulesActive()) html+='<div class="pr"><span>'+h(t("rulesShort"))+'</span><span class="'+(okR?"ok":"dim")+'">'+(okR?"✓ "+h(ackDate(ra.at))+(ra.emailedAt?"":" · "+h(t("copyNotSent"))):"–")+'</span></div>';
@@ -2501,7 +2502,8 @@
   var DOCS_SNOOZE_KEY="bl_docs_snooze";
   var rules={doc:null,mandatory:false,scrolled:false,backToDocs:false};
   function rulesActive(){ return !!(RULES&&RULES.version&&/^\d{4}-\d{2}-\d{2}$/.test(RULES.version)); }
-  function rulesRequired(){ return rulesActive()&&!!state.me.name&&state.me.rulesAck!==undefined&&(!state.me.rulesAck||state.me.rulesAck.version!==RULES.version); }
+  function docsExempt(n){ return deptOf(n||state.me.name)==="owner"; } // the owner signs nothing: the documents are his, given to the staff
+  function rulesRequired(){ return rulesActive()&&!!state.me.name&&!docsExempt()&&state.me.rulesAck!==undefined&&(!state.me.rulesAck||state.me.rulesAck.version!==RULES.version); }
   function ackDate(iso){ var d=new Date(iso||""); if(isNaN(d)) return "—"; try{ return d.toLocaleDateString(lang==="it"?"it-IT":"en-US",{year:"numeric",month:"short",day:"numeric"}); }catch(e){ return dateShort(d)+", "+d.getFullYear(); } }
   function rulesDoc(){ return Object.assign({id:"rules",icon:"",short:"House Rules",printUrl:"/rules.html"},RULES); }
   // Status of one document for the signed-in person: {ack, ok, due, late}. Deadline = deadlineDays after the later of
@@ -2513,7 +2515,7 @@
     var due=addDays(start,d.yearly?(DOCS.trainingDays||30):(DOCS.deadlineDays||7)); due.setHours(23,59,59,999);
     return {ack:a,ok:ok,due:due,late:!ok&&Date.now()>due.getTime()};
   }
-  function docsPending(){ if(!state.me.name||state.me.docAcks===undefined) return []; return (DOCS.list||[]).filter(function(d){ return d.version&&!docStatus(d).ok; }); }
+  function docsPending(){ if(!state.me.name||state.me.docAcks===undefined||docsExempt()) return []; return (DOCS.list||[]).filter(function(d){ return d.version&&!docStatus(d).ok; }); }
   function docStatusText(d,st){
     if(d.kind==="training") return st.ok?t("trainDone",{d:ackDate(st.ack.at)}):st.late?t("trainLate"):t("trainTodo",{d:ackDate(st.due.toISOString())});
     return st.ok?t("docSigned",{d:ackDate(st.ack.at)}):st.late?t("docLate"):t("docToSign",{d:ackDate(st.due.toISOString())});
@@ -2787,7 +2789,7 @@
     me.name=name; me.week=null;
     var keys=meWeeks(), cur=currentMondayISO();
     me.week=keys.indexOf(cur)!==-1?cur:(keys.filter(function(k){return k>=cur;})[0]||keys[keys.length-1]||null);
-    meTitles(); $("meRules").style.display=((rulesActive()||(DOCS.list||[]).length)&&!asName)?"":"none"; $("meRules").innerHTML=docsButtonLabel();
+    meTitles(); $("meRules").style.display=((rulesActive()||(DOCS.list||[]).length)&&!asName&&!docsExempt(name))?"":"none"; $("meRules").innerHTML=docsButtonLabel();
     var other=asName&&asName!==state.me.name; $("meSwitch").style.display=other?"none":""; $("meLogout").style.display=other?"none":""; $("meReport").style.display=other?"none":"";
     $("meStatsLink").style.display=(!other&&state.me.appClock)?"none":"";
     renderMeBday(other?null:name);
