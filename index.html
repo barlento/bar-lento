@@ -322,7 +322,8 @@
   .hero .whoworks .names{font-weight:600}
 
   .weekrow{display:flex;gap:8px;align-items:stretch;margin-bottom:8px;flex-wrap:wrap}
-  .deptrow{display:none;justify-content:center;margin:0 0 10px} body.mgr .deptrow{display:flex} /* Floor / Kitchen switch: manager and owner only */
+  .deptrow{display:none;justify-content:center;margin:0 0 10px} body.mgr .deptrow{display:flex} /* Floor / Kitchen switch: manager, owner and the chef */
+  body.ro .addshift,body.ro #weekTools{display:none!important} body.ro .shift .edit{visibility:hidden} /* the chef on the Floor view: look, don't touch */
   .deptseg{display:inline-flex;background:#E9E9EE;border-radius:11px;padding:3px;gap:2px}
   .deptseg button{border:0;background:transparent;border-radius:9px;padding:7px 18px;font:inherit;font-weight:600;font-size:.85rem;color:var(--ink-muted);cursor:pointer;display:inline-flex;align-items:center;gap:7px;white-space:nowrap;transition:background .15s,color .15s}
   .deptseg button.active{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
@@ -1195,7 +1196,7 @@
   var I18N={
     en:{
       myBday:"My birthday", myBdayNone:"Not set yet. Add it and the team celebrates you.", myBdayIs:"My birthday: {d}", bdaySavedMe:"Birthday saved. See you on {d}.", save:"Save",
-      chefMode:"Chef mode · kitchen only", ownerMode:"Owner mode", viewingAs:"Viewing as {n}", viewAsTxt:"You are seeing the app as {n} ({r}) sees it. Nothing you tap here changes anything.", viewAsTxtTools:"You are seeing the app as {n} ({r}) sees it, with their tools. What you change here is saved.", viewAsBtn:"View as {n}", viewAsExit:"Exit", lvlStaffWord:"Staff", ownerOnly:"Only the owner can make someone Management or Owner.", chefForbidden:"Kitchen only: this change is for the manager.", showPin:"Show", hidePin:"Hide", deptRoleHint:"Chef, Management and Owner get the manager tools after their own PIN: Chef for the kitchen only, Management for everything, Owner for everything plus View as and these promotions.", appClockSalary:"Clocks in from the app (salaried in Toast)",
+      chefMode:"Chef mode · kitchen only", ownerMode:"Owner mode", viewingAs:"Viewing as {n}", viewAsTxt:"You are seeing the app as {n} ({r}) sees it. Nothing you tap here changes anything.", viewAsTxtTools:"You are seeing the app as {n} ({r}) sees it, with their tools. What you change here is saved.", floorReadOnly:"The floor is planned by the manager. You can edit the kitchen.", viewAsBtn:"View as {n}", viewAsExit:"Exit", lvlStaffWord:"Staff", ownerOnly:"Only the owner can make someone Management or Owner.", chefForbidden:"Kitchen only: this change is for the manager.", showPin:"Show", hidePin:"Hide", deptRoleHint:"Chef, Management and Owner get the manager tools after their own PIN: Chef for the kitchen only, Management for everything, Owner for everything plus View as and these promotions.", appClockSalary:"Clocks in from the app (salaried in Toast)",
       adminMode:"Manager mode", lbBtn:"Team ranking", staffBtn:"Staff", historyBtn:"History", exportBtn:"Export PDF", logoutBtn:"Log out",
       newWeekBtn:"＋ New week", deleteWeekBtn:"Delete week", nwTitle:"New week", nwLead:"Create the week of {r}", nwCopy:"Copy last week's shifts ({k} shifts)", nwCopySub:"Same people and times as {r}; adjust as needed", nwEmpty:"Start empty", nwEmptySub:"Add every shift by hand",
       copyConfirm:"Tap again to replace the current shifts", deleteWeekConfirm:"Tap again to delete", deleteWeekConfirmN:"Tap again: deletes {k} shifts", deleteWeekLocked:"Past week · archived", pastLocked:"Past weeks are archived and can't be deleted", onlyEmpty:"Only an empty week can be deleted",
@@ -1256,7 +1257,7 @@
     },
     it:{
       myBday:"Il mio compleanno", myBdayNone:"Non ancora inserito. Aggiungilo e il team ti festeggia.", myBdayIs:"Il mio compleanno: {d}", bdaySavedMe:"Compleanno salvato. Ci vediamo il {d}.", save:"Salva",
-      chefMode:"Modalità chef · solo cucina", ownerMode:"Modalità titolare", viewingAs:"Stai vedendo come {n}", viewAsTxt:"Stai vedendo l'app come la vede {n} ({r}). Qui non cambi niente.", viewAsTxtTools:"Stai vedendo l'app come la vede {n} ({r}), con i suoi strumenti. Quello che cambi qui viene salvato.", viewAsBtn:"Vedi come {n}", viewAsExit:"Esci", lvlStaffWord:"Staff", ownerOnly:"Solo il titolare può rendere qualcuno Direzione o Titolare.", chefForbidden:"Solo cucina: questa modifica spetta alla manager.", showPin:"Mostra", hidePin:"Nascondi", deptRoleHint:"Chef, Direzione e Titolare hanno gli strumenti del manager dopo il proprio PIN: Chef solo per la cucina, Direzione per tutto, Titolare per tutto più Vedi come e queste promozioni.", appClockSalary:"Timbra dall'app (a stipendio su Toast)",
+      chefMode:"Modalità chef · solo cucina", ownerMode:"Modalità titolare", viewingAs:"Stai vedendo come {n}", viewAsTxt:"Stai vedendo l'app come la vede {n} ({r}). Qui non cambi niente.", viewAsTxtTools:"Stai vedendo l'app come la vede {n} ({r}), con i suoi strumenti. Quello che cambi qui viene salvato.", floorReadOnly:"La sala la pianifica la direzione. Tu puoi modificare la cucina.", viewAsBtn:"Vedi come {n}", viewAsExit:"Esci", lvlStaffWord:"Staff", ownerOnly:"Solo il titolare può rendere qualcuno Direzione o Titolare.", chefForbidden:"Solo cucina: questa modifica spetta alla manager.", showPin:"Mostra", hidePin:"Nascondi", deptRoleHint:"Chef, Direzione e Titolare hanno gli strumenti del manager dopo il proprio PIN: Chef solo per la cucina, Direzione per tutto, Titolare per tutto più Vedi come e queste promozioni.", appClockSalary:"Timbra dall'app (a stipendio su Toast)",
       adminMode:"Modalità manager", lbBtn:"Classifica team", staffBtn:"Staff", historyBtn:"Cronologia", exportBtn:"Esporta PDF", logoutBtn:"Esci",
       newWeekBtn:"＋ Nuova settimana", deleteWeekBtn:"Elimina settimana", nwTitle:"Nuova settimana", nwLead:"Crea la settimana {r}", nwCopy:"Copia i turni della settimana scorsa ({k} turni)", nwCopySub:"Stesse persone e orari di {r}; poi modifica ciò che cambia", nwEmpty:"Parti da zero", nwEmptySub:"Aggiungi ogni turno a mano",
       copyConfirm:"Tocca di nuovo per sostituire i turni", deleteWeekConfirm:"Tocca di nuovo per eliminare", deleteWeekConfirmN:"Tocca di nuovo: elimina {k} turni", deleteWeekLocked:"Settimana passata · archivio", pastLocked:"Le settimane passate sono in archivio e non si eliminano", onlyEmpty:"Si può eliminare solo una settimana vuota",
@@ -1743,8 +1744,9 @@
   function floorNames(){ return (state.data.staff||[]).filter(function(n){return !isKitchenName(n);}); }
   // Two calendars in one app (owner's decision 2026-09-20): Floor (Marta's) and Kitchen (the chef's). One is shown at a time;
   // everyone starts on their own department, the chef is locked to the kitchen, the segment above the weeks switches.
-  function isMgr(){ var r=effRole(); return !!state.admin&&(r==="manager"||r==="owner"); } // manager or owner: the only ones who see both departments
-  function deptView(){ if(isMgr()&&state.deptView) return state.deptView; var me=state.viewAs||state.me.name; return (isChef()||(me&&isKitchenName(me)))?"kitchen":"floor"; } // staff and the chef: their own department only
+  function isMgr(){ var r=effRole(); return !!state.admin&&(r==="manager"||r==="owner"||r==="chef"); } // manager, owner and the chef see both departments (the chef edits only the kitchen)
+  function deptView(){ if(isMgr()&&state.deptView) return state.deptView; var me=state.viewAs||state.me.name; return (isChef()||(me&&isKitchenName(me)))?"kitchen":"floor"; } // staff: their own department only
+  function readOnlyView(){ return isChef()&&deptView()==="floor"; } // the chef looks at the floor, never touches it
   function canSee(n){ return isKitchenName(n)===(deptView()==="kitchen"); }
   function renderDeptSeg(){ var el=$("deptSeg"); if(!el) return; var v=deptView(); el.querySelectorAll("button").forEach(function(b){ var k=b.getAttribute("data-v"); b.classList.toggle("active",k===v); b.setAttribute("aria-selected",k===v); b.innerHTML='<span class="dept">'+DEPT_SVG[k]+'</span>'+h(t(k==="kitchen"?"deptKitchen":"deptFloor")); }); }
   // Every secret field gets an eye to show what is being typed (owner's request 2026-09-19).
@@ -1850,7 +1852,7 @@
         +'<div class="addrow2"><button type="button" class="addshift" data-day="'+key+'">'+t("addShift")+'</button><button type="button" class="daybtn" data-day="'+key+'" title="'+t("daySettings")+'" aria-label="'+t("daySettings")+'">⋯</button></div>'
         +'</div>';
     }).join("");
-    renderDeptSeg();
+    renderDeptSeg(); document.body.classList.toggle("ro",readOnlyView());
     grid.querySelectorAll(".shift").forEach(function(b){b.addEventListener("click",function(){onShiftTap(wk,b.getAttribute("data-day"),b.getAttribute("data-id"));});});
     grid.querySelectorAll(".addshift").forEach(function(b){b.addEventListener("click",function(){openShiftEditor(wk,b.getAttribute("data-day"),null);});});
     grid.querySelectorAll(".daybtn").forEach(function(b){b.addEventListener("click",function(){openDayEditor(wk,b.getAttribute("data-day"));});});
@@ -1880,6 +1882,7 @@
 
   // ---------- staff tap → confirm your own shift (identity = PIN login) ----------
   function onShiftTap(wk,day,id){
+    if(readOnlyView()){ toast(t("floorReadOnly"),3000); return; }
     if(state.admin){openShiftEditor(wk,day,id);return;}
     if(!state.features.storage){toast("Confirmations turn on once the database is connected (Vercel → Storage). Preview mode for now.",4500);return;}
     var list=(state.data.weeks[wk]||{})[day]||[]; var s=list.filter(function(x){return x.id===id;})[0]; if(!s) return;
