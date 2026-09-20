@@ -14,7 +14,6 @@ module.exports = async (req, res) => {
   if (!auth.adminEnabled()) return send(res, 503, { error: "admin_disabled" });
   // Small fixed delay blunts brute-force attempts without hurting a real login.
   await new Promise((r) => setTimeout(r, 350));
-  const role = await auth.roleFrom(req);
-  if (!role) return send(res, 401, { error: "unauthorized" });
-  return send(res, 200, { ok: true, role });
+  if (!auth.checkPassword(auth.passwordFrom(req))) return send(res, 401, { error: "unauthorized" });
+  return send(res, 200, { ok: true, role: "manager" });
 };

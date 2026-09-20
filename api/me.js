@@ -162,9 +162,9 @@ module.exports = async (req, res) => {
     const url = new URL(req.url, "http://x");
     const body = req.body || {};
     const action = req.method === "GET" ? (url.searchParams.get("action") || "who") : String(body.action || "");
-    const role = await auth.roleFrom(req); // "manager" | "chef" | null
-    const isAdmin = role === "manager", isChef = role === "chef";
     const doc0 = await store.getSchedule();
+    const role = await auth.roleFrom(req, doc0); // "manager" | "chef" | null — password, or the person's department
+    const isAdmin = role === "manager", isChef = role === "chef";
     const kitchen = new Set(auth.kitchenNames(doc0.data));
     const mayManage = (n) => isAdmin || (isChef && kitchen.has(n)); // the chef manages kitchen people only
 
@@ -199,7 +199,7 @@ module.exports = async (req, res) => {
           Object.keys(summary).forEach((n) => { if (!k.has(n)) delete summary[n]; }); Object.keys(presenceOut).forEach((n) => { if (!k.has(n)) delete presenceOut[n]; });
           return send(res, 200, { accounts: summary, formerAcks: [], formerDocAcks: [], rulesVersion: RULES.version || null, docsVersions: docVersions(), mail: mail.enabled(), toastReport: null, formerStaff: [], presence: presenceOut, dept: doc.data.dept || {}, role: "chef", version: doc.version });
         }
-        return send(res, 200, { accounts: summary, formerAcks, formerDocAcks, rulesVersion: RULES.version || null, docsVersions: docVersions(), mail: mail.enabled(), toastReport, formerStaff, presence: presenceOut, dept: doc.data.dept || {}, chef: await auth.chefInfo().catch(() => ({ on: false, name: null })), role: "manager", version: doc.version });
+        return send(res, 200, { accounts: summary, formerAcks, formerDocAcks, rulesVersion: RULES.version || null, docsVersions: docVersions(), mail: mail.enabled(), toastReport, formerStaff, presence: presenceOut, dept: doc.data.dept || {}, role: "manager", version: doc.version });
       }
       // Who is on this device? (also used by "hours" below)
       let name = await accounts.whoIs(tokenFrom(req), doc.data.staff);
@@ -210,7 +210,7 @@ module.exports = async (req, res) => {
         const docsOut = {}; if (docAcks) DOC_IDS.forEach((id) => { docsOut[id] = ackView(docAcks[id]); });
         const appClock = await punch.isAppClock(doc.data, name);
         const openP = appClock ? await punch.openEntry(name).catch(() => null) : null;
-        return send(res, 200, { name, appClock, open: openP ? { in: openP.in } : null, rulesAck: ackView(ack), rulesVersion: RULES.version || null, docAcks: docAcks ? docsOut : undefined, docsVersions: docVersions(), since: pinRec && pinRec.createdAt || null, fullName: ident ? ident.fullName : null, email: ident ? ident.email : null, mail: mail.enabled() });
+        return send(res, 200, { name, role: auth.roleOfDept((doc.data.dept || {})[name]), appClock, open: openP ? { in: openP.in } : null, rulesAck: ackView(ack), rulesVersion: RULES.version || null, docAcks: docAcks ? docsOut : undefined, docsVersions: docVersions(), since: pinRec && pinRec.createdAt || null, fullName: ident ? ident.fullName : null, email: ident ? ident.email : null, mail: mail.enabled() });
       }
       if (action === "hours") {
         const asked = String(url.searchParams.get("name") || "");
@@ -418,15 +418,6 @@ module.exports = async (req, res) => {
       return mailed.sent ? send(res, 200, { ok: true, email: ack.email }) : send(res, 502, { error: "mail_failed", detail: mailed.reason });
     }
 
-    if (action === "setChefPassword") { // manager only, from the person sheet: give this person the chef login (empty password = take it away)
-      if (!isAdmin) return send(res, 401, { error: "unauthorized" });
-      const pw = String(body.password || "").trim(); const who = String(body.name || "").trim().slice(0, 60);
-      if (pw && pw.length < 6) return send(res, 400, { error: "too_short" });
-      if (pw && !doc0.data.staff.includes(who)) return send(res, 400, { error: "unknown_name" });
-      const on = await auth.setChefPassword(pw, who);
-      await store.appendLog({ at: new Date().toISOString(), changes: [on ? `Chef login given to ${who} (password set by the manager)` : "Chef login switched off"] }).catch(() => {});
-      return send(res, 200, { ok: true, chef: await auth.chefInfo() });
-    }
     if (action === "reset") {
       if (!mayManage(String(body.name || "").trim().slice(0, 60))) return send(res, 401, { error: "unauthorized" });
       const name = String(body.name || "").trim().slice(0, 60);

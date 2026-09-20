@@ -12,7 +12,7 @@ module.exports = async (req, res) => {
   try {
     if (req.method !== "GET") { res.setHeader("Allow", "GET"); return send(res, 405, { error: "method_not_allowed" }); }
     if (!auth.adminEnabled()) return send(res, 503, { error: "admin_disabled" });
-    if (!auth.checkPassword(auth.passwordFrom(req))) return send(res, 401, { error: "unauthorized" });
+    if ((await auth.roleFrom(req)) !== "manager") return send(res, 401, { error: "unauthorized" });
     const url = new URL(req.url, "http://x");
     const entries = await store.getLog(url.searchParams.get("limit") || 300);
     return send(res, 200, { entries, storage: store.hasStorage() });

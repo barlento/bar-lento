@@ -51,7 +51,7 @@ const NO_TOAST = GUIDE ? "Marco" : "Pietro"; // the one person who is not in Toa
 // The schedule starts with Kayla explicitly linked to her Toast record (which is archived below): the sync must remove her.
 kv.set("barlento:schedule", JSON.stringify({ version: 1, data: Object.assign({}, seed, GUIDE ? {} : { toastMap: { Kayla: "guid-kayla" } }), updatedAt: new Date(Date.now() - 3600000).toISOString() }));
 const EMPS = seed.staff.filter((n) => n !== NO_TOAST).map((n, i) => ({ guid: "guid-" + n.toLowerCase(), firstName: n, lastName: "Test" + i, email: n.toLowerCase() + "@example.com", createdDate: "2025-01-01T00:00:00.000Z", deleted: false }));
-EMPS.forEach((e) => { e.jobReferences = [{ guid: e.firstName === "Mariia" ? "job-cook" : e.firstName === "Marta" ? "job-fm" : "job-server" }]; }); // Mariia kitchen, Marta management, everyone else floor
+EMPS.forEach((e) => { e.jobReferences = [{ guid: e.firstName === "Mariia" ? "job-chef" : e.firstName === "Marta" ? "job-fm" : "job-server" }]; }); // Mariia = Executive Chef (chef role), Marta = Floor Manager (manager role), everyone else floor
 EMPS.forEach((e) => { if (e.firstName === "Kayla") { e.deleted = true; e.deletedDate = "2026-09-01T00:00:00.000+0000"; } }); // archived in Toast while still on staff → the sync removes her
 EMPS.push({ guid: "guid-luca-rossi-0001", firstName: "Luca", lastName: "Rossi", email: "luca.rossi@example.com", createdDate: "2026-09-10T00:00:00.000Z", deleted: false, deletedDate: "1970-01-01T00:00:00.000+0000" });
 EMPS.push({ guid: "guid-joe-second-0002", firstName: GUIDE ? "Leo" : "Joe", lastName: "Bianchi", email: "joe.b@example.com", createdDate: "2026-09-01T00:00:00.000Z", deleted: false });
@@ -88,7 +88,7 @@ const toastServer = http.createServer((req, res) => {
   if (u.pathname.endsWith("/authentication/login")) return res.end(JSON.stringify({ token: { accessToken: "tok", expiresIn: 3600 } }));
   if (u.pathname === "/partners/v1/restaurants") return res.end(JSON.stringify([{ restaurantGuid: "rest-1", restaurantName: "Bar Lento" }]));
   if (u.pathname === "/labor/v1/employees") return res.end(JSON.stringify(EMPS));
-  if (u.pathname === "/labor/v1/jobs") return res.end(JSON.stringify([{ guid: "job-server", title: "Server", wageFrequency: "HOURLY" }, { guid: "job-cook", title: "Line Cook", wageFrequency: "HOURLY" }, { guid: "job-bar", title: "Bartender", wageFrequency: "HOURLY" }, { guid: "job-fm", title: "Floor Manager", wageFrequency: "SALARY" }]));
+  if (u.pathname === "/labor/v1/jobs") return res.end(JSON.stringify([{ guid: "job-server", title: "Server", wageFrequency: "HOURLY" }, { guid: "job-cook", title: "Line Cook", wageFrequency: "HOURLY" }, { guid: "job-bar", title: "Bartender", wageFrequency: "HOURLY" }, { guid: "job-fm", title: "Floor Manager", wageFrequency: "SALARY" }, { guid: "job-chef", title: "Executive Chef", wageFrequency: "SALARY" }]));
   if (u.pathname === "/labor/v1/timeEntries") {
     if (u.searchParams.get("businessDate")) return res.end("[]"); // the fake Toast files nothing by business date
     const s = Date.parse(u.searchParams.get("startDate")), e = Date.parse(u.searchParams.get("endDate"));
