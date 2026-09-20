@@ -82,7 +82,7 @@ module.exports = async (req, res) => {
       const doc = await store.getSchedule();
       const asked = String(url.searchParams.get("name") || "").trim().slice(0, 60);
       let name = await accounts.whoIs(req.headers["x-staff-token"], doc.data.staff);
-      if (asked) { const role = await auth.roleFrom(req); if (role === "manager" || (role === "chef" && auth.kitchenNames(doc.data).includes(asked))) name = asked; }
+      if (asked) { const role = await auth.roleFrom(req); if (auth.isManagerish(role) || (role === "chef" && auth.kitchenNames(doc.data).includes(asked))) name = asked; }
       if (!name) return send(res, 401, { error: "unauthorized" });
       const full = await lb.leaderboard(period);
       const me = full.rows.find((r) => r.name === name);

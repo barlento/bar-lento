@@ -97,6 +97,12 @@ module.exports = async (req, res) => {
         const strip = (d) => { const c = JSON.parse(JSON.stringify(d)); Object.keys(c.weeks || {}).forEach((wk) => { ["mon", "tue", "wed", "thu", "fri", "sat", "sun"].forEach((k) => { c.weeks[wk][k] = (c.weeks[wk][k] || []).filter((sh) => !kitchen.has(sh.name)); }); }); return c; };
         if (JSON.stringify(strip(current.data)) !== JSON.stringify(strip(data))) return send(res, 403, { error: "chef_forbidden", detail: "Kitchen shifts only" });
       }
+      // Only the owner (Titolare) promotes to Direzione / Titolare or demotes them (owner's decision 2026-09-20)
+      if (role === "manager") {
+        const top = (d) => new Set((d.staff || []).filter((n) => ["management", "owner"].includes((d.dept || {})[n])));
+        const before = top(current.data), after = top(data);
+        if ([...before].some((n) => !after.has(n)) || [...after].some((n) => !before.has(n))) return send(res, 403, { error: "owner_only", detail: "Only the owner can change who is Management or Owner" });
+      }
       const { changes, resetKeys, notable, newWeeks } = diffData(current.data, data);
       // Someone removed from staff loses their personal access (PIN + devices). Past shifts stay in the archive,
       // and their Toast employee must not come back at the next sync.

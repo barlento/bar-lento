@@ -298,6 +298,10 @@
 
   .adminbar{position:relative;z-index:20;display:none;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 14px;margin-bottom:14px;border-radius:14px;background:var(--ink);color:var(--bg);box-shadow:var(--shadow)}
   .adminbar.show{display:flex}
+  .viewasbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 14px;margin-bottom:14px;border-radius:14px;border:1.5px solid var(--accent);background:var(--accent-soft);font-weight:600;font-size:.9rem}
+  .viewasbar .spacer{flex:1}
+  body.viewing .adminbar .actions,body.viewing #weekTools,body.viewing .daybtn,body.viewing .addshift{display:none!important}
+  body:not(.owner) .dept-pick[data-d=management],body:not(.owner) .dept-pick[data-d=owner]{opacity:.45}
   .adminbar .who{display:flex;align-items:center;gap:8px;font-weight:700;font-size:.9rem}
   .adminbar .dot{width:9px;height:9px;border-radius:50%;background:var(--accent)}
   .adminbar .actions{display:flex;gap:8px;flex-wrap:wrap}
@@ -792,6 +796,7 @@
     <div class="mebtns"><button class="btn primary" id="meOpenBtn" type="button" data-t="myWeek">My week</button><button class="btn" id="meStatsBtn" type="button" data-t="myStats">My stats</button><button class="btn good" id="mePunchBtn" type="button" style="display:none">Clock in</button></div>
   </div>
 
+  <div class="viewasbar" id="viewAsBar" style="display:none"><span id="viewAsTxt"></span><span class="spacer"></span><button class="btn" id="viewAsWeek" type="button" data-t="myWeek">My week</button><button class="btn" id="viewAsStats" type="button" data-t="myStats">My stats</button><button class="btn primary" id="viewAsExit" type="button" data-t="viewAsExit">Exit</button></div>
   <div class="hero" id="heroStatus" aria-live="polite"></div>
 
   <div class="weekrow">
@@ -1181,7 +1186,7 @@
   var I18N={
     en:{
       myBday:"My birthday", myBdayNone:"Not set yet. Add it and the team celebrates you.", myBdayIs:"My birthday: {d}", bdaySavedMe:"Birthday saved. See you on {d}.", save:"Save",
-      chefMode:"Chef mode · kitchen only", chefForbidden:"Kitchen only: this change is for the manager.", showPin:"Show", hidePin:"Hide", deptRoleHint:"Chef, Management and Owner get the manager tools after their own PIN: Chef for the kitchen only, the others for everything.", appClockSalary:"Clocks in from the app (salaried in Toast)",
+      chefMode:"Chef mode · kitchen only", ownerMode:"Owner mode", viewingAs:"Viewing as {n}", viewAsTxt:"You are seeing the app as {n} ({r}) sees it. Nothing you tap here changes anything.", viewAsBtn:"View as {n}", viewAsExit:"Exit", lvlStaffWord:"Staff", ownerOnly:"Only the owner can make someone Management or Owner.", chefForbidden:"Kitchen only: this change is for the manager.", showPin:"Show", hidePin:"Hide", deptRoleHint:"Chef, Management and Owner get the manager tools after their own PIN: Chef for the kitchen only, Management for everything, Owner for everything plus View as and these promotions.", appClockSalary:"Clocks in from the app (salaried in Toast)",
       adminMode:"Manager mode", lbBtn:"Team ranking", staffBtn:"Staff", historyBtn:"History", exportBtn:"Export PDF", logoutBtn:"Log out",
       newWeekBtn:"＋ New week", deleteWeekBtn:"Delete week", nwTitle:"New week", nwLead:"Create the week of {r}", nwCopy:"Copy last week's shifts ({k} shifts)", nwCopySub:"Same people and times as {r}; adjust as needed", nwEmpty:"Start empty", nwEmptySub:"Add every shift by hand",
       copyConfirm:"Tap again to replace the current shifts", deleteWeekConfirm:"Tap again to delete", deleteWeekConfirmN:"Tap again: deletes {k} shifts", deleteWeekLocked:"Past week · archived", pastLocked:"Past weeks are archived and can't be deleted", onlyEmpty:"Only an empty week can be deleted",
@@ -1242,7 +1247,7 @@
     },
     it:{
       myBday:"Il mio compleanno", myBdayNone:"Non ancora inserito. Aggiungilo e il team ti festeggia.", myBdayIs:"Il mio compleanno: {d}", bdaySavedMe:"Compleanno salvato. Ci vediamo il {d}.", save:"Salva",
-      chefMode:"Modalità chef · solo cucina", chefForbidden:"Solo cucina: questa modifica spetta alla manager.", showPin:"Mostra", hidePin:"Nascondi", deptRoleHint:"Chef, Direzione e Titolare hanno gli strumenti del manager dopo il proprio PIN: Chef solo per la cucina, gli altri per tutto.", appClockSalary:"Timbra dall'app (a stipendio su Toast)",
+      chefMode:"Modalità chef · solo cucina", ownerMode:"Modalità titolare", viewingAs:"Stai vedendo come {n}", viewAsTxt:"Stai vedendo l'app come la vede {n} ({r}). Qui non cambi niente.", viewAsBtn:"Vedi come {n}", viewAsExit:"Esci", lvlStaffWord:"Staff", ownerOnly:"Solo il titolare può rendere qualcuno Direzione o Titolare.", chefForbidden:"Solo cucina: questa modifica spetta alla manager.", showPin:"Mostra", hidePin:"Nascondi", deptRoleHint:"Chef, Direzione e Titolare hanno gli strumenti del manager dopo il proprio PIN: Chef solo per la cucina, Direzione per tutto, Titolare per tutto più Vedi come e queste promozioni.", appClockSalary:"Timbra dall'app (a stipendio su Toast)",
       adminMode:"Modalità manager", lbBtn:"Classifica team", staffBtn:"Staff", historyBtn:"Cronologia", exportBtn:"Esporta PDF", logoutBtn:"Esci",
       newWeekBtn:"＋ Nuova settimana", deleteWeekBtn:"Elimina settimana", nwTitle:"Nuova settimana", nwLead:"Crea la settimana {r}", nwCopy:"Copia i turni della settimana scorsa ({k} turni)", nwCopySub:"Stesse persone e orari di {r}; poi modifica ciò che cambia", nwEmpty:"Parti da zero", nwEmptySub:"Aggiungi ogni turno a mano",
       copyConfirm:"Tocca di nuovo per sostituire i turni", deleteWeekConfirm:"Tocca di nuovo per eliminare", deleteWeekConfirmN:"Tocca di nuovo: elimina {k} turni", deleteWeekLocked:"Settimana passata · archivio", pastLocked:"Le settimane passate sono in archivio e non si eliminano", onlyEmpty:"Si può eliminare solo una settimana vuota",
@@ -1501,6 +1506,8 @@
     if(r.ok){
       state.version=r.json.version; state.updatedAt=r.json.updatedAt; state.data=r.json.data; state.confirmations=r.json.confirmations||state.confirmations;
       $("saveStatus").textContent=t("statusSaved"); renderUpdated(); renderDays();
+    } else if(r.status===403&&r.json&&r.json.error==="owner_only"){
+      toast(t("ownerOnly"),4500); await load(true); $("saveStatus").textContent=t("statusReady");
     } else if(r.status===403&&r.json&&r.json.error==="chef_forbidden"){
       toast(t("chefForbidden"),4500); await load(true); $("saveStatus").textContent=t("statusReady");
     } else if(r.status===409){
@@ -1713,8 +1720,11 @@
   var DEPT_LABEL={floor:"deptFloor",kitchen:"deptKitchen",chef:"deptChef",management:"deptManagement",owner:"deptOwner",test:"deptTest"};
   var DEPT_SVG={chef:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 20V12a5 5 0 0 1-1-9.9A4 4 0 0 1 12 3a4 4 0 0 1 6 -.9A5 5 0 0 1 17 12v8z"/><path d="M7 16h10"/><path d="M9 20v2h6v-2"/></svg>',owner:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5L3 8z"/><path d="M5 19h14"/></svg>',test:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>',management:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 12h18"/></svg>',floor:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10l-1 7a4 4 0 0 1-8 0L7 3z"/><path d="M12 14v6M8 21h8"/></svg>',kitchen:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 20V12a5 5 0 0 1-1-9.9A4 4 0 0 1 12 3a4 4 0 0 1 6 -.9A5 5 0 0 1 17 12v8z"/><path d="M7 16h10"/></svg>'};
   function isChef(){ return !!state.admin&&state.role==="chef"; }
+  function isOwner(){ return !!state.admin&&state.role==="owner"; }
+  // "View as": the owner looks at the app the way one person sees it (their shifts marked, the chef's kitchen-only calendar, their week, stats, documents)
+  function viewRole(n){ var d=(state.data.dept||{})[n]; return d==="chef"?"chef":(d==="management"||d==="owner")?"manager":null; }
   function kitchenNames(){ var d=state.data.dept||{}; return (state.data.staff||[]).filter(function(n){return d[n]==="kitchen"||d[n]==="chef";}); } // the kitchen and the chef themself
-  function canSee(n){ return !isChef()||kitchenNames().indexOf(n)!==-1; } // the chef sees kitchen people only
+  function canSee(n){ if(state.viewAs&&viewRole(state.viewAs)==="chef") return kitchenNames().indexOf(n)!==-1; return !isChef()||kitchenNames().indexOf(n)!==-1; } // the chef sees kitchen people only
   // Every secret field gets an eye to show what is being typed (owner's request 2026-09-19).
   var EYE_SVG='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>', EYE_OFF_SVG='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 10.6A3 3 0 0 0 13.4 13.4M6.5 6.6C4 8.2 2 12 2 12s3.5 6 10 6c1.6 0 3-.3 4.2-.8M9.9 5.1A11 11 0 0 1 12 5c6.5 0 10 7 10 7s-.9 1.8-2.6 3.6"/></svg>';
   function pwField(id,opts){ opts=opts||{}; return '<span class="pwwrap"><input type="password" id="'+id+'" autocomplete="'+(opts.auto||"off")+'" aria-label="'+h(opts.label||"Password")+'"><button type="button" class="eye" data-for="'+id+'" aria-label="Show">'+EYE_SVG+'</button></span>'; }
@@ -1799,7 +1809,7 @@
       var confirmed=shifts.filter(function(s){return !!state.confirmations[shiftKey(wk,key,s.id)];}).length;
       var rows=shifts.length?shifts.map(function(s){
         var ok=!!state.confirmations[shiftKey(wk,key,s.id)];
-        var mine=!!state.me.name&&s.name===state.me.name;
+        var mine=state.viewAs?s.name===state.viewAs:(!!state.me.name&&s.name===state.me.name);
         return '<button type="button" class="shift'+(ok?" confirmed":"")+(mine?" mine":"")+'" data-day="'+key+'" data-id="'+h(s.id)+'" aria-pressed="'+ok+'">'
           +'<span class="check" aria-hidden="true">✓</span>'
           +'<span class="main"><span class="who">'+h(s.name)+(s.station?'<span class="st">'+h(s.station)+'</span>':(s.src==="toast"?'<span class="st">Toast</span>':s.src==="app"?'<span class="st">App</span>':""))+'</span><span class="when mono">'+range12(s.start,s.end)+'</span>'+clockBadge(wk,key,s,isToday,isPast)+'</span>'
@@ -1825,7 +1835,9 @@
 
   function renderAdminUI(){
     document.body.classList.toggle("admin",state.admin); document.body.classList.toggle("chef",isChef());
-    var modeEl=$("adminBar").querySelector("[data-t=adminMode]"); if(modeEl) modeEl.textContent=t(isChef()?"chefMode":"adminMode");
+    document.body.classList.toggle("owner",isOwner()); document.body.classList.toggle("viewing",!!state.viewAs);
+    var modeEl=$("adminBar").querySelector("[data-t=adminMode]"); if(modeEl) modeEl.textContent=state.viewAs?t("viewingAs",{n:state.viewAs}):t(isOwner()?"ownerMode":isChef()?"chefMode":"adminMode");
+    var vb=$("viewAsBar"); if(vb){ vb.style.display=state.viewAs?"":"none"; if(state.viewAs){ var vr=viewRole(state.viewAs); $("viewAsTxt").textContent=t("viewAsTxt",{n:state.viewAs,r:t(vr==="chef"?"deptChef":vr==="manager"?"deptManagement":"lvlStaffWord")}); } }
     $("adminBar").classList.toggle("show",state.admin);
     $("weekTools").classList.toggle("show",state.admin);
     if(typeof renderLbBtn==="function") renderLbBtn();
@@ -1896,6 +1908,8 @@
       state.me.open=r.json.open||null; $("punchOverlay").classList.remove("show"); renderMe();
       var e=r.json.entry; toast(on?"Clocked in at "+fmtClock(e.in)+".":"Clocked out at "+fmtClock(e.out)+" · "+durText(Date.parse(e.out)-Date.parse(e.in))+".",4200);
       delete tc.cache[nyTodayISO()]; loadToastToday(); if(me.name===state.me.name) delete me.hours[me.week];
+    } else if(r.status===403&&r.json&&r.json.error==="owner_only"){
+      toast(t("ownerOnly"),4500); await load(true); $("saveStatus").textContent=t("statusReady");
     } else if(r.status===403&&r.json&&r.json.error==="chef_forbidden"){
       toast(t("chefForbidden"),4500); await load(true); $("saveStatus").textContent=t("statusReady");
     } else if(r.status===409){ state.me.open=r.json.entry&&!r.json.entry.out?{in:r.json.entry.in}:null; $("punchOverlay").classList.remove("show"); renderMe(); toast(r.json.error==="already_in"?"You are already clocked in.":"You are not clocked in."); }
@@ -2143,7 +2157,7 @@
       html+='</div>';
     }
     html+='<div class="pcard"><div class="ph">'+h(t("phRecord"))+'</div><div class="pr"><span class="dim">'+h(t("recordLead"))+'</span><button type="button" class="pinbtn record">'+h(t("recordBtn"))+'</button></div></div>';
-    html+='<div class="pcard"><div class="ph">'+h(t("phWeek"))+'</div><div class="pr"><span class="dim">'+h(t("viewWeek",{n:n}))+'</span><button type="button" class="pinbtn view">'+h(t("viewWeekBtn"))+'</button></div></div>';
+    html+='<div class="pcard"><div class="ph">'+h(t("phWeek"))+'</div><div class="pr"><span class="dim">'+h(t("viewWeek",{n:n}))+'</span><button type="button" class="pinbtn view">'+h(t("viewWeekBtn"))+'</button></div>'+(isOwner()?'<div class="pr"><span class="dim">'+h(t("viewAsTxt",{n:n,r:t(viewRole(n)==="chef"?"deptChef":viewRole(n)==="manager"?"deptManagement":"lvlStaffWord")}).split(".")[0])+'.</span><button type="button" class="pinbtn viewas">'+h(t("viewAsBtn",{n:n}))+'</button></div>':'')+'</div>';
     var body=$("personBody"); body.innerHTML=html;
     var rm=$("personRemove"); rm.textContent=t("removeName",{n:n}); rm.dataset.arm=""; rm.classList.remove("arm"); rm.dataset.name=n;
     body.querySelectorAll(".pinbtn.mail").forEach(function(b){b.addEventListener("click",async function(){
@@ -2165,10 +2179,13 @@
       scheduleSave(); renderPerson(); toast(i===-1?t("appClockSet",{n:n}):t("appClockUnset",{n:n}),4000);
     });});
     body.querySelectorAll(".dept-pick").forEach(function(b){b.addEventListener("click",function(){
-      var d=b.getAttribute("data-d"); if(deptOf(n)===d) return; state.data.dept=state.data.dept||{}; state.data.dept[n]=d;
+      var d=b.getAttribute("data-d"); if(deptOf(n)===d) return;
+      if(!isOwner()&&(d==="management"||d==="owner"||deptOf(n)==="management"||deptOf(n)==="owner")){ toast(t("ownerOnly"),4000); return; }
+      state.data.dept=state.data.dept||{}; state.data.dept[n]=d;
       state.data.deptManual=state.data.deptManual||[]; if(state.data.deptManual.indexOf(n)===-1) state.data.deptManual.push(n); // chosen by hand: Toast never overrides it
       scheduleSave(); renderPerson(); renderRoster(); toast(t("deptSet",{n:n,d:t(DEPT_LABEL[d])}),3500);
     });});
+    body.querySelectorAll(".pinbtn.viewas").forEach(function(b){b.addEventListener("click",function(){ $("personOverlay").classList.remove("show"); $("staffOverlay").classList.remove("show"); startViewAs(n); });});
     body.querySelectorAll(".pinbtn.view").forEach(function(b){b.addEventListener("click",function(){ $("personOverlay").classList.remove("show"); $("staffOverlay").classList.remove("show"); openMe(n); });});
     body.querySelectorAll(".pinbtn.reset").forEach(function(b){b.addEventListener("click",async function(){
       if(!b.dataset.arm){ b.dataset.arm="1"; b.classList.add("arm"); b.textContent=t("pinResetSure"); setTimeout(function(){ if(b.isConnected&&b.dataset.arm){ b.dataset.arm=""; b.classList.remove("arm"); b.textContent=""+t("pinReset"); } },4000); return; }
@@ -2412,10 +2429,15 @@
   // Chef / Management / Owner get their tools right after their own PIN (no second login). The password login stays the service door.
   function applyPinRole(role){
     var was=state.admin;
-    if(role==="chef"||role==="manager"){ state.pinRole=role; if(!state.password){ state.admin=true; state.role=role; } }
+    if(role==="chef"||role==="manager"||role==="owner"){ state.pinRole=role; if(!state.password||role==="owner"){ state.admin=true; state.role=role; } }
     else { state.pinRole=null; if(!state.password&&state.admin){ state.admin=false; state.role=null; } }
     if(state.admin!==was){ ensureActiveWeek(); applyLang(); if(state.admin) $("saveStatus").textContent=t("statusReady"); renderAll(); }
   }
+  function startViewAs(n){ if(!isOwner()||!n) return; state.viewAs=n; ensureActiveWeek(); renderAll(); window.scrollTo({top:0,behavior:"smooth"}); }
+  function stopViewAs(){ state.viewAs=null; renderAll(); }
+  $("viewAsExit").addEventListener("click",stopViewAs);
+  $("viewAsWeek").addEventListener("click",function(){ if(state.viewAs) openMe(state.viewAs); });
+  $("viewAsStats").addEventListener("click",function(){ if(state.viewAs&&typeof openStats==="function") openStats(state.viewAs); });
   async function meWhoAmI(){
     if(!state.me.token) return;
     var r; try{ r=await api("/api/me?action=who"); }catch(e){ r={ok:false,status:0,json:{}}; }
@@ -2749,7 +2771,7 @@
   async function meLogout(){
     var tok=state.me.token; $("meOverlay").classList.remove("show");
     if(tok) api("/api/me",{method:"POST",body:{action:"logout"}});
-    meSet(null,null); applyPinRole(null); renderMe(); renderDays(); toast("Logged out on this device."); maybeWhoPopup();
+    meSet(null,null); state.viewAs=null; applyPinRole(null); renderMe(); renderDays(); toast("Logged out on this device."); maybeWhoPopup();
   }
 
   // -- my week --

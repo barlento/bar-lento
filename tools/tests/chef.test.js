@@ -47,6 +47,21 @@ async function pinLogin(p,name,pin){ await p.goto(B+"/?v=r"+Math.random()); awai
   console.log("15 Marta after her PIN:",mu); if(!mu.admin||mu.chef||!/Manager mode/.test(mu.mode)||mu.history==="none") errors.push("manager role after PIN wrong");
   r=await j("/api/log?limit=3",{headers:{"x-staff-token":mtok}}); console.log("16 Marta reads the history with her PIN token:",r.s); if(r.s!==200) errors.push("manager-by-PIN cannot read history");
   r=await j("/api/me?action=list",{headers:{"x-staff-token":mtok}}); console.log("17 Marta's Staff list size:",Object.keys(r.j.accounts||{}).length,"role:",r.j.role); if(r.j.role!=="manager") errors.push("manager-by-PIN list wrong");
+  // ---- Marta (management) cannot promote to Management/Owner; Sierrah (Owner via Toast) can, and has "View as" ----
+  r=await j("/api/data"); const dm=JSON.parse(JSON.stringify(r.j.data)); dm.dept.Joe="management"; dm.deptManual=(dm.deptManual||[]).concat(["Joe"]);
+  r=await j("/api/data",{method:"POST",headers:{"Content-Type":"application/json","x-staff-token":mtok},body:JSON.stringify({version:(await j("/api/data")).j.version,data:dm})}); console.log("19 Marta promotes Joe to Management:",r.s,r.j&&r.j.error); if(r.s!==403) errors.push("manager could promote to management");
+  const o=await (await b.newContext({viewport:{width:1200,height:900}})).newPage(); o.on("pageerror",e=>errors.push("owner pageerror: "+e.message));
+  const otok=await pinLogin(o,"Sierrah","7777");
+  const ou=await o.evaluate(()=>({admin:document.body.classList.contains("admin"), owner:document.body.classList.contains("owner"), mode:document.querySelector("#adminBar [data-t=adminMode]").textContent}));
+  console.log("20 Sierrah (Owner) after her PIN:",ou); if(!ou.admin||!ou.owner||!/Owner mode/.test(ou.mode)) errors.push("owner mode after PIN wrong");
+  r=await j("/api/data"); const dm2=JSON.parse(JSON.stringify(r.j.data)); dm2.dept.Joe="management"; dm2.deptManual=(dm2.deptManual||[]).concat(["Joe"]);
+  r=await j("/api/data",{method:"POST",headers:{"Content-Type":"application/json","x-staff-token":otok},body:JSON.stringify({version:r.j.version,data:dm2})}); console.log("21 owner promotes Joe to Management:",r.s); if(r.s!==200) errors.push("owner could not promote");
+  const dm3=JSON.parse(JSON.stringify(r.j.data)); dm3.dept.Joe="floor"; await j("/api/data",{method:"POST",headers:{"Content-Type":"application/json","x-staff-token":otok},body:JSON.stringify({version:r.j.version,data:dm3})});
+  await o.click("#staffBtn"); await o.waitForSelector("#staffOverlay.show"); await o.waitForTimeout(900); await o.click('.person[data-name="Mariia"]'); await o.waitForSelector("#personOverlay.show"); await o.waitForTimeout(300);
+  const va=await o.isVisible(".pinbtn.viewas"); await o.click(".pinbtn.viewas"); await o.waitForTimeout(600);
+  const vw=await o.evaluate(()=>({bar:document.getElementById("viewAsBar").style.display!=="none", txt:document.getElementById("viewAsTxt").textContent.slice(0,40), names:[...new Set([...document.querySelectorAll(".shift .who")].map(e=>e.firstChild.textContent.trim()))], mine:document.querySelectorAll(".shift.mine").length, addshift:getComputedStyle(document.querySelector(".addshift")).display}));
+  console.log("22 View as Mariia (chef):",va,vw); if(!va||!vw.bar||vw.names.some(n=>!inK(n))||vw.addshift!=="none") errors.push("view-as wrong: "+JSON.stringify(vw));
+  await o.click("#viewAsExit"); await o.waitForTimeout(400); const back=await o.evaluate(()=>({bar:document.getElementById("viewAsBar").style.display!=="none", mode:document.querySelector("#adminBar [data-t=adminMode]").textContent})); console.log("23 exit view-as:",back); if(back.bar||!/Owner mode/.test(back.mode)) errors.push("exit view-as wrong");
   // no Chef login button anywhere
   const p2=await (await b.newContext({viewport:{width:1200,height:900}})).newPage(); await p2.goto(B+"/?v=nochef"); await p2.waitForSelector("#whoOverlay.show"); const btns=await p2.evaluate(()=>[...document.querySelectorAll(".who-logins .btn")].map(b=>b.textContent.trim())); console.log("18 login buttons:",btns); if(btns.length!==1||!/Manager login/.test(btns[0])) errors.push("login buttons wrong");
   await b.close(); console.log("ERRORS:",errors.length?errors:"none"); process.exit(errors.length?1:0);

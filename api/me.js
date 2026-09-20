@@ -164,7 +164,7 @@ module.exports = async (req, res) => {
     const action = req.method === "GET" ? (url.searchParams.get("action") || "who") : String(body.action || "");
     const doc0 = await store.getSchedule();
     const role = await auth.roleFrom(req, doc0); // "manager" | "chef" | null — password, or the person's department
-    const isAdmin = role === "manager", isChef = role === "chef";
+    const isAdmin = auth.isManagerish(role), isChef = role === "chef";
     const kitchen = new Set(auth.kitchenNames(doc0.data));
     const mayManage = (n) => isAdmin || (isChef && kitchen.has(n)); // the chef manages kitchen people only
 
@@ -199,7 +199,7 @@ module.exports = async (req, res) => {
           Object.keys(summary).forEach((n) => { if (!k.has(n)) delete summary[n]; }); Object.keys(presenceOut).forEach((n) => { if (!k.has(n)) delete presenceOut[n]; });
           return send(res, 200, { accounts: summary, formerAcks: [], formerDocAcks: [], rulesVersion: RULES.version || null, docsVersions: docVersions(), mail: mail.enabled(), toastReport: null, formerStaff: [], presence: presenceOut, dept: doc.data.dept || {}, role: "chef", version: doc.version });
         }
-        return send(res, 200, { accounts: summary, formerAcks, formerDocAcks, rulesVersion: RULES.version || null, docsVersions: docVersions(), mail: mail.enabled(), toastReport, formerStaff, presence: presenceOut, dept: doc.data.dept || {}, role: "manager", version: doc.version });
+        return send(res, 200, { accounts: summary, formerAcks, formerDocAcks, rulesVersion: RULES.version || null, docsVersions: docVersions(), mail: mail.enabled(), toastReport, formerStaff, presence: presenceOut, dept: doc.data.dept || {}, role, version: doc.version });
       }
       // Who is on this device? (also used by "hours" below)
       let name = await accounts.whoIs(tokenFrom(req), doc.data.staff);
