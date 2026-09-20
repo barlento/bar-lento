@@ -45,6 +45,25 @@ async function migrationMartaDays(doc) {
   await store.appendLog({ at: new Date().toISOString(), changes: [`Marta: ${wrong.length} owner-entered days removed (hours before the opening were variable; nothing is recorded for that period)`] }).catch(() => {});
 }
 
+// Empty past weeks (owner's request 2026-09-20): weeks the history import created before the opening and that hold no
+// shift and no day note are removed once (the week of 2026-09-07 has the renovation closures and stays).
+const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+function isEmptyWeek(w) { return !DAYS.some((d) => (w[d] || []).length) && !Object.values(w.notes || {}).some((n) => n && (n.status || (n.text || "").trim())); }
+async function migrationEmptyWeeks(doc) {
+  if (!store.hasStorage()) return doc;
+  const FLAG = "barlento:migr:2026-09-20-empty-weeks";
+  if (await store._redis("GET", FLAG).catch(() => null)) return doc;
+  await store._redis("SET", FLAG, new Date().toISOString()).catch(() => {});
+  const weeks = Object.assign({}, doc.data.weeks || {});
+  const gone = Object.keys(weeks).filter((wk) => wk < "2026-09-07" && isEmptyWeek(weeks[wk])).sort();
+  if (!gone.length) return doc;
+  gone.forEach((wk) => delete weeks[wk]);
+  const next = { version: (doc.version || 0) + 1, data: store.normalizeData(Object.assign({}, doc.data, { weeks })), updatedAt: doc.updatedAt };
+  await store.saveSchedule(next);
+  await store.appendLog({ at: new Date().toISOString(), version: next.version, changes: [`Empty past weeks removed: ${gone.join(", ")}`] }).catch(() => {});
+  return next;
+}
+
 module.exports = async (req, res) => {
   try {
     if (req.method === "GET") {
@@ -53,8 +72,9 @@ module.exports = async (req, res) => {
       const [doc0, confirmations, announcement] = await Promise.all([store.getSchedule(), store.getConfirmations(), store.getAnnouncement().catch(() => null)]);
       // New Toast employees appear in Staff by themselves (never throws, never while the manager is editing).
       const docS = await staffsync.syncFromToast(doc0).then((r) => r.doc).catch(() => doc0);
-      const doc = await migrations(docS).catch(() => docS);
-      await migrationMartaDays(doc).catch(() => {});
+      const docM = await migrations(docS).catch(() => docS);
+      await migrationMartaDays(docM).catch(() => {});
+      const doc = await migrationEmptyWeeks(docM).catch(() => docM);
       // Past weeks follow Toast by themselves (real clock-ins replace the plan; last 8 weeks, every 6 h).
       const doc1 = await backfill.auto(doc, doc0.updatedAt).catch(() => doc);
       // A signed-in device polling = that person has the app open: note it for the manager's live Staff list.

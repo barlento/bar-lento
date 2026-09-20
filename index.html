@@ -2195,7 +2195,8 @@
       if(r.ok){ toast(t("pinResetDone",{n:n}),4200); await loadAccounts(); renderPerson(); renderRoster(); }
       else { toast(t("pinResetFail")); b.disabled=false; b.dataset.arm=""; b.classList.remove("arm"); b.textContent=""+t("pinReset"); }
     });});
-    body.querySelectorAll('input[type="date"]').forEach(function(inp){inp.addEventListener("change",function(){ if(inp.value) state.data.birthdays[n]=inp.value; else delete state.data.birthdays[n]; renderDays(); scheduleSave(); toast(inp.value?t("bdaySaved",{n:n}):t("bdayRemoved")); renderPerson(); renderRoster(); });});
+    // The native date picker fires "change" at every wheel move: update the text in place and keep the picker open (no re-render of the sheet).
+    body.querySelectorAll('input[type="date"]').forEach(function(inp){var tm=null;inp.addEventListener("change",function(){ var v=/^\d{4}-\d{2}-\d{2}$/.test(inp.value)?inp.value:""; if(v) state.data.birthdays[n]=v; else delete state.data.birthdays[n]; var sp=inp.parentNode.querySelector(".dim"); if(sp) sp.textContent=v?bdayShort(v)+", "+v.slice(0,4):t("noBirthday"); renderDays(); scheduleSave(); renderRoster(); clearTimeout(tm); tm=setTimeout(function(){ toast(v?t("bdaySaved",{n:n}):t("bdayRemoved")); },900); });});
   }
   function shiftMonth(ym,d){ var y=Number(ym.slice(0,4)), m=Number(ym.slice(5,7))-1+d; var dt=new Date(y,m,1); return dt.getFullYear()+"-"+pad(dt.getMonth()+1); }
   var punchCache={};
