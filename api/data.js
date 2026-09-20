@@ -115,7 +115,11 @@ module.exports = async (req, res) => {
       if (role === "chef") {
         const kitchen = new Set(auth.kitchenNames(current.data));
         const strip = (d) => { const c = JSON.parse(JSON.stringify(d)); Object.keys(c.weeks || {}).forEach((wk) => { ["mon", "tue", "wed", "thu", "fri", "sat", "sun"].forEach((k) => { c.weeks[wk][k] = (c.weeks[wk][k] || []).filter((sh) => !kitchen.has(sh.name)); }); }); return c; };
-        if (JSON.stringify(strip(current.data)) !== JSON.stringify(strip(data))) return send(res, 403, { error: "chef_forbidden", detail: "Kitchen shifts only" });
+        // A new week is allowed when, kitchen shifts aside, it is an empty week (the chef plans the kitchen before Marta plans the floor).
+        const oldS = strip(current.data), newS = strip(data);
+        const blank = (w) => DAYS.every((k) => !(w[k] || []).length) && !Object.values(w.notes || {}).some((n) => n && (n.status || (n.text || "").trim()));
+        Object.keys(newS.weeks || {}).forEach((wk) => { if (!(oldS.weeks || {})[wk] && blank(newS.weeks[wk])) delete newS.weeks[wk]; });
+        if (JSON.stringify(oldS) !== JSON.stringify(newS)) return send(res, 403, { error: "chef_forbidden", detail: "Kitchen shifts only" });
       }
       // Only the owner (Titolare) promotes to Direzione / Titolare or demotes them (owner's decision 2026-09-20)
       if (role === "manager") {
