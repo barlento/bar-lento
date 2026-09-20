@@ -1022,7 +1022,7 @@
 <!-- Leaderboard (everyone) -->
 <div class="overlay" id="lbOverlay">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="lbTitle">
-    <h2 id="lbTitle"><span data-t="lbTitle">Team ranking</span> <span class="pill" data-t="managersOnly">Managers only</span></h2>
+    <h2 id="lbTitle"><span data-t="lbTitle">Team ranking</span> <span class="pill" id="lbDept"></span></h2>
     <p class="lead" data-t="lbLead">Hours worked + punctuality, straight from Toast. Staff don't see this — each person only sees their own stats.</p>
     <div class="lb-tabs" role="tablist">
       <button type="button" class="active" data-period="week" data-t="thisWeek">This week</button>
@@ -1605,7 +1605,8 @@
   var lb={period:"week", data:{}, timer:null, tick:null, lastOrder:{}, lastLeader:{}, pos:{}};
   var MEDALS=["1","2","3"];
   function lbPoints(r,now){ var live=r.openSince?Math.max(0,now-Date.parse(r.openSince)):0; var hours=(r.msClosed+live)/3600000; return {hours:hours, points:Math.round(hours*10)+(r.matched>=3&&r.onTimePct!=null?r.onTimePct:0)+r.streak*5}; }
-  function lbRanked(){ var d=lb.data[lb.period]; if(!d) return null; var now=Date.now(); var rows=d.rows.map(function(r){ var c=lbPoints(r,now); return Object.assign({},r,{hoursLive:c.hours,pointsLive:c.points,on:!!r.openSince}); }); rows.sort(function(a,b){ return b.pointsLive-a.pointsLive||a.name.localeCompare(b.name); }); return rows; }
+  // The ranking follows the calendar shown: Floor people in the Floor view, Kitchen people in the Kitchen view (the chef sees the kitchen, himself included).
+  function lbRanked(){ var d=lb.data[lb.period]; if(!d) return null; var now=Date.now(); var rows=d.rows.filter(function(r){return canSee(r.name);}).map(function(r){ var c=lbPoints(r,now); return Object.assign({},r,{hoursLive:c.hours,pointsLive:c.points,on:!!r.openSince}); }); rows.sort(function(a,b){ return b.pointsLive-a.pointsLive||a.name.localeCompare(b.name); }); return rows; }
   function fmtHours(h){ var m=Math.round(h*60); return Math.floor(m/60)+"h "+pad(m%60)+"m"; }
   function renderLbBtn(){ $("lbBtn").style.display=(state.features.toast&&state.admin)?"":"none"; }
   async function loadLb(quiet){
@@ -1619,6 +1620,7 @@
   function renderLb(){
     var rows=lbRanked(); var list=$("lbList"), pod=$("lbPodium");
     document.querySelectorAll(".lb-tabs button").forEach(function(b){ b.classList.toggle("active",b.getAttribute("data-period")===lb.period); });
+    $("lbDept").textContent=t(deptView()==="kitchen"?"deptKitchen":"deptFloor");
     if(!rows){ list.innerHTML='<div class="tc-empty">'+t("loadingWord")+'</div>'; pod.innerHTML=""; $("lbUpdated").textContent=""; return; }
     var d=lb.data[lb.period];
     if(!rows.length){ pod.innerHTML=""; list.innerHTML='<div class="tc-empty"><span class="big"></span>'+t("addPeople")+'</div>'; return; }
@@ -2457,7 +2459,7 @@
   }
   function startViewAs(n){ if(!isOwner()||!n) return; state.viewAs=n; state.deptView=null; ensureActiveWeek(); renderAll(); window.scrollTo({top:0,behavior:"smooth"}); }
   function stopViewAs(){ state.viewAs=null; state.deptView=null; renderAll(); }
-  $("deptSeg").querySelectorAll("button").forEach(function(b){ b.addEventListener("click",function(){ state.deptView=b.getAttribute("data-v"); renderDays(); if($("clockOverlay").classList.contains("show")) renderClockPanel(); }); });
+  $("deptSeg").querySelectorAll("button").forEach(function(b){ b.addEventListener("click",function(){ state.deptView=b.getAttribute("data-v"); renderDays(); if($("clockOverlay").classList.contains("show")) renderClockPanel(); if($("lbOverlay").classList.contains("show")) renderLb(); }); });
   $("viewAsExit").addEventListener("click",stopViewAs);
   $("viewAsWeek").addEventListener("click",function(){ if(state.viewAs) openMe(state.viewAs); });
   $("viewAsStats").addEventListener("click",function(){ if(state.viewAs&&typeof openStats==="function") openStats(state.viewAs); });
