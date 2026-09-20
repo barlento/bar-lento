@@ -3015,7 +3015,9 @@
   $("aiInput").addEventListener("input",function(){ this.style.height="auto"; this.style.height=Math.min(120,this.scrollHeight)+"px"; $("aiSend").disabled=!this.value.trim()||ai.busy; });
   $("aiInput").addEventListener("keydown",function(e){ if(e.key==="Enter"&&!e.shiftKey&&window.matchMedia("(min-width:700px)").matches){ e.preventDefault(); askAi(this.value); } });
   document.addEventListener("keydown",function(e){ if(e.key==="Escape"&&$("aiScreen").classList.contains("show")) closeAi(); });
-  (function(){ var SR=window.SpeechRecognition||window.webkitSpeechRecognition; if(!SR) return; var mic=$("aiMic"); mic.style.display="flex";
+  // Own mic button only where the browser's speech recognition is dependable (desktop Chrome/Edge). On iPhone/iPad and Safari
+  // it stalls inside the installed app, and the keyboard already has a dictation key that types straight into the field.
+  (function(){ var SR=window.SpeechRecognition||window.webkitSpeechRecognition; var apple=/iPhone|iPad|iPod/i.test(navigator.userAgent)||(/Safari/.test(navigator.userAgent)&&!/Chrome|Chromium|Edg/.test(navigator.userAgent)); if(!SR||apple) return; var mic=$("aiMic"); mic.style.display="flex";
     mic.addEventListener("click",function(){ if(ai.rec){ try{ai.rec.stop();}catch(e){} return; } var rec=new SR(); rec.lang=lang==="it"?"it-IT":"en-US"; rec.interimResults=false; ai.rec=rec; mic.classList.add("on");
       rec.onresult=function(ev){ var tx=ev.results[0][0].transcript; $("aiInput").value=tx; $("aiSend").disabled=false; askAi(tx); };
       rec.onend=function(){ ai.rec=null; mic.classList.remove("on"); }; rec.onerror=rec.onend; try{ rec.start(); }catch(e){ rec.onend(); } }); })();
