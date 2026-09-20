@@ -322,7 +322,7 @@
   .hero .whoworks .names{font-weight:600}
 
   .weekrow{display:flex;gap:8px;align-items:stretch;margin-bottom:8px;flex-wrap:wrap}
-  .deptrow{display:flex;justify-content:center;margin:0 0 10px}
+  .deptrow{display:none;justify-content:center;margin:0 0 10px} body.mgr .deptrow{display:flex} /* Floor / Kitchen switch: manager and owner only */
   .deptseg{display:inline-flex;background:#E9E9EE;border-radius:11px;padding:3px;gap:2px}
   .deptseg button{border:0;background:transparent;border-radius:9px;padding:7px 18px;font:inherit;font-weight:600;font-size:.85rem;color:var(--ink-muted);cursor:pointer;display:inline-flex;align-items:center;gap:7px;white-space:nowrap;transition:background .15s,color .15s}
   .deptseg button.active{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
@@ -334,7 +334,7 @@
   .tab.past{border-style:dashed}
   .tab .sm{display:block;font-weight:500;font-size:.72rem;opacity:.85;margin-top:2px}
   .archiverow{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
-  body.chef .daybtn,body.chef #historyBtn,body.chef #exportBtn,body.chef #deleteWeekBtn,body.chef #deptRow,body.chef #personRemove,body.chef #rosterImport,body.chef #rosterFormer,body.chef #staffOverlay .addrow,body.chef #personBody input[type=date]{display:none!important}
+  body.chef .daybtn,body.chef #historyBtn,body.chef #exportBtn,body.chef #deleteWeekBtn,body.chef #personRemove,body.chef #rosterImport,body.chef #rosterFormer,body.chef #staffOverlay .addrow,body.chef #personBody input[type=date]{display:none!important}
   .weektools{display:none;gap:8px;flex-wrap:wrap}
   .weektools.show{display:flex}
 
@@ -1743,7 +1743,8 @@
   function floorNames(){ return (state.data.staff||[]).filter(function(n){return !isKitchenName(n);}); }
   // Two calendars in one app (owner's decision 2026-09-20): Floor (Marta's) and Kitchen (the chef's). One is shown at a time;
   // everyone starts on their own department, the chef is locked to the kitchen, the segment above the weeks switches.
-  function deptView(){ if(isChef()) return "kitchen"; if(state.deptView) return state.deptView; var me=state.viewAs||state.me.name; return me&&isKitchenName(me)?"kitchen":"floor"; }
+  function isMgr(){ var r=effRole(); return !!state.admin&&(r==="manager"||r==="owner"); } // manager or owner: the only ones who see both departments
+  function deptView(){ if(isMgr()&&state.deptView) return state.deptView; var me=state.viewAs||state.me.name; return (isChef()||(me&&isKitchenName(me)))?"kitchen":"floor"; } // staff and the chef: their own department only
   function canSee(n){ return isKitchenName(n)===(deptView()==="kitchen"); }
   function renderDeptSeg(){ var el=$("deptSeg"); if(!el) return; var v=deptView(); el.querySelectorAll("button").forEach(function(b){ var k=b.getAttribute("data-v"); b.classList.toggle("active",k===v); b.setAttribute("aria-selected",k===v); b.innerHTML='<span class="dept">'+DEPT_SVG[k]+'</span>'+h(t(k==="kitchen"?"deptKitchen":"deptFloor")); }); }
   // Every secret field gets an eye to show what is being typed (owner's request 2026-09-19).
@@ -1857,7 +1858,7 @@
 
   function renderAdminUI(){
     document.body.classList.toggle("admin",state.admin); document.body.classList.toggle("chef",isChef());
-    document.body.classList.toggle("owner",isOwner()); document.body.classList.toggle("viewing",!!state.viewAs); document.body.classList.toggle("viewstaff",!!state.viewAs&&!viewRole(state.viewAs));
+    document.body.classList.toggle("owner",isOwner()); document.body.classList.toggle("viewing",!!state.viewAs); document.body.classList.toggle("viewstaff",!!state.viewAs&&!viewRole(state.viewAs)); document.body.classList.toggle("mgr",isMgr());
     var modeEl=$("adminBar").querySelector("[data-t=adminMode]"); if(modeEl) modeEl.textContent=state.viewAs?t("viewingAs",{n:state.viewAs}):t(isOwner()?"ownerMode":isChef()?"chefMode":"adminMode");
     var vb=$("viewAsBar"); if(vb){ vb.style.display=state.viewAs?"":"none"; if(state.viewAs){ var vr=viewRole(state.viewAs); $("viewAsTxt").textContent=t(vr?"viewAsTxtTools":"viewAsTxt",{n:state.viewAs,r:t(vr==="chef"?"deptChef":vr==="manager"?"deptManagement":vr==="owner"?"deptOwner":"lvlStaffWord")}); } }
     $("adminBar").classList.toggle("show",state.admin);
