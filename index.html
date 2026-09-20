@@ -700,7 +700,10 @@
   .hero .sub{opacity:1;color:var(--ink-muted)}
   .tab{border-radius:999px;font-weight:600;min-width:0;flex:1 1 0;padding:8px 10px}
   .tab .lbl,.tab b,.tab span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .tabs{overflow:visible}
+  /* Week tabs (owner 2026-09-20): one short label "Sep 7–13 ’26", never cut: the row scrolls sideways instead of squeezing. */
+  .tabs{overflow-x:auto;overflow-y:hidden;flex-wrap:nowrap;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{flex:0 0 auto;min-width:0;padding:8px 14px}
   @media (max-width:420px){.tab{font-size:.78rem}}
   .tab.active{background:var(--ink);border-color:var(--ink);color:#fff}
   .day-card{border-radius:20px;padding:16px;box-shadow:var(--shadow)}
@@ -1445,7 +1448,8 @@
     var cur=currentMondayISO();
     var tag = forceEn ? (startISO===cur ? "This week" : startISO===toISO(addDays(fromISO(cur),7)) ? "Next week" : startISO<cur ? "Past week" : "Week")
       : (startISO===cur ? t("thisWeek") : startISO===toISO(addDays(fromISO(cur),7)) ? t("nextWeek") : startISO<cur ? t("pastWeek") : t("weekTag"));
-    return {tag:tag, range:range, past:startISO<cur};
+    var yy="’"+String(end.getFullYear()).slice(-2);
+    return {tag:tag, range:range, short:range+" "+yy, past:startISO<cur};
   }
 
   function visibleWeeks(){
@@ -1458,6 +1462,8 @@
   function pastWeekCount(){var cur=currentMondayISO();return weekKeys().filter(function(k){return k<cur;}).length;}
 
   // ---------- API ----------
+  // Manager tools reached through the own PIN (Owner/Management/Chef) have no password: the staff token carries the role.
+  function adminHeaders(){ var h={}; if(state.password) h["x-admin-password"]=state.password; if(state.me.token) h["x-staff-token"]=state.me.token; return h; }
   async function api(path,opts){
     opts=opts||{}; var headers={"Content-Type":"application/json"};
     if(opts.auth && state.password) headers["x-admin-password"]=state.password;
@@ -1558,7 +1564,7 @@
     var el=$("weekTabs"); var vis=visibleWeeks();
     if(!vis.length){el.innerHTML='<div class="empty-note">'+t("noWeeks")+'</div>';}
     else {
-      el.innerHTML=vis.map(function(k){var l=weekLabel(k);return '<button type="button" role="tab" class="tab'+(k===state.activeWeek?" active":"")+(l.past?" past":"")+'" data-week="'+k+'" aria-selected="'+(k===state.activeWeek)+'">'+l.tag+'<span class="sm">'+l.range+'</span></button>';}).join("");
+      el.innerHTML=vis.map(function(k){var l=weekLabel(k);return '<button type="button" role="tab" class="tab'+(k===state.activeWeek?" active":"")+(l.past?" past":"")+'" data-week="'+k+'" aria-selected="'+(k===state.activeWeek)+'">'+l.short+'</button>';}).join("");
       el.querySelectorAll(".tab").forEach(function(b){b.addEventListener("click",function(){state.activeWeek=b.getAttribute("data-week");renderTabs();renderDays();renderAdminUI();});});
       var act=el.querySelector(".tab.active"); if(act&&act.scrollIntoView) try{act.scrollIntoView({block:"nearest",inline:"center"});}catch(e){}
     }
@@ -2271,7 +2277,7 @@
   async function downloadRecord(n,btn){
     if(btn) btn.disabled=true; toast(t("recordWait"),3000);
     try{
-      var res=await fetch("/api/export?person="+encodeURIComponent(n),{headers:{"x-admin-password":state.password},cache:"no-store"});
+      var res=await fetch("/api/export?person="+encodeURIComponent(n),{headers:adminHeaders(),cache:"no-store"});
       if(!res.ok){ var why=""; try{ why=(await res.text()).slice(0,140); }catch(e){} toast(t("exportFail")+(why?" ("+why+")":""),6000); return; }
       var blob=await res.blob(); var a=document.createElement("a"); a.href=URL.createObjectURL(blob);
       a.download="bar-lento-record-"+n.replace(/[^A-Za-z0-9]+/g,"-").toLowerCase()+"-"+toISO(new Date())+".pdf"; document.body.appendChild(a); a.click(); document.body.removeChild(a); setTimeout(function(){URL.revokeObjectURL(a.href);},2000);
@@ -2282,7 +2288,7 @@
   async function exportCSV(){
     toast(t("exporting"));
     try{
-      var res=await fetch("/api/export",{headers:{"x-admin-password":state.password},cache:"no-store"});
+      var res=await fetch("/api/export",{headers:adminHeaders(),cache:"no-store"});
       if(!res.ok){ var why=""; try{ why=(await res.text()).slice(0,140); }catch(e){} toast((res.status===503?t("exportNeedsDb"):t("exportFail"))+(why?" ("+why+")":""),6000); return; }
       var blob=await res.blob(); var a=document.createElement("a"); a.href=URL.createObjectURL(blob);
       a.download="bar-lento-schedule-archive-"+toISO(new Date())+".pdf"; document.body.appendChild(a); a.click(); document.body.removeChild(a); setTimeout(function(){URL.revokeObjectURL(a.href);},2000);
@@ -2824,7 +2830,7 @@
     var keys=meWeeks(), wk=me.week; var lbl=$("meWeekLbl"), sub=$("meWeekSub"), list=$("meList"), sum=$("meSum"), note=$("meNote");
     $("mePrev").disabled=!wk||keys.indexOf(wk)<=0; $("meNext").disabled=!wk||keys.indexOf(wk)>=keys.length-1;
     if(!wk){ lbl.textContent=t("noWeeksYet"); sub.textContent=""; list.innerHTML='<div class="me-empty"><span class="big"></span>'+t("nothingPublished")+'</div>'; sum.innerHTML=""; note.textContent=""; return; }
-    var l=weekLabel(wk); lbl.textContent=l.tag; sub.textContent=l.range;
+    var l=weekLabel(wk); lbl.textContent=l.short; sub.textContent="";
     var start=fromISO(wk), today=new Date(), todayISO=toISO(today), week=state.data.weeks[wk]||emptyWeek();
     var hk=me.name+"|"+wk, hrs=me.hours[hk]&&me.hours[hk].data; var byDay={}; if(hrs&&hrs.entries) hrs.entries.forEach(function(e){ (byDay[e.day]=byDay[e.day]||[]).push(e); });
     var rows=[], schedMin=0, schedSoFarMin=0, workedMs=0, nowMs=Date.now(), nowMin=today.getHours()*60+today.getMinutes();

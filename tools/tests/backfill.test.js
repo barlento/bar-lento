@@ -29,6 +29,9 @@ const hdr = { "Content-Type": "application/json", "x-admin-password": PW };
   if (pastDays.some((s) => !s.src)) errors.push("a planned shift survived in a past day of the current week");
   if (future.some((s) => s.src)) errors.push("today or a future day was rewritten");
   // 2. manager button: idempotent, informative
+  // The automatic run happened at the first GET of the shared server (minutes ago in the full run): a fake clock-in that closed
+  // since then is legitimately "new" once, so the button runs twice and the SECOND call must change nothing.
+  await j("/api/data", { method: "POST", headers: hdr, body: JSON.stringify({ action: "backfillToast" }) });
   r = await j("/api/data", { method: "POST", headers: hdr, body: JSON.stringify({ action: "backfillToast" }) });
   console.log("6 button:", r.s, { clockIns: r.j.clockIns, replaced: r.j.replaced, changed: r.j.changed, seen: r.j.seen, from: r.j.from, to: r.j.to, firstIn: r.j.firstIn, lastIn: r.j.lastIn });
   if (r.s !== 200 || (r.j.changed || []).length) errors.push("second import changed something (not idempotent)");
