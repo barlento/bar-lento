@@ -763,6 +763,38 @@
   .hdr-actions>*{flex:0 0 auto}
   .sheet .actions .btn,.sheet .actions .linkbtn{min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis}
   .toast{top:calc(14px + env(safe-area-inset-top));bottom:auto;max-width:calc(100vw - 32px)}
+  /* ---- Assistant (owner 2026-09-20): one black circle "AI" with a soft pulsing halo, a full new screen, nothing else ---- */
+  .aifab{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom));width:56px;height:56px;border-radius:50%;border:0;background:#0b0b0c;color:#fff;font:inherit;font-weight:700;font-size:.95rem;letter-spacing:-.02em;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:45;box-shadow:0 10px 30px -12px rgba(0,0,0,.45)}
+  .aifab.show{display:flex}
+  .aifab::before{content:"";position:absolute;inset:-6px;border-radius:50%;border:1.5px solid rgba(11,11,12,.35);animation:aihalo 2.6s ease-out infinite}
+  @keyframes aihalo{0%{transform:scale(.92);opacity:.9}70%{transform:scale(1.22);opacity:0}100%{transform:scale(1.22);opacity:0}}
+  body.locked .aifab,body.viewstaff .aifab{display:none!important}
+  .aiscreen{position:fixed;inset:0;background:var(--bg);z-index:70;display:none;flex-direction:column;padding-top:env(safe-area-inset-top)}
+  .aiscreen.show{display:flex;animation:fadein .18s forwards}
+  .aiscreen .aihead{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);background:var(--surface)}
+  .aiscreen .aihead .back{border:0;background:transparent;font:inherit;font-size:1.6rem;line-height:1;color:var(--ink);cursor:pointer;padding:4px 10px 6px 6px}
+  .aiscreen .aihead .ttl{font-weight:600;letter-spacing:-.01em;font-size:1.05rem}
+  .aiscreen .aihead .sub{color:var(--ink-muted);font-size:.78rem;display:block;font-weight:500}
+  .aiscreen .aibody{flex:1;overflow:auto;padding:16px 16px 8px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch}
+  .aiscreen .aisug{display:flex;flex-direction:column;gap:8px;margin:auto 0 8px}
+  .aiscreen .aisug .lead{color:var(--ink-muted);font-size:.9rem;margin-bottom:4px}
+  .aiscreen .aisug button{text-align:left;border:1px solid var(--border);background:var(--surface);color:var(--ink);border-radius:14px;padding:12px 14px;font:inherit;font-size:.95rem;cursor:pointer}
+  .aiscreen .msg{max-width:88%;padding:11px 14px;border-radius:16px;font-size:.98rem;line-height:1.45;white-space:pre-wrap;word-wrap:break-word}
+  .aiscreen .msg.me{align-self:flex-end;background:var(--ink);color:#fff;border-bottom-right-radius:6px}
+  .aiscreen .msg.bot{align-self:flex-start;background:var(--surface);border:1px solid var(--border);border-bottom-left-radius:6px}
+  .aiscreen .msg.bot .open{display:inline-flex;margin-top:10px;border:1px solid var(--accent);color:var(--accent);background:transparent;border-radius:999px;padding:6px 12px;font:inherit;font-weight:600;font-size:.85rem;cursor:pointer}
+  .aiscreen .msg.wait{color:var(--ink-muted);letter-spacing:.2em}
+  .aiscreen .msg.wait span{animation:aidot 1.2s infinite}.aiscreen .msg.wait span:nth-child(2){animation-delay:.2s}.aiscreen .msg.wait span:nth-child(3){animation-delay:.4s}
+  @keyframes aidot{0%,80%,100%{opacity:.25}40%{opacity:1}}
+  .aiscreen .aiin{display:flex;gap:8px;align-items:flex-end;padding:10px 14px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--border);background:var(--surface)}
+  .aiscreen .aiin textarea{flex:1;resize:none;border:1px solid var(--border);border-radius:16px;padding:11px 14px;font:inherit;font-size:1rem;line-height:1.35;max-height:120px;background:var(--bg);color:var(--ink)}
+  .aiscreen .aiin textarea:focus{outline:none;border-color:var(--accent)}
+  .aiscreen .aiin .send{width:44px;height:44px;border-radius:50%;border:0;background:var(--accent);color:#fff;font-size:1.2rem;cursor:pointer;flex:none;display:flex;align-items:center;justify-content:center}
+  .aiscreen .aiin .send:disabled{opacity:.4}
+  .aiscreen .aiin .mic{width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--ink);cursor:pointer;flex:none;display:none;align-items:center;justify-content:center}
+  .aiscreen .aiin .mic.on{border-color:#d33;color:#d33}
+  .aiscreen .aiin .mic svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .aiscreen .aifoot{text-align:center;color:var(--ink-muted);font-size:.72rem;padding:0 16px 8px;background:var(--surface)}
 </style>
 </head>
 <body>
@@ -1168,6 +1200,13 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<button class="aifab" id="aiFab" type="button" aria-label="Ask Bar Lento">AI</button>
+<div class="aiscreen" id="aiScreen" role="dialog" aria-modal="true" aria-labelledby="aiTitle">
+  <div class="aihead"><button class="back" id="aiBack" type="button" aria-label="Back">‹</button><div><div class="ttl" id="aiTitle" data-t="aiTitle">Ask Bar Lento</div><span class="sub" data-t="aiSub">The app, your shifts, the rules, the menu</span></div></div>
+  <div class="aibody" id="aiBody"></div>
+  <div class="aiin"><button class="mic" id="aiMic" type="button" aria-label="Speak"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button><textarea id="aiInput" rows="1" placeholder="Ask anything…" aria-label="Your question"></textarea><button class="send" id="aiSend" type="button" aria-label="Send" disabled>↑</button></div>
+  <div class="aifoot" data-t="aiFoot">Answers only about the app, your own data, the rules and the menu. It cannot change anything.</div>
+</div>
 <script src="/rules.js"></script>
 <script src="/documents.js"></script>
 <script>
@@ -1197,7 +1236,7 @@
   var I18N={
     en:{
       myBday:"My birthday", myBdayNone:"Not set yet. Add it and the team celebrates you.", myBdayIs:"My birthday: {d}", bdaySavedMe:"Birthday saved. See you on {d}.", save:"Save",
-      chefMode:"Chef mode · kitchen only", ownerMode:"Owner mode", viewingAs:"Viewing as {n}", viewAsTxt:"You are seeing the app as {n} ({r}) sees it. Nothing you tap here changes anything.", viewAsTxtTools:"You are seeing the app as {n} ({r}) sees it, with their tools. What you change here is saved.", floorReadOnly:"The floor is planned by the manager. You can edit the kitchen.", iconNotice:"New app icon. iPhone keeps the old one: remove Bar Lento from the Home Screen and add it again from Safari (Share, Add to Home Screen).", viewAsBtn:"View as {n}", viewAsExit:"Exit", lvlStaffWord:"Staff", ownerOnly:"Only the owner can make someone Management or Owner.", chefForbidden:"Kitchen only: this change is for the manager.", showPin:"Show", hidePin:"Hide", deptRoleHint:"Chef, Management and Owner get the manager tools after their own PIN: Chef for the kitchen only, Management for everything, Owner for everything plus View as and these promotions.", appClockSalary:"Clocks in from the app (salaried in Toast)",
+      chefMode:"Chef mode · kitchen only", ownerMode:"Owner mode", viewingAs:"Viewing as {n}", viewAsTxt:"You are seeing the app as {n} ({r}) sees it. Nothing you tap here changes anything.", viewAsTxtTools:"You are seeing the app as {n} ({r}) sees it, with their tools. What you change here is saved.", floorReadOnly:"The floor is planned by the manager. You can edit the kitchen.", aiTitle:"Ask Bar Lento", aiSub:"The app, your shifts, the rules, the menu", aiFoot:"Answers only about the app, your own data, the rules and the menu. It cannot change anything.", aiPlaceholder:"Ask anything…", aiLead:"Ask me, for example:", aiSug1:"When do I work this week?", aiSug2:"How do I set my birthday?", aiSug3:"What does the sick leave policy say?", aiSugMgr:"How do I close a day for a private event?", aiSugChef:"How do I plan the kitchen for next week?", aiError:"Something went wrong. Try again in a moment.", aiBusy:"Too many questions today. Try again tomorrow.", aiOpen:"Open {s}", aiTimeClock:"Time clock", aiStaff:"Staff", aiRanking:"Team ranking", aiDocs:"My documents", iconNotice:"New app icon. iPhone keeps the old one: remove Bar Lento from the Home Screen and add it again from Safari (Share, Add to Home Screen).", viewAsBtn:"View as {n}", viewAsExit:"Exit", lvlStaffWord:"Staff", ownerOnly:"Only the owner can make someone Management or Owner.", chefForbidden:"Kitchen only: this change is for the manager.", showPin:"Show", hidePin:"Hide", deptRoleHint:"Chef, Management and Owner get the manager tools after their own PIN: Chef for the kitchen only, Management for everything, Owner for everything plus View as and these promotions.", appClockSalary:"Clocks in from the app (salaried in Toast)",
       adminMode:"Manager mode", lbBtn:"Team ranking", staffBtn:"Staff", historyBtn:"History", exportBtn:"Export PDF", logoutBtn:"Log out",
       newWeekBtn:"＋ New week", deleteWeekBtn:"Delete week", nwTitle:"New week", nwLead:"Create the week of {r}", nwCopy:"Copy last week's shifts ({k} shifts)", nwCopySub:"Same people and times as {r}; adjust as needed", nwEmpty:"Start empty", nwEmptySub:"Add every shift by hand",
       copyConfirm:"Tap again to replace the current shifts", deleteWeekConfirm:"Tap again to delete", deleteWeekConfirmN:"Tap again: deletes {k} shifts", deleteWeekLocked:"Past week · archived", pastLocked:"Past weeks are archived and can't be deleted", onlyEmpty:"Only an empty week can be deleted",
@@ -1258,7 +1297,7 @@
     },
     it:{
       myBday:"Il mio compleanno", myBdayNone:"Non ancora inserito. Aggiungilo e il team ti festeggia.", myBdayIs:"Il mio compleanno: {d}", bdaySavedMe:"Compleanno salvato. Ci vediamo il {d}.", save:"Salva",
-      chefMode:"Modalità chef · solo cucina", ownerMode:"Modalità titolare", viewingAs:"Stai vedendo come {n}", viewAsTxt:"Stai vedendo l'app come la vede {n} ({r}). Qui non cambi niente.", viewAsTxtTools:"Stai vedendo l'app come la vede {n} ({r}), con i suoi strumenti. Quello che cambi qui viene salvato.", floorReadOnly:"La sala la pianifica la direzione. Tu puoi modificare la cucina.", iconNotice:"Nuova icona. iPhone tiene quella vecchia: togli Bar Lento dalla Home e aggiungila di nuovo da Safari (Condividi, Aggiungi alla schermata Home).", viewAsBtn:"Vedi come {n}", viewAsExit:"Esci", lvlStaffWord:"Staff", ownerOnly:"Solo il titolare può rendere qualcuno Direzione o Titolare.", chefForbidden:"Solo cucina: questa modifica spetta alla manager.", showPin:"Mostra", hidePin:"Nascondi", deptRoleHint:"Chef, Direzione e Titolare hanno gli strumenti del manager dopo il proprio PIN: Chef solo per la cucina, Direzione per tutto, Titolare per tutto più Vedi come e queste promozioni.", appClockSalary:"Timbra dall'app (a stipendio su Toast)",
+      chefMode:"Modalità chef · solo cucina", ownerMode:"Modalità titolare", viewingAs:"Stai vedendo come {n}", viewAsTxt:"Stai vedendo l'app come la vede {n} ({r}). Qui non cambi niente.", viewAsTxtTools:"Stai vedendo l'app come la vede {n} ({r}), con i suoi strumenti. Quello che cambi qui viene salvato.", floorReadOnly:"La sala la pianifica la direzione. Tu puoi modificare la cucina.", aiTitle:"Chiedi a Bar Lento", aiSub:"L'app, i tuoi turni, le regole, il menu", aiFoot:"Risponde solo sull'app, sui tuoi dati, sulle regole e sul menu. Non può cambiare niente.", aiPlaceholder:"Chiedi quello che vuoi…", aiLead:"Chiedimi, per esempio:", aiSug1:"Quando lavoro questa settimana?", aiSug2:"Come imposto il mio compleanno?", aiSug3:"Cosa dice la policy sulla malattia?", aiSugMgr:"Come chiudo un giorno per un evento privato?", aiSugChef:"Come pianifico la cucina della prossima settimana?", aiError:"Qualcosa è andato storto. Riprova tra un attimo.", aiBusy:"Troppe domande per oggi. Riprova domani.", aiOpen:"Apri {s}", aiTimeClock:"Time clock", aiStaff:"Staff", aiRanking:"Classifica team", aiDocs:"I miei documenti", iconNotice:"Nuova icona. iPhone tiene quella vecchia: togli Bar Lento dalla Home e aggiungila di nuovo da Safari (Condividi, Aggiungi alla schermata Home).", viewAsBtn:"Vedi come {n}", viewAsExit:"Esci", lvlStaffWord:"Staff", ownerOnly:"Solo il titolare può rendere qualcuno Direzione o Titolare.", chefForbidden:"Solo cucina: questa modifica spetta alla manager.", showPin:"Mostra", hidePin:"Nascondi", deptRoleHint:"Chef, Direzione e Titolare hanno gli strumenti del manager dopo il proprio PIN: Chef solo per la cucina, Direzione per tutto, Titolare per tutto più Vedi come e queste promozioni.", appClockSalary:"Timbra dall'app (a stipendio su Toast)",
       adminMode:"Modalità manager", lbBtn:"Classifica team", staffBtn:"Staff", historyBtn:"Cronologia", exportBtn:"Esporta PDF", logoutBtn:"Esci",
       newWeekBtn:"＋ Nuova settimana", deleteWeekBtn:"Elimina settimana", nwTitle:"Nuova settimana", nwLead:"Crea la settimana {r}", nwCopy:"Copia i turni della settimana scorsa ({k} turni)", nwCopySub:"Stesse persone e orari di {r}; poi modifica ciò che cambia", nwEmpty:"Parti da zero", nwEmptySub:"Aggiungi ogni turno a mano",
       copyConfirm:"Tocca di nuovo per sostituire i turni", deleteWeekConfirm:"Tocca di nuovo per eliminare", deleteWeekConfirmN:"Tocca di nuovo: elimina {k} turni", deleteWeekLocked:"Settimana passata · archivio", pastLocked:"Le settimane passate sono in archivio e non si eliminano", onlyEmpty:"Si può eliminare solo una settimana vuota",
@@ -1539,7 +1578,7 @@
   }
 
   // ---------- rendering ----------
-  function renderAll(){renderUpdated();renderHero();renderTabs();renderDays();renderAdminUI();renderMe();}
+  function renderAll(){renderUpdated();renderHero();renderTabs();renderDays();renderAdminUI();renderMe();renderAiFab();}
 
   function renderUpdated(){
     var el=$("updatedNote");
@@ -2498,7 +2537,7 @@
     });
     return best;
   }
-  function renderMe(){
+  function renderMe(){ renderAiFab();
     var b=$("meBtn"), strip=$("meStrip");
     document.body.classList.toggle("locked",mustIdentify());
     if(!state.features.storage||(!state.data.staff.length&&!state.me.name)){ b.style.display="none"; strip.classList.remove("show"); return; }
@@ -2946,6 +2985,40 @@
   // Installable as an app (home screen) — the worker never caches data, so it stays live.
   if("serviceWorker" in navigator){ window.addEventListener("load",function(){ navigator.serviceWorker.register("/sw.js").then(function(){renderBell();}).catch(function(){}); }); }
   if(window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches) document.body.classList.add("standalone");
+
+  // ---------- Assistant (owner 2026-09-20): one button, one screen, read-only answers about the app, own data, rules, menu ----------
+  var ai={msgs:[],busy:false};
+  function renderAiFab(){ var on=!!(state.features&&state.features.ai)&&!!(state.me.token||state.admin); $("aiFab").classList.toggle("show",on); if(!on&&$("aiScreen").classList.contains("show")) closeAi(); }
+  function aiSuggestions(){ var r=effRole(); return [t("aiSug1"), r==="chef"?t("aiSugChef"):(r==="manager"||r==="owner")?t("aiSugMgr"):t("aiSug2"), t("aiSug3")]; }
+  function renderAi(){
+    var body=$("aiBody"); $("aiInput").placeholder=t("aiPlaceholder");
+    if(!ai.msgs.length){ body.innerHTML='<div class="aisug"><div class="lead">'+h(t("aiLead"))+'</div>'+aiSuggestions().map(function(q){return '<button type="button">'+h(q)+'</button>';}).join("")+'</div>'; body.querySelectorAll(".aisug button").forEach(function(b){ b.addEventListener("click",function(){ askAi(b.textContent); }); }); return; }
+    body.innerHTML=ai.msgs.map(function(m){ if(m.role==="user") return '<div class="msg me">'+h(m.content)+'</div>'; var open=m.open&&m.open!=="none"?'<button type="button" class="open" data-open="'+h(m.open)+'">'+h(t("aiOpen",{s:aiOpenLabel(m.open)}))+'</button>':""; return '<div class="msg bot">'+h(m.content)+(open?'<br>'+open:'')+'</div>'; }).join("")+(ai.busy?'<div class="msg bot wait"><span>•</span><span>•</span><span>•</span></div>':"");
+    body.querySelectorAll(".open").forEach(function(b){ b.addEventListener("click",function(){ aiOpen(b.getAttribute("data-open")); }); });
+    body.scrollTop=body.scrollHeight;
+  }
+  function aiOpenLabel(k){ return k==="myweek"?t("myWeek"):k==="mystats"?t("myStats"):k==="docs"?t("aiDocs"):k==="clock"?t("aiTimeClock"):k==="staff"?t("aiStaff"):k==="ranking"?t("aiRanking"):k; }
+  function aiOpen(k){ closeAi(); var who=state.viewAs||state.me.name; if(k==="myweek") openMe(who); else if(k==="mystats"&&typeof openStats==="function") openStats(who); else if(k==="docs") openDocs(); else if(k==="clock") openClock(); else if(k==="staff") $("staffBtn").click(); else if(k==="ranking") openLb(); }
+  function openAi(){ $("aiScreen").classList.add("show"); document.body.style.overflow="hidden"; renderAi(); if(!ai.msgs.length&&window.matchMedia("(min-width:700px)").matches) $("aiInput").focus(); }
+  function closeAi(){ $("aiScreen").classList.remove("show"); document.body.style.overflow=""; if(ai.rec){ try{ai.rec.stop();}catch(e){} } }
+  async function askAi(q){
+    q=String(q||"").trim(); if(!q||ai.busy) return;
+    ai.msgs.push({role:"user",content:q}); ai.busy=true; $("aiInput").value=""; $("aiInput").style.height="auto"; $("aiSend").disabled=true; renderAi();
+    var r; try{ r=await api("/api/ask",{method:"POST",auth:true,body:{messages:ai.msgs.map(function(m){return {role:m.role,content:m.content};})}}); }catch(e){ r={ok:false,status:0,json:{}}; }
+    ai.busy=false;
+    if(r.ok&&r.json&&r.json.answer) ai.msgs.push({role:"assistant",content:r.json.answer,open:r.json.open||"none"});
+    else ai.msgs.push({role:"assistant",content:r.status===429?t("aiBusy"):t("aiError"),open:"none"});
+    renderAi();
+  }
+  $("aiFab").addEventListener("click",openAi); $("aiBack").addEventListener("click",closeAi);
+  $("aiSend").addEventListener("click",function(){ askAi($("aiInput").value); });
+  $("aiInput").addEventListener("input",function(){ this.style.height="auto"; this.style.height=Math.min(120,this.scrollHeight)+"px"; $("aiSend").disabled=!this.value.trim()||ai.busy; });
+  $("aiInput").addEventListener("keydown",function(e){ if(e.key==="Enter"&&!e.shiftKey&&window.matchMedia("(min-width:700px)").matches){ e.preventDefault(); askAi(this.value); } });
+  document.addEventListener("keydown",function(e){ if(e.key==="Escape"&&$("aiScreen").classList.contains("show")) closeAi(); });
+  (function(){ var SR=window.SpeechRecognition||window.webkitSpeechRecognition; if(!SR) return; var mic=$("aiMic"); mic.style.display="flex";
+    mic.addEventListener("click",function(){ if(ai.rec){ try{ai.rec.stop();}catch(e){} return; } var rec=new SR(); rec.lang=lang==="it"?"it-IT":"en-US"; rec.interimResults=false; ai.rec=rec; mic.classList.add("on");
+      rec.onresult=function(ev){ var tx=ev.results[0][0].transcript; $("aiInput").value=tx; $("aiSend").disabled=false; askAi(tx); };
+      rec.onend=function(){ ai.rec=null; mic.classList.remove("on"); }; rec.onerror=rec.onend; try{ rec.start(); }catch(e){ rec.onend(); } }); })();
 
   // New app icon (2026-09-20): iOS keeps the icon captured at install time, so people who installed before are told once how to refresh it.
   var ICON_V="2";

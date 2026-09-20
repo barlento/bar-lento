@@ -85,7 +85,7 @@ module.exports = async (req, res) => {
         data: doc1.data,
         confirmations,
         announcement,
-        features: { storage: store.hasStorage(), admin: auth.adminEnabled(), push: push.pushEnabled(), toast: toast.enabled(), mail: require("../lib/mail").enabled() },
+        features: { storage: store.hasStorage(), admin: auth.adminEnabled(), push: push.pushEnabled(), toast: toast.enabled(), mail: require("../lib/mail").enabled(), ai: require("../lib/ai").enabled() },
       });
     }
 
