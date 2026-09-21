@@ -861,6 +861,34 @@
   /* Documents button: the count sits on the corner instead of pushing the label */
   .me-actions .btn{position:relative;min-width:0}
   .me-actions .btn .badge-n{position:absolute;top:-6px;right:-6px;margin:0;box-shadow:0 0 0 2px var(--surface)}
+  /* Close from the top: every sheet with a Close/Cancel button gets a sticky round × (owner 2026-09-21: "History è lunghissimo, il Close è in fondo") */
+  .sheet-xw{position:sticky;top:0;z-index:6;height:0;display:flex;justify-content:flex-end;pointer-events:none}
+  .sheet-x{pointer-events:auto;width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--ink);font-size:1.15rem;line-height:1;display:grid;place-items:center;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.08);margin:0 -4px 0 0;padding:0;font-family:inherit}
+  .sheet-x:active{background:var(--surface-2)}
+  .sheet.hasx>h2{padding-right:40px}
+  /* History: one collapsed row per save, tap to open */
+  .log{gap:6px}
+  .log details.entry{border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:12px;padding:0;background:var(--surface)}
+  .log details.entry summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:10px 12px;font-size:.84rem}
+  .log details.entry summary::-webkit-details-marker{display:none}
+  .log details.entry summary .when{flex:1;font-size:.84rem;color:var(--ink)}
+  .log details.entry summary .n{font-size:.74rem;color:var(--ink-muted);white-space:nowrap}
+  .log details.entry summary .chev{color:var(--ink-muted);transition:transform .2s}
+  .log details.entry[open] summary .chev{transform:rotate(90deg)}
+  .log details.entry ul{margin:0;padding:0 14px 10px 30px;font-size:.84rem;color:var(--ink)}
+  .log .more{margin-top:6px}
+  /* Staff: search + one group per department */
+  .roster-search{position:relative;margin:0 0 10px}
+  .roster-search input{width:100%;box-sizing:border-box;padding:10px 12px 10px 36px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2);font:inherit;font-size:.92rem;color:var(--ink)}
+  .roster-search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--ink-muted)}
+  .roster-grp{font-size:.7rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-muted);margin:8px 2px 2px;display:flex;justify-content:space-between}
+  .roster-grp:first-child{margin-top:0}
+  .roster .person{padding:7px 10px}
+  .roster .person .av{width:32px;height:32px;font-size:.78rem}
+  .roster .person.hide,.roster-grp.hide{display:none}
+  details.former summary{list-style:none;cursor:pointer;font-size:.7rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-muted);margin:6px 0 6px;display:flex;align-items:center;gap:6px}
+  details.former summary::-webkit-details-marker{display:none}
+  details.former summary .chev{transition:transform .2s} details.former[open] summary .chev{transform:rotate(90deg)}
 </style>
 </head>
 <body>
@@ -1337,7 +1365,7 @@
       staffTitle:"Staff", staffLead:"Tap a name for birthday, PIN and documents. Removing a name never deletes past weeks.", staffLeadToast:"Toast employees appear here by themselves and leave when archived in Toast. Tap a name for birthday, PIN and documents. Removing a name never deletes past weeks.", fromToast:"Added from Toast: {n}", goneToast:"Archived in Toast, removed here: {n}", importToast:"Import past clock-ins from Toast", importing:"Reading the clock-ins in Toast…", importWait:"Wait for the save to finish, then try again.", importDone:"Past weeks updated: {n} clock-ins from Toast ({f} to {t}), {w} weeks changed, {r} planned shifts replaced.", importNone:"Past weeks already match Toast: {n} clock-ins ({f} to {t}).", importEmpty:"Toast has no clock-ins between {f} and {t}.", importFail:"Import failed ({r}).", weekReport:"Week report", reportWait:"Preparing your report…", reportDone:"Your report has been downloaded.", legalRights:"All rights reserved", legalLink:"Legal, ownership and privacy", guideLink:"Guide (PDF)", phRecord:"Record", recordLead:"Official report: shifts, clock-ins, hours, signed documents (last 12 months)", recordBtn:"Download PDF", recordWait:"Preparing the record…", recordDone:"Record of {n} downloaded.", formerHead:"Former staff", formerLine:"· left {d} ({w})", formerByToast:"archived in Toast", formerByManager:"removed here", phToast:"Toast", phClock:"Time clock", appClockRow:"Clocks in from the app (not in Toast)", toastClockRow:"Clocks in on the Toast terminal", appClockSalaried:"Clocks in from the app (salaried, no Toast clock-ins)", appClockOn:"Use the app", appClockOff:"Back to Toast", appClockSet:"{n} now clocks in from the app.", appClockUnset:"{n} clocks in on Toast again.", punchTotal:"{h} · {n} {d}", dayWord:"day", daysWord:"days", punchNone:"No clock-ins this month", stillIn:"still in", autoOut:"auto-closed", hoursFromApp:"Hours from your clock-ins in this app · updated {t}", weekLeadApp:"Your shifts and your clock-ins from this app.", toastActive:"{n} on Toast, synced automatically", toastMissing:"Not in the app:", toastRemoved:"removed here", toastPending:"waiting", toastNoName:"no name in Toast", toastErr:"Toast not reachable right now ({e})",
       newNamePh:"New name", noNames:"No names yet.", nameExists:"That name is already on the list", removeQ:"Remove?", bdaySaved:"Birthday saved for {n}", bdayRemoved:"Birthday removed",
       removeTap:"Tap again to remove {n}{s}. Past weeks are kept.", upcoming1:" and 1 upcoming shift", upcomingN:" and {k} upcoming shifts", removed:"{n} removed{s}. Past shifts kept in the archive.", deleted1:" · 1 upcoming shift deleted", deletedN:" · {k} upcoming shifts deleted",
-      historyTitle:"Change history", historyLead:"Every edit made from manager mode, newest first. Confirmation times are included in the CSV export.", loading:"Loading…", historyFail:"Couldn't load the history.", noChanges:"No changes recorded yet.", historyNeedsDb:"History is available once the database is connected.",
+      historyTitle:"Change history", nChanges:"{n} changes", oneChange:"1 change", showMore:"Show {n} more", searchName:"Search name", historyLead:"Every edit made from manager mode, newest first. Confirmation times are included in the CSV export.", loading:"Loading…", historyFail:"Couldn't load the history.", noChanges:"No changes recorded yet.", historyNeedsDb:"History is available once the database is connected.",
       exporting:"Preparing the CSV export…", exportNeedsDb:"Export is available once the database is connected.", exportFail:"Couldn't export.",
       weekCreated:"Week of {r} created", weekCopied:"Week of {r} created with {k} shifts copied — adjust names and times", weekNoPrev:"Week created (no previous week to copy from)", noPrev:"There's no previous week to copy.", weekDeleted:"Week deleted",
       welcome:"Manager mode is on.", welcomeChef:"Chef mode is on: kitchen only.", noDb:"Note: the database is not connected; changes will not be saved.", loggedOut:"Logged out of manager mode.",
@@ -1398,7 +1426,7 @@
       staffTitle:"Staff", staffLead:"Tocca un nome per compleanno, PIN e documenti. Togliere un nome non cancella mai le settimane passate.", staffLeadToast:"I dipendenti di Toast compaiono qui da soli e spariscono se archiviati su Toast. Tocca un nome per compleanno, PIN e documenti. Togliere un nome non cancella mai le settimane passate.", fromToast:"Aggiunto da Toast: {n}", goneToast:"Archiviato su Toast, tolto anche qui: {n}", importToast:"Importa timbrature passate da Toast", importing:"Leggo le timbrature su Toast…", importWait:"Aspetta che finisca il salvataggio e riprova.", importDone:"Settimane passate aggiornate: {n} timbrature da Toast (dal {f} al {t}), {w} settimane cambiate, {r} turni pianificati sostituiti.", importNone:"Le settimane passate corrispondono già a Toast: {n} timbrature (dal {f} al {t}).", importEmpty:"Toast non ha timbrature tra il {f} e il {t}.", importFail:"Importazione non riuscita ({r}).", weekReport:"Report settimana", reportWait:"Preparo il report…", reportDone:"Report scaricato.", legalRights:"Tutti i diritti riservati", legalLink:"Note legali, proprietà e privacy", guideLink:"Guida (PDF)", phRecord:"Fascicolo", recordLead:"Report ufficiale: turni, timbrature, ore, documenti firmati (ultimi 12 mesi)", recordBtn:"Scarica PDF", recordWait:"Preparo il fascicolo…", recordDone:"Fascicolo di {n} scaricato.", formerHead:"Ex dipendenti", formerLine:"· uscito/a il {d} ({w})", formerByToast:"archiviato su Toast", formerByManager:"tolto qui", phToast:"Toast", phClock:"Timbrature", appClockRow:"Timbra dall'app (non è su Toast)", toastClockRow:"Timbra sul terminale Toast", appClockSalaried:"Timbra dall'app (a stipendio, niente timbrature Toast)", appClockOn:"Usa l'app", appClockOff:"Torna a Toast", appClockSet:"{n} ora timbra dall'app.", appClockUnset:"{n} timbra di nuovo su Toast.", punchTotal:"{h} · {n} {d}", dayWord:"giorno", daysWord:"giorni", punchNone:"Nessuna timbratura questo mese", stillIn:"ancora dentro", autoOut:"chiusa in automatico", hoursFromApp:"Ore dalle timbrature in questa app · aggiornato {t}", weekLeadApp:"I tuoi turni e le tue timbrature da questa app.", toastActive:"{n} su Toast, sincronizzati in automatico", toastMissing:"Non nell'app:", toastRemoved:"tolto qui", toastPending:"in attesa", toastNoName:"senza nome su Toast", toastErr:"Toast non raggiungibile adesso ({e})",
       newNamePh:"Nuovo nome", noNames:"Nessun nome ancora.", nameExists:"Nome già presente", removeQ:"Rimuovi?", bdaySaved:"Compleanno salvato per {n}", bdayRemoved:"Compleanno rimosso",
       removeTap:"Tocca di nuovo per rimuovere {n}{s}. Le settimane passate restano.", upcoming1:" e 1 turno futuro", upcomingN:" e {k} turni futuri", removed:"{n} rimosso/a{s}. I turni passati restano in archivio.", deleted1:" · 1 turno futuro cancellato", deletedN:" · {k} turni futuri cancellati",
-      historyTitle:"Cronologia modifiche", historyLead:"Ogni modifica fatta dalla modalità manager, dalla più recente. Le ore di conferma sono nell'esportazione CSV.", loading:"Caricamento…", historyFail:"Impossibile caricare la cronologia.", noChanges:"Nessuna modifica registrata.", historyNeedsDb:"La cronologia è disponibile quando il database è collegato.",
+      historyTitle:"Cronologia modifiche", nChanges:"{n} modifiche", oneChange:"1 modifica", showMore:"Mostra altre {n}", searchName:"Cerca nome", historyLead:"Ogni modifica fatta dalla modalità manager, dalla più recente. Le ore di conferma sono nell'esportazione CSV.", loading:"Caricamento…", historyFail:"Impossibile caricare la cronologia.", noChanges:"Nessuna modifica registrata.", historyNeedsDb:"La cronologia è disponibile quando il database è collegato.",
       exporting:"Preparo il file CSV…", exportNeedsDb:"L'esportazione è disponibile quando il database è collegato.", exportFail:"Esportazione non riuscita.",
       weekCreated:"Settimana {r} creata", weekCopied:"Settimana {r} creata con {k} turni copiati — sistema nomi e orari", weekNoPrev:"Settimana creata (nessuna precedente da copiare)", noPrev:"Non c'è una settimana precedente da copiare.", weekDeleted:"Settimana eliminata",
       welcome:"Modalità manager attiva.", welcomeChef:"Modalità chef attiva: solo cucina.", noDb:"Attenzione: database non collegato, le modifiche non verranno salvate.", loggedOut:"Uscita dalla modalità manager.",
@@ -2322,17 +2350,27 @@
     var allOk=(!rulesActive()||okR)&&kOk===nDocs;
     var line=nDocs?t("stLine",{r:okR?"✓":"–",k:kOk,n:nDocs}):t("stLineNoDocs",{r:okR?"✓":"–"}); if(!acc.pin) line=line.replace(/^PIN ✓/,t("pinNoneShort")); return {txt:line,ok:allOk&&!!acc.pin};
   }
+  var rosterQuery=""; // what the manager typed in the Staff search box (kept across the 15 s refresh)
   function renderRoster(){
     var el=$("rosterList"); if(!state.data.birthdays) state.data.birthdays={}; if(!state.data.toastMap) state.data.toastMap={};
     $("staffOverlay").querySelector(".lead").textContent=t(state.features.toast?"staffLeadToast":"staffLead");
     var pres=state.presence||null, onlineK=0; var people=state.data.staff.filter(function(n){return !isChef()||isKitchenName(n);}); // Staff = everyone for manager and owner, kitchen only for the chef
-    var rows=people.length?people.map(function(n){
+    function grpOf(n){ var d=deptOf(n); return d==="kitchen"||d==="chef"?"kitchen":(d==="management"||d==="owner")?"management":"floor"; }
+    var GRP=[["floor","deptFloor"],["kitchen","deptKitchen"],["management","deptManagement"]];
+    function personRow(n){
       var st=personStatus(n), b=state.data.birthdays[n]||""; var pr=pres&&pres[n]; var on=!!(pr&&pr.online); if(on) onlineK++;
       var seen=pr?(on?t("onlineNow"):(pr.lastSeen?t("lastSeen",{t:agoText(pr.lastSeen)}):t("neverOnline"))):"";
       var line=[seen,st.txt].filter(Boolean).join(" · ");
-      return '<button type="button" class="person" data-name="'+h(n)+'"><span class="av" style="background:'+avColor(n)+'">'+h(initials(n))+(pres?'<span class="pres '+(on?"on":"off")+'"></span>':'')+'</span><span class="nm">'+h(n)+deptIcon(n)+(line?'<small class="'+(on?"on":st.ok?"ok":"")+'">'+h(line)+'</small>':'')+'</span><span class="bd">'+(b?''+h(bdayShort(b)):'')+'</span><span class="go">›</span></button>';
-    }).join(""):'<div class="empty-note">'+t("noNames")+'</div>';
-    el.innerHTML=(pres&&people.length?'<div class="roster-online"><span class="pres '+(onlineK?"on":"off")+'"></span>'+h(t("onlineCount",{k:onlineK,n:people.length}))+'</div>':'')+rows;
+      return '<button type="button" class="person" data-name="'+h(n)+'" data-grp="'+grpOf(n)+'"><span class="av" style="background:'+avColor(n)+'">'+h(initials(n))+(pres?'<span class="pres '+(on?"on":"off")+'"></span>':'')+'</span><span class="nm">'+h(n)+deptIcon(n)+(line?'<small class="'+(on?"on":st.ok?"ok":"")+'">'+h(line)+'</small>':'')+'</span><span class="bd">'+(b?''+h(bdayShort(b)):'')+'</span><span class="go">›</span></button>';
+    }
+    var rows;
+    if(!people.length) rows='<div class="empty-note">'+t("noNames")+'</div>';
+    else { var groups=GRP.filter(function(g){return people.some(function(n){return grpOf(n)===g[0];});}); // one group per department, only the ones with people; a single group needs no header
+      rows=groups.map(function(g){ var ppl=people.filter(function(n){return grpOf(n)===g[0];}); return (groups.length>1?'<div class="roster-grp" data-grp="'+g[0]+'"><span>'+h(t(g[1]))+'</span><span>'+ppl.length+'</span></div>':'')+ppl.map(personRow).join(""); }).join(""); }
+    var search=people.length>=6?'<div class="roster-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" id="rosterSearch" placeholder="'+h(t("searchName"))+'" aria-label="'+h(t("searchName"))+'" autocomplete="off" value="'+h(rosterQuery)+'"></div>':'';
+    el.innerHTML=search+(pres&&people.length?'<div class="roster-online"><span class="pres '+(onlineK?"on":"off")+'"></span>'+h(t("onlineCount",{k:onlineK,n:people.length}))+'</div>':'')+rows;
+    function applyFilter(){ var q=rosterQuery.trim().toLowerCase(); el.querySelectorAll(".person").forEach(function(b){ b.classList.toggle("hide",!!q&&b.getAttribute("data-name").toLowerCase().indexOf(q)===-1); }); el.querySelectorAll(".roster-grp").forEach(function(g){ var any=el.querySelector('.person[data-grp="'+g.getAttribute("data-grp")+'"]:not(.hide)'); g.classList.toggle("hide",!any); }); }
+    var si=$("rosterSearch"); if(si){ si.addEventListener("input",function(){ rosterQuery=si.value; applyFilter(); }); applyFilter(); }
     el.querySelectorAll(".person").forEach(function(b){ b.addEventListener("click",function(){ openPerson(b.getAttribute("data-name")); }); });
     var tr=state.toastReport, tn=$("rosterToast");
     if(tr&&!tr.error){
@@ -2344,7 +2382,7 @@
     $("rosterImport").style.display=state.features.toast?"":"none";
     var fs=$("rosterFormer"), former=state.formerStaff||[];
     if(former.length){
-      fs.innerHTML='<div class="ph" style="font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-muted);margin:6px 0 6px">'+h(t("formerHead"))+'</div>'+former.map(function(f,i){ return '<div class="pcard" style="padding:8px 12px"><div class="pr"><span><b>'+h(f.name)+'</b> <span class="dim" style="font-size:.8rem">'+h(t("formerLine",{d:ackDate(f.removedAt),w:t(f.by==="toast"?"formerByToast":"formerByManager")}))+'</span></span><button type="button" class="pinbtn record" data-i="'+i+'">'+h(t("recordBtn"))+'</button></div></div>'; }).join("");
+      fs.innerHTML='<details class="former"><summary><span class="chev">›</span>'+h(t("formerHead"))+' · '+former.length+'</summary>'+former.map(function(f,i){ return '<div class="pcard" style="padding:8px 12px"><div class="pr"><span><b>'+h(f.name)+'</b> <span class="dim" style="font-size:.8rem">'+h(t("formerLine",{d:ackDate(f.removedAt),w:t(f.by==="toast"?"formerByToast":"formerByManager")}))+'</span></span><button type="button" class="pinbtn record" data-i="'+i+'">'+h(t("recordBtn"))+'</button></div></div>'; }).join("")+'</details>';
       fs.style.display="";
       fs.querySelectorAll(".pinbtn.record").forEach(function(b){ b.addEventListener("click",function(){ var f=former[Number(b.getAttribute("data-i"))]; if(f) downloadRecord(f.name,b); }); });
     } else fs.style.display="none";
@@ -2457,6 +2495,13 @@
     state.data.staff.push(v); $("newStaffInput").value=""; renderRoster(); scheduleSave();
   }
 
+  // ---- close from the top: a sticky × on every sheet that already has a Close/Cancel button; it just taps that button (same cleanup) ----
+  document.querySelectorAll(".overlay .sheet").forEach(function(sh){
+    var btn=null; sh.querySelectorAll('button[data-t="close"],button[data-t="cancel"]').forEach(function(b){ if(!btn) btn=b; });
+    var h2=sh.querySelector(":scope>h2"); if(!btn||!h2) return;
+    var w=document.createElement("div"); w.className="sheet-xw"; var x=document.createElement("button"); x.type="button"; x.className="sheet-x"; x.setAttribute("aria-label","Close"); x.textContent="\u00d7"; w.appendChild(x); sh.insertBefore(w,h2); sh.classList.add("hasx");
+    x.addEventListener("click",function(){ btn.click(); });
+  });
   // ---------- history + export (admin) ----------
   async function openHistory(){
     $("logList").innerHTML='<div class="empty-note">'+t("loading")+'</div>'; $("historyOverlay").classList.add("show");
@@ -2464,7 +2509,10 @@
     if(!r.ok){$("logList").innerHTML='<div class="empty-note">'+t("historyFail")+'</div>';return;}
     var entries=r.json.entries||[];
     if(!entries.length){$("logList").innerHTML='<div class="empty-note">'+(r.json.storage?t("noChanges"):t("historyNeedsDb"))+'</div>';return;}
-    $("logList").innerHTML=entries.map(function(e){var d=new Date(e.at);return '<div class="entry"><div class="when">'+dateShort(d)+', '+d.getFullYear()+' · '+fmt12(pad(d.getHours())+":"+pad(d.getMinutes()))+(e.version?' · v'+e.version:'')+'</div><ul>'+(e.changes||[]).map(function(c){return '<li>'+h(c)+'</li>';}).join("")+'</ul></div>';}).join("");
+    var PAGE=25; function row(e,open){ var d=new Date(e.at), ch=e.changes||[]; return '<details class="entry"'+(open?' open':'')+'><summary><span class="chev">›</span><span class="when">'+dateShort(d)+', '+d.getFullYear()+' · '+fmt12(pad(d.getHours())+":"+pad(d.getMinutes()))+(e.version?' · v'+e.version:'')+'</span><span class="n">'+h(ch.length===1?t("oneChange"):t("nChanges",{n:ch.length}))+'</span></summary><ul>'+ch.map(function(c){return '<li>'+h(c)+'</li>';}).join("")+'</ul></details>'; }
+    var shown=Math.min(PAGE,entries.length), box=$("logList");
+    function paint(){ box.innerHTML=entries.slice(0,shown).map(function(e,i){return row(e,i===0);}).join("")+(shown<entries.length?'<div class="me-actions more"><button class="btn" type="button" id="logMore">'+h(t("showMore",{n:Math.min(PAGE,entries.length-shown)}))+'</button></div>':''); var m=$("logMore"); if(m) m.addEventListener("click",function(){ shown=Math.min(entries.length,shown+PAGE); paint(); }); }
+    paint();
   }
   // the signed-in person's own PDF for the week shown in My week (hours only)
   async function downloadMyReport(){
