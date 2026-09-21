@@ -112,9 +112,8 @@ const NAME = "Astrea"; // fresh name (no PIN yet on the fake server)
   await page.waitForFunction(() => /Wrong PIN/.test(document.getElementById("pinErr").textContent));
   await page.screenshot({ path: OUT + "/6-pin-wrong.png" });
   await page.keyboard.type("2580");
-  await page.waitForSelector("#meOverlay.show");
-  console.log("re-login ok");
-  await page.click("#meClose");
+  await page.waitForFunction(() => !document.body.classList.contains("locked") && !document.getElementById("pinOverlay").classList.contains("show"), null, { timeout: 8000 });
+  console.log("re-login ok (My week does not open by itself)");
   // logout here
   await page.click("#meBtn"); await page.waitForSelector("#meOverlay.show"); await page.click("#meLogout");
   await page.waitForFunction(() => !document.getElementById("meBtn").classList.contains("on"));
