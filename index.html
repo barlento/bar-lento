@@ -763,6 +763,33 @@
   .hdr-actions>*{flex:0 0 auto}
   .sheet .actions .btn,.sheet .actions .linkbtn{min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis}
   .toast{top:calc(14px + env(safe-area-inset-top));bottom:auto;max-width:calc(100vw - 32px)}
+  /* ---- Requests: time off + shift cover (owner 2026-09-21) ---- */
+  .reqcard{display:none;margin-bottom:14px;padding:14px 16px;border-radius:14px;background:var(--surface);border:1px solid var(--border)}
+  .reqcard.show{display:block}
+  .reqcard .rh{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+  .reqcard .rh b{font-weight:600;letter-spacing:-.01em}
+  .req-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--border);font-size:.92rem}
+  .req-row:first-of-type{border-top:0}
+  .req-row .who{font-weight:600}.req-row .sub{display:block;color:var(--ink-muted);font-size:.8rem;margin-top:2px}
+  .req-row .act{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;flex:none}
+  .rpill{display:inline-block;font-size:.7rem;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--surface-2);color:var(--ink-muted);white-space:nowrap}
+  .rpill.ok{background:#E3F4E8;color:#1B6B36}.rpill.no{background:#FBE5E5;color:#A32D2D}.rpill.wait{background:var(--accent-soft);color:var(--accent-ink)}
+  .me-cov{display:flex;justify-content:flex-end;gap:8px;margin:-4px 0 4px;padding:0 6px;font-size:.8rem;color:var(--ink-muted)}
+  .me-cov button{border:0;background:transparent;color:var(--accent);font:inherit;font-size:.8rem;font-weight:600;cursor:pointer;padding:2px 4px}
+  .me-off{margin-top:12px;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
+  .me-off .ttl{font-weight:600;font-size:.9rem;margin-bottom:8px}
+  .me-off .frm{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .me-off .frm input{border:1px solid var(--border);border-radius:10px;padding:8px 10px;font:inherit;font-size:.9rem;background:var(--bg);color:var(--ink);min-width:0;width:100%;box-sizing:border-box;-webkit-appearance:none;appearance:none}
+  .me-off .frm .wide{grid-column:1/-1}
+  .me-off .frm .btn{grid-column:1/-1}
+  .me-off .lbl{font-size:.72rem;color:var(--ink-muted);margin-bottom:3px}
+  .me-reqs{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+  .abtn .cnt{display:inline-block;min-width:18px;padding:0 5px;margin-left:6px;border-radius:999px;background:var(--accent);color:#fff;font-size:.7rem;line-height:18px;text-align:center}
+  .offchip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:.78rem;font-weight:600;background:var(--surface-2);color:var(--ink-muted)}
+  .offchip.wait{border:1px dashed var(--border);background:transparent}
+  .req-assign{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  .req-assign select{border:1px solid var(--border);border-radius:10px;padding:6px 8px;font:inherit;font-size:.85rem;background:var(--bg);color:var(--ink)}
+
   /* ---- Assistant (owner 2026-09-20): one black circle "AI" with a soft pulsing halo, a full new screen, nothing else ---- */
   .aifab{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom));width:56px;height:56px;border-radius:50%;border:0;background:#0b0b0c;color:#fff;font:inherit;font-weight:700;font-size:.95rem;letter-spacing:-.02em;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:45;box-shadow:0 10px 30px -12px rgba(0,0,0,.45)}
   .aifab.show{display:flex}
@@ -827,6 +854,7 @@
       <button class="abtn" id="lbBtn" type="button" style="display:none" data-t="lbBtn">Team ranking</button>
       <button class="abtn" id="staffBtn" type="button" data-t="staffBtn">Staff</button>
       <button class="abtn" id="historyBtn" type="button" data-t="historyBtn">History</button>
+      <button class="abtn" id="reqBtn" type="button" style="display:none"><span data-t="reqTitle">Requests</span><span class="cnt" id="reqCnt" style="display:none">0</span></button>
       <button class="abtn" id="exportBtn" type="button" data-t="exportBtn">Export PDF</button>
       <button class="abtn lang" id="langBtn" type="button" title="Language / Lingua">IT</button>
       <button class="abtn" id="logoutBtn" type="button" data-t="logoutBtn" style="display:none">Log out</button>
@@ -840,6 +868,7 @@
 
   <div class="viewasbar" id="viewAsBar" style="display:none"><span id="viewAsTxt"></span><span class="spacer"></span><button class="btn" id="viewAsWeek" type="button" data-t="myWeek">My week</button><button class="btn" id="viewAsStats" type="button" data-t="myStats">My stats</button><button class="btn primary" id="viewAsExit" type="button" data-t="viewAsExit">Exit</button></div>
   <div class="hero" id="heroStatus" aria-live="polite"></div>
+  <div class="reqcard" id="openShifts"></div>
 
   <div class="deptrow" id="deptRow"><div class="deptseg" id="deptSeg" role="tablist" aria-label="Department"><button type="button" role="tab" data-v="floor"></button><button type="button" role="tab" data-v="kitchen"></button></div></div>
   <div class="weekrow">
@@ -1054,6 +1083,21 @@
 </div>
 
 <!-- Leaderboard (everyone) -->
+<div class="overlay" id="reqOverlay">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="reqTitleH">
+    <h2 id="reqTitleH" data-t="reqTitle">Requests</h2>
+    <p class="lead" data-t="reqLead">Time off and shift covers asked by the team. Approving a cover changes the shift in the schedule.</p>
+    <div id="reqList"></div>
+    <div class="me-actions"><button class="btn primary" id="reqClose" type="button" data-t="close">Close</button></div>
+  </div>
+</div>
+<div class="overlay" id="covOverlay">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="covTitle">
+    <h2 id="covTitle" data-t="reqCantMakeTitle">Ask for cover?</h2>
+    <p class="lead" id="covTxt"></p>
+    <div class="me-actions"><button class="btn" id="covNo" type="button" data-t="cancel">Cancel</button><button class="btn primary" id="covYes" type="button" data-t="reqAskBtn">Ask for cover</button></div>
+  </div>
+</div>
 <div class="overlay" id="lbOverlay">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="lbTitle">
     <h2 id="lbTitle"><span data-t="lbTitle">Team ranking</span> <span class="pill" id="lbDept"></span></h2>
@@ -1184,6 +1228,7 @@
     <div class="tc-sum" id="meSum"></div>
     <div class="me-list" id="meList"></div>
     <p class="me-note" id="meNote"></p>
+    <div id="meReq"></div>
     <div class="me-bday" id="meBday" style="display:none"><span class="lbl" id="meBdayLbl"></span><input type="date" id="meBdayInput" aria-label="Your birthday"><button class="btn" id="meBdaySave" type="button" data-t="save">Save</button></div>
     <div class="me-actions">
       <button class="btn" id="meRules" type="button" style="display:none">Documents</button>
@@ -1236,7 +1281,7 @@
   var I18N={
     en:{
       myBday:"My birthday", myBdayNone:"Not set yet. Add it and the team celebrates you.", myBdayIs:"My birthday: {d}", bdaySavedMe:"Birthday saved. See you on {d}.", save:"Save",
-      chefMode:"Chef mode · kitchen only", ownerMode:"Owner mode", viewingAs:"Viewing as {n}", viewAsTxt:"You are seeing the app as {n} ({r}) sees it. Nothing you tap here changes anything.", viewAsTxtTools:"You are seeing the app as {n} ({r}) sees it, with their tools. What you change here is saved.", floorReadOnly:"The floor is planned by the manager. You can edit the kitchen.", aiTitle:"Ask Bar Lento", aiSub:"The app, your shifts, the rules, the menu", aiFoot:"Answers only about the app, your own data, the rules and the menu. It cannot change anything.", aiPlaceholder:"Ask anything…", aiLead:"Ask me, for example:", aiSug1:"When do I work this week?", aiSug2:"How do I set my birthday?", aiSug3:"What does the sick leave policy say?", aiSugMgr:"How do I close a day for a private event?", aiSugChef:"How do I plan the kitchen for next week?", aiError:"Something went wrong. Try again in a moment.", aiBusy:"Too many questions today. Try again tomorrow.", aiOpen:"Open {s}", aiTimeClock:"Time clock", aiStaff:"Staff", aiRanking:"Team ranking", aiDocs:"My documents", iconNotice:"New app icon. iPhone keeps the old one: remove Bar Lento from the Home Screen and add it again from Safari (Share, Add to Home Screen).", viewAsBtn:"View as {n}", viewAsExit:"Exit", lvlStaffWord:"Staff", ownerOnly:"Only the owner can make someone Management or Owner.", chefForbidden:"Kitchen only: this change is for the manager.", showPin:"Show", hidePin:"Hide", deptRoleHint:"Chef, Management and Owner get the manager tools after their own PIN: Chef for the kitchen only, Management for everything, Owner for everything plus View as and these promotions.", appClockSalary:"Clocks in from the app (salaried in Toast)",
+      chefMode:"Chef mode · kitchen only", ownerMode:"Owner mode", viewingAs:"Viewing as {n}", viewAsTxt:"You are seeing the app as {n} ({r}) sees it. Nothing you tap here changes anything.", viewAsTxtTools:"You are seeing the app as {n} ({r}) sees it, with their tools. What you change here is saved.", floorReadOnly:"The floor is planned by the manager. You can edit the kitchen.", reqTitle:"Requests", reqLead:"Time off and shift covers asked by the team. Approving a cover changes the shift in the schedule.", reqOpenShifts:"Open shifts", reqOpenLead:"A colleague can't make it. Offer to take it; the manager decides.", reqTake:"I can take it", reqOffered:"You offered", reqWithdraw:"Withdraw", reqWaiting:"{n} waiting for you", reqWaiting1:"1 waiting for you", reqOpenBtn:"Open", reqCantMake:"Can't make it? Ask for cover", reqCoverWait:"Cover requested · the manager decides", reqCoveredBy:"Covered by {n}", reqCancel:"Cancel", reqTooLate:"Covers can be asked up to {h} hours before the shift. Talk to the manager.", reqTimeOff:"Time off", reqFrom:"From", reqTo:"To", reqNoteHint:"Reason (optional)", reqSend:"Request", reqMine:"My requests", reqStatusPending:"Waiting", reqStatusApproved:"Approved", reqStatusDeclined:"Declined", reqStatusCancelled:"Withdrawn", reqStatusExpired:"Expired", reqCoverOf:"Cover · {d}", reqOffOf:"Time off · {d}", reqSent:"Request sent. The manager will see it.", reqCoverSent:"Cover requested. Colleagues and the manager have been told.", reqOfferedToast:"Thanks. The manager decides who covers.", reqAssign:"Assign {n}", reqAssignOther:"Someone else…", reqAssignBtn:"Assign", reqApprove:"Approve", reqDecline:"Decline", reqDone:"Done.", reqNone:"Nothing waiting.", reqVolunteers:"Can take it: {n}", reqNoVolunteers:"Nobody has offered yet.", reqRecent:"Recent decisions", reqOffChip:"Off: {n}", reqOffReqChip:"Off requested: {n}", reqCantMakeTitle:"Ask for cover?", reqCantMakeTxt:"Your colleagues will be asked to take {d}. The manager decides who covers; until then the shift is yours.", reqAskBtn:"Ask for cover", reqRule:"Requests close {h} hours before the shift.", reqCantMakeShort:"{n} can't make {d}", reqAsksOff:"{n} asks for time off · {d}", reqDup:"Already requested.", reqFail:"Could not send. Try again.", aiTitle:"Ask Bar Lento", aiSub:"The app, your shifts, the rules, the menu", aiFoot:"Answers only about the app, your own data, the rules and the menu. It cannot change anything.", aiPlaceholder:"Ask anything…", aiLead:"Ask me, for example:", aiSug1:"When do I work this week?", aiSug2:"How do I set my birthday?", aiSug3:"What does the sick leave policy say?", aiSugMgr:"How do I close a day for a private event?", aiSugChef:"How do I plan the kitchen for next week?", aiError:"Something went wrong. Try again in a moment.", aiBusy:"Too many questions today. Try again tomorrow.", aiOpen:"Open {s}", aiTimeClock:"Time clock", aiStaff:"Staff", aiRanking:"Team ranking", aiDocs:"My documents", iconNotice:"New app icon. iPhone keeps the old one: remove Bar Lento from the Home Screen and add it again from Safari (Share, Add to Home Screen).", viewAsBtn:"View as {n}", viewAsExit:"Exit", lvlStaffWord:"Staff", ownerOnly:"Only the owner can make someone Management or Owner.", chefForbidden:"Kitchen only: this change is for the manager.", showPin:"Show", hidePin:"Hide", deptRoleHint:"Chef, Management and Owner get the manager tools after their own PIN: Chef for the kitchen only, Management for everything, Owner for everything plus View as and these promotions.", appClockSalary:"Clocks in from the app (salaried in Toast)",
       adminMode:"Manager mode", lbBtn:"Team ranking", staffBtn:"Staff", historyBtn:"History", exportBtn:"Export PDF", logoutBtn:"Log out",
       newWeekBtn:"＋ New week", deleteWeekBtn:"Delete week", nwTitle:"New week", nwLead:"Create the week of {r}", nwCopy:"Copy last week's shifts ({k} shifts)", nwCopySub:"Same people and times as {r}; adjust as needed", nwEmpty:"Start empty", nwEmptySub:"Add every shift by hand",
       copyConfirm:"Tap again to replace the current shifts", deleteWeekConfirm:"Tap again to delete", deleteWeekConfirmN:"Tap again: deletes {k} shifts", deleteWeekLocked:"Past week · archived", pastLocked:"Past weeks are archived and can't be deleted", onlyEmpty:"Only an empty week can be deleted",
@@ -1297,7 +1342,7 @@
     },
     it:{
       myBday:"Il mio compleanno", myBdayNone:"Non ancora inserito. Aggiungilo e il team ti festeggia.", myBdayIs:"Il mio compleanno: {d}", bdaySavedMe:"Compleanno salvato. Ci vediamo il {d}.", save:"Salva",
-      chefMode:"Modalità chef · solo cucina", ownerMode:"Modalità titolare", viewingAs:"Stai vedendo come {n}", viewAsTxt:"Stai vedendo l'app come la vede {n} ({r}). Qui non cambi niente.", viewAsTxtTools:"Stai vedendo l'app come la vede {n} ({r}), con i suoi strumenti. Quello che cambi qui viene salvato.", floorReadOnly:"La sala la pianifica la direzione. Tu puoi modificare la cucina.", aiTitle:"Chiedi a Bar Lento", aiSub:"L'app, i tuoi turni, le regole, il menu", aiFoot:"Risponde solo sull'app, sui tuoi dati, sulle regole e sul menu. Non può cambiare niente.", aiPlaceholder:"Chiedi quello che vuoi…", aiLead:"Chiedimi, per esempio:", aiSug1:"Quando lavoro questa settimana?", aiSug2:"Come imposto il mio compleanno?", aiSug3:"Cosa dice la policy sulla malattia?", aiSugMgr:"Come chiudo un giorno per un evento privato?", aiSugChef:"Come pianifico la cucina della prossima settimana?", aiError:"Qualcosa è andato storto. Riprova tra un attimo.", aiBusy:"Troppe domande per oggi. Riprova domani.", aiOpen:"Apri {s}", aiTimeClock:"Time clock", aiStaff:"Staff", aiRanking:"Classifica team", aiDocs:"I miei documenti", iconNotice:"Nuova icona. iPhone tiene quella vecchia: togli Bar Lento dalla Home e aggiungila di nuovo da Safari (Condividi, Aggiungi alla schermata Home).", viewAsBtn:"Vedi come {n}", viewAsExit:"Esci", lvlStaffWord:"Staff", ownerOnly:"Solo il titolare può rendere qualcuno Direzione o Titolare.", chefForbidden:"Solo cucina: questa modifica spetta alla manager.", showPin:"Mostra", hidePin:"Nascondi", deptRoleHint:"Chef, Direzione e Titolare hanno gli strumenti del manager dopo il proprio PIN: Chef solo per la cucina, Direzione per tutto, Titolare per tutto più Vedi come e queste promozioni.", appClockSalary:"Timbra dall'app (a stipendio su Toast)",
+      chefMode:"Modalità chef · solo cucina", ownerMode:"Modalità titolare", viewingAs:"Stai vedendo come {n}", viewAsTxt:"Stai vedendo l'app come la vede {n} ({r}). Qui non cambi niente.", viewAsTxtTools:"Stai vedendo l'app come la vede {n} ({r}), con i suoi strumenti. Quello che cambi qui viene salvato.", floorReadOnly:"La sala la pianifica la direzione. Tu puoi modificare la cucina.", reqTitle:"Richieste", reqLead:"Giorni liberi e cambi turno chiesti dal team. Approvare un cambio modifica il turno nel calendario.", reqOpenShifts:"Turni scoperti", reqOpenLead:"Un collega non può. Offriti di coprirlo; decide la direzione.", reqTake:"Posso coprirlo", reqOffered:"Ti sei offerto", reqWithdraw:"Ritira", reqWaiting:"{n} in attesa", reqWaiting1:"1 in attesa", reqOpenBtn:"Apri", reqCantMake:"Non puoi? Chiedi una copertura", reqCoverWait:"Copertura richiesta · decide la direzione", reqCoveredBy:"Coperto da {n}", reqCancel:"Annulla", reqTooLate:"La copertura si chiede fino a {h} ore prima del turno. Parla con la direzione.", reqTimeOff:"Giorni liberi", reqFrom:"Dal", reqTo:"Al", reqNoteHint:"Motivo (facoltativo)", reqSend:"Richiedi", reqMine:"Le mie richieste", reqStatusPending:"In attesa", reqStatusApproved:"Approvata", reqStatusDeclined:"Rifiutata", reqStatusCancelled:"Ritirata", reqStatusExpired:"Scaduta", reqCoverOf:"Copertura · {d}", reqOffOf:"Giorni liberi · {d}", reqSent:"Richiesta inviata. La direzione la vedrà.", reqCoverSent:"Copertura richiesta. Colleghi e direzione sono stati avvisati.", reqOfferedToast:"Grazie. Decide la direzione.", reqAssign:"Assegna a {n}", reqAssignOther:"Qualcun altro…", reqAssignBtn:"Assegna", reqApprove:"Approva", reqDecline:"Rifiuta", reqDone:"Fatto.", reqNone:"Niente in attesa.", reqVolunteers:"Disponibili: {n}", reqNoVolunteers:"Nessuno si è ancora offerto.", reqRecent:"Decisioni recenti", reqOffChip:"Libero: {n}", reqOffReqChip:"Libero richiesto: {n}", reqCantMakeTitle:"Chiedere una copertura?", reqCantMakeTxt:"I colleghi saranno avvisati per coprire {d}. Decide la direzione; fino ad allora il turno è tuo.", reqAskBtn:"Chiedi copertura", reqRule:"Le richieste chiudono {h} ore prima del turno.", reqCantMakeShort:"{n} non può fare {d}", reqAsksOff:"{n} chiede giorni liberi · {d}", reqDup:"Già richiesto.", reqFail:"Invio non riuscito. Riprova.", aiTitle:"Chiedi a Bar Lento", aiSub:"L'app, i tuoi turni, le regole, il menu", aiFoot:"Risponde solo sull'app, sui tuoi dati, sulle regole e sul menu. Non può cambiare niente.", aiPlaceholder:"Chiedi quello che vuoi…", aiLead:"Chiedimi, per esempio:", aiSug1:"Quando lavoro questa settimana?", aiSug2:"Come imposto il mio compleanno?", aiSug3:"Cosa dice la policy sulla malattia?", aiSugMgr:"Come chiudo un giorno per un evento privato?", aiSugChef:"Come pianifico la cucina della prossima settimana?", aiError:"Qualcosa è andato storto. Riprova tra un attimo.", aiBusy:"Troppe domande per oggi. Riprova domani.", aiOpen:"Apri {s}", aiTimeClock:"Time clock", aiStaff:"Staff", aiRanking:"Classifica team", aiDocs:"I miei documenti", iconNotice:"Nuova icona. iPhone tiene quella vecchia: togli Bar Lento dalla Home e aggiungila di nuovo da Safari (Condividi, Aggiungi alla schermata Home).", viewAsBtn:"Vedi come {n}", viewAsExit:"Esci", lvlStaffWord:"Staff", ownerOnly:"Solo il titolare può rendere qualcuno Direzione o Titolare.", chefForbidden:"Solo cucina: questa modifica spetta alla manager.", showPin:"Mostra", hidePin:"Nascondi", deptRoleHint:"Chef, Direzione e Titolare hanno gli strumenti del manager dopo il proprio PIN: Chef solo per la cucina, Direzione per tutto, Titolare per tutto più Vedi come e queste promozioni.", appClockSalary:"Timbra dall'app (a stipendio su Toast)",
       adminMode:"Modalità manager", lbBtn:"Classifica team", staffBtn:"Staff", historyBtn:"Cronologia", exportBtn:"Esporta PDF", logoutBtn:"Esci",
       newWeekBtn:"＋ Nuova settimana", deleteWeekBtn:"Elimina settimana", nwTitle:"Nuova settimana", nwLead:"Crea la settimana {r}", nwCopy:"Copia i turni della settimana scorsa ({k} turni)", nwCopySub:"Stesse persone e orari di {r}; poi modifica ciò che cambia", nwEmpty:"Parti da zero", nwEmptySub:"Aggiungi ogni turno a mano",
       copyConfirm:"Tocca di nuovo per sostituire i turni", deleteWeekConfirm:"Tocca di nuovo per eliminare", deleteWeekConfirmN:"Tocca di nuovo: elimina {k} turni", deleteWeekLocked:"Settimana passata · archivio", pastLocked:"Le settimane passate sono in archivio e non si eliminano", onlyEmpty:"Si può eliminare solo una settimana vuota",
@@ -1534,8 +1579,82 @@
     if(newStaff.length||goneStaff.length){ setTimeout(function(){ if(newStaff.length) toast(t("fromToast",{n:newStaff.join(", ")}),5000); if(goneStaff.length) toast(t("goneToast",{n:goneStaff.join(", ")}),5000); },800); if($("staffOverlay").classList.contains("show")) renderRoster(); if(person.name&&goneStaff.indexOf(person.name)!==-1){ $("personOverlay").classList.remove("show"); person.name=null; } }
     if(changedRemotely){ setTimeout(function(){ var u=$("updatedNote"); u.classList.remove("flashnew"); void u.offsetWidth; u.classList.add("flashnew"); toast(t("scheduleUpdated")); },50); }
     state.confirmations=j.confirmations||{}; state.features=j.features||state.features; state.announcement=j.announcement||null;
-    ensureActiveWeek(); renderAll(); return true;
+    ensureActiveWeek(); renderAll(); loadRequests(); return true;
   }
+  // ---------- Requests: time off + shift cover (owner 2026-09-21) ----------
+  state.requests=null;
+  async function loadRequests(){
+    if(!state.features.storage||!(state.me.token||state.password)){ state.requests=null; renderRequests(); return; }
+    var r=await api("/api/requests",{auth:true}); if(!r.ok){ return; }
+    state.requests=r.json||null; renderRequests();
+  }
+  function reqDate(iso){ return dateShort(fromISO(iso)); }
+  function reqWhen(r){ return r.type==="cover" ? reqDate(r.date)+" · "+range12(r.start,r.end)+(r.station?" · "+r.station:"") : (r.from===r.to?reqDate(r.from):reqDate(r.from)+" – "+reqDate(r.to)); }
+  function reqStatus(r){ var k={pending:"reqStatusPending",approved:"reqStatusApproved",declined:"reqStatusDeclined",cancelled:"reqStatusCancelled",expired:"reqStatusExpired"}[r.status]||"reqStatusPending"; var c=r.status==="approved"?"ok":r.status==="declined"?"no":r.status==="pending"?"wait":""; return '<span class="rpill '+c+'">'+h(t(k))+'</span>'; }
+  function renderRequests(){
+    var q=state.requests; var card=$("openShifts"); var mgr=isMgr()&&q&&q.pending;
+    // manager bar button + badge
+    var rb=$("reqBtn"); rb.style.display=(state.admin&&q&&q.pending)?"":"none"; var n=q&&q.pending?q.pending.length:0; $("reqCnt").style.display=n?"":"none"; $("reqCnt").textContent=n;
+    if(mgr){
+      if(!n){ card.classList.remove("show"); card.innerHTML=""; }
+      else { card.innerHTML='<div class="rh"><b>'+h(t("reqTitle"))+'</b><button type="button" class="btn sm primary" id="openReqBtn">'+h(t("reqOpenBtn"))+'</button></div><div class="sub" style="color:var(--ink-muted);font-size:.85rem">'+h(n===1?t("reqWaiting1"):t("reqWaiting",{n:n}))+'</div>'; card.classList.add("show"); $("openReqBtn").addEventListener("click",openReq); }
+    } else if(q&&q.open&&q.open.length&&!state.viewAs){
+      card.innerHTML='<div class="rh"><b>'+h(t("reqOpenShifts"))+'</b></div><div class="sub" style="color:var(--ink-muted);font-size:.85rem;margin-bottom:4px">'+h(t("reqOpenLead"))+'</div>'+q.open.map(function(r){ return '<div class="req-row"><div><span class="who">'+h(r.name)+'</span><span class="sub">'+h(reqWhen(r))+'</span></div><div class="act">'+(r.offered?'<span class="rpill ok">'+h(t("reqOffered"))+'</span><button type="button" class="btn sm" data-act="withdraw" data-id="'+h(r.id)+'">'+h(t("reqWithdraw"))+'</button>':'<button type="button" class="btn sm primary" data-act="offer" data-id="'+h(r.id)+'">'+h(t("reqTake"))+'</button>')+'</div></div>'; }).join("");
+      card.classList.add("show");
+      card.querySelectorAll("button[data-act]").forEach(function(b){ b.addEventListener("click",async function(){ b.disabled=true; var r=await api("/api/requests",{method:"POST",auth:true,body:{action:b.getAttribute("data-act"),id:b.getAttribute("data-id")}}); if(r.ok){ if(b.getAttribute("data-act")==="offer") toast(t("reqOfferedToast")); } else toast(t("reqFail")); await loadRequests(); }); });
+    } else { card.classList.remove("show"); card.innerHTML=""; }
+    if($("meOverlay").classList.contains("show")) renderMeRequests();
+    if($("reqOverlay").classList.contains("show")) renderReqSheet();
+    if(mgr||(q&&q.off)) renderDays();
+  }
+  function offChips(iso){ var q=state.requests; if(!q||!q.off||!isMgr()) return ""; return q.off.filter(function(o){return o.from<=iso&&iso<=o.to;}).map(function(o){ return '<span class="offchip'+(o.status==="pending"?" wait":"")+'">'+h(t(o.status==="pending"?"reqOffReqChip":"reqOffChip",{n:o.name}))+'</span>'; }).join(""); }
+  // My week: the "Can't make it?" line under each own future shift, the time-off form, the list of own requests
+  function coverStateFor(wk,d,id){ var q=state.requests; if(!q||!q.mine) return null; return q.mine.filter(function(r){return r.type==="cover"&&r.week===wk&&r.day===d&&r.shiftId===id&&(r.status==="pending"||r.status==="approved");}).sort(function(a,b){return b.createdAt.localeCompare(a.createdAt);})[0]||null; }
+  function coverLine(wk,d,s,date){
+    if(me.name!==state.me.name||state.viewAs) return "";
+    var q=state.requests; var minH=(q&&q.coverMinHours)||24; var start=new Date(date.getFullYear(),date.getMonth(),date.getDate(),mins(s.start)/60|0,mins(s.start)%60);
+    var st=coverStateFor(wk,d,s.id);
+    if(st&&st.status==="pending") return '<div class="me-cov"><span>'+h(t("reqCoverWait"))+'</span><button type="button" data-cancel="'+h(st.id)+'">'+h(t("reqCancel"))+'</button></div>';
+    if(start.getTime()-Date.now()<minH*3600000) return "";
+    return '<div class="me-cov"><button type="button" data-cover="'+h(wk)+'|'+h(d)+'|'+h(s.id)+'" data-when="'+h(dateShort(date)+", "+range12(s.start,s.end))+'">'+h(t("reqCantMake"))+'</button></div>';
+  }
+  function renderMeRequests(){
+    var box=$("meReq"); if(!box) return; if(me.name!==state.me.name||state.viewAs||!state.features.storage){ box.innerHTML=""; return; }
+    var q=state.requests||{mine:[]}; var today=toISO(new Date());
+    var mine=(q.mine||[]).slice().sort(function(a,b){return b.createdAt.localeCompare(a.createdAt);}).slice(0,8);
+    box.innerHTML='<div class="me-off"><div class="ttl">'+h(t("reqTimeOff"))+'</div><div class="frm"><div><div class="lbl">'+h(t("reqFrom"))+'</div><input type="date" id="offFrom" min="'+today+'"></div><div><div class="lbl">'+h(t("reqTo"))+'</div><input type="date" id="offTo" min="'+today+'"></div><input class="wide" type="text" id="offNote" maxlength="140" placeholder="'+h(t("reqNoteHint"))+'"><button type="button" class="btn primary" id="offSend">'+h(t("reqSend"))+'</button></div>'
+      +(mine.length?'<div class="ttl" style="margin-top:12px">'+h(t("reqMine"))+'</div><div class="me-reqs">'+mine.map(function(r){ return '<div class="req-row"><div><span class="who">'+h(t(r.type==="cover"?"reqCoverOf":"reqOffOf",{d:reqWhen(r)}))+'</span>'+(r.type==="cover"&&r.taker?'<span class="sub">'+h(t("reqCoveredBy",{n:r.taker}))+'</span>':r.note?'<span class="sub">'+h(r.note)+'</span>':r.reply?'<span class="sub">'+h(r.reply)+'</span>':'')+'</div><div class="act">'+reqStatus(r)+(r.status==="pending"?'<button type="button" class="btn sm" data-cancel="'+h(r.id)+'">'+h(t("reqCancel"))+'</button>':'')+'</div></div>'; }).join("")+'</div>':'')+'</div>';
+    $("offFrom").addEventListener("change",function(){ if(!$("offTo").value||$("offTo").value<this.value) $("offTo").value=this.value; $("offTo").min=this.value||today; });
+    $("offSend").addEventListener("click",async function(){ var f=$("offFrom").value, to=$("offTo").value||f; if(!f){ $("offFrom").focus(); return; } this.disabled=true; var r=await api("/api/requests",{method:"POST",auth:true,body:{action:"off",from:f,to:to,note:$("offNote").value}}); if(r.ok) toast(t("reqSent")); else toast(r.json&&r.json.error==="duplicate"?t("reqDup"):t("reqFail")); await loadRequests(); });
+    box.querySelectorAll("button[data-cancel]").forEach(function(b){ b.addEventListener("click",async function(){ b.disabled=true; await api("/api/requests",{method:"POST",auth:true,body:{action:"cancel",id:b.getAttribute("data-cancel")}}); await loadRequests(); }); });
+  }
+  var covPending=null;
+  function askCover(key,when){ covPending=key; $("covTxt").textContent=t("reqCantMakeTxt",{d:when}); $("covOverlay").classList.add("show"); }
+  $("covNo").addEventListener("click",function(){ $("covOverlay").classList.remove("show"); covPending=null; });
+  $("covYes").addEventListener("click",async function(){ if(!covPending) return; var p=covPending.split("|"); this.disabled=true; var r=await api("/api/requests",{method:"POST",auth:true,body:{action:"cover",week:p[0],day:p[1],shiftId:p[2]}}); this.disabled=false; $("covOverlay").classList.remove("show"); covPending=null;
+    if(r.ok) toast(t("reqCoverSent"),4000); else if(r.json&&r.json.error==="too_late") toast(t("reqTooLate",{h:r.json.minHours||24}),5000); else if(r.json&&r.json.error==="duplicate") toast(t("reqDup")); else toast(t("reqFail"));
+    await loadRequests(); if($("meOverlay").classList.contains("show")) renderMePanel(); });
+  // Manager sheet
+  function openReq(){ renderReqSheet(); $("reqOverlay").classList.add("show"); }
+  function renderReqSheet(){
+    var q=state.requests||{}; var list=$("reqList"); var pend=q.pending||[];
+    var html=pend.length?pend.map(function(r){
+      var head='<div><span class="who">'+h(r.type==="cover"?t("reqCantMakeShort",{n:r.name,d:reqWhen(r)}):t("reqAsksOff",{n:r.name,d:reqWhen(r)}))+'</span>'+(r.note?'<span class="sub">'+h(r.note)+'</span>':'')+(r.type==="cover"?'<span class="sub">'+h((r.volunteers||[]).length?t("reqVolunteers",{n:r.volunteers.join(", ")}):t("reqNoVolunteers"))+'</span>':'')+'</div>';
+      var act;
+      if(r.type==="cover"){ var vols=(r.volunteers||[]); var others=(r.eligible||state.data.staff).filter(function(n){return vols.indexOf(n)===-1&&n!==r.name;});
+        act='<div class="req-assign">'+vols.map(function(n){return '<button type="button" class="btn sm primary" data-approve="'+h(r.id)+'" data-taker="'+h(n)+'">'+h(t("reqAssign",{n:n}))+'</button>';}).join("")+'<select data-sel="'+h(r.id)+'"><option value="">'+h(t("reqAssignOther"))+'</option>'+others.map(function(n){return '<option value="'+h(n)+'">'+h(n)+'</option>';}).join("")+'</select><button type="button" class="btn sm" data-approvesel="'+h(r.id)+'">'+h(t("reqAssignBtn"))+'</button><button type="button" class="btn sm" data-decline="'+h(r.id)+'">'+h(t("reqDecline"))+'</button></div>'; }
+      else act='<div class="act"><button type="button" class="btn sm primary" data-approve="'+h(r.id)+'">'+h(t("reqApprove"))+'</button><button type="button" class="btn sm" data-decline="'+h(r.id)+'">'+h(t("reqDecline"))+'</button></div>';
+      return '<div class="req-row" style="flex-direction:column;align-items:stretch">'+head+act+'</div>';
+    }).join(""):'<div class="me-empty">'+h(t("reqNone"))+'</div>';
+    var dec=(q.decided||[]).slice(0,10);
+    if(dec.length) html+='<div class="ttl" style="font-weight:600;font-size:.9rem;margin-top:14px">'+h(t("reqRecent"))+'</div>'+dec.map(function(r){ return '<div class="req-row"><div><span class="who">'+h(r.name)+'</span><span class="sub">'+h(t(r.type==="cover"?"reqCoverOf":"reqOffOf",{d:reqWhen(r)}))+(r.taker?" · "+h(t("reqCoveredBy",{n:r.taker})):"")+'</span></div>'+reqStatus(r)+'</div>'; }).join("");
+    list.innerHTML=html;
+    async function act(body,btn){ if(btn) btn.disabled=true; var r=await api("/api/requests",{method:"POST",auth:true,body:body}); if(r.ok){ toast(t("reqDone")); if(r.json.version) await load(true); } else toast(t("reqFail")); await loadRequests(); renderReqSheet(); }
+    list.querySelectorAll("button[data-approve]").forEach(function(b){ b.addEventListener("click",function(){ act({action:"approve",id:b.getAttribute("data-approve"),taker:b.getAttribute("data-taker")||undefined},b); }); });
+    list.querySelectorAll("button[data-approvesel]").forEach(function(b){ b.addEventListener("click",function(){ var id=b.getAttribute("data-approvesel"); var sel=list.querySelector('select[data-sel="'+id+'"]'); if(!sel.value){ sel.focus(); return; } act({action:"approve",id:id,taker:sel.value},b); }); });
+    list.querySelectorAll("button[data-decline]").forEach(function(b){ b.addEventListener("click",function(){ act({action:"decline",id:b.getAttribute("data-decline")},b); }); });
+  }
+  $("reqBtn").addEventListener("click",openReq); $("reqClose").addEventListener("click",function(){ $("reqOverlay").classList.remove("show"); });
 
   function ensureActiveWeek(){
     var vis=visibleWeeks(); var cur=currentMondayISO();
@@ -1882,7 +2001,7 @@
       var badge=note&&note.status?'<span class="badge '+note.status+'">'+statusLabel(note.status)+'</span>':"";
       var noteHtml=note&&note.text?'<div class="daynote">'+h(note.text)+'</div>':"";
       var hol=holidayOn(date), bdays=birthdaysOn(date);
-      var chips=(hol?'<span class="holichip">'+h(hol.name)+'</span>':"")+bdays.map(function(n){return '<span class="bdaychip">'+t("bdayChip",{n:lang==="it"?h(n):h(possessive(n))})+'</span>';}).join("");
+      var chips=offChips(toISO(date))+(hol?'<span class="holichip">'+h(hol.name)+'</span>':"")+bdays.map(function(n){return '<span class="bdaychip">'+t("bdayChip",{n:lang==="it"?h(n):h(possessive(n))})+'</span>';}).join("");
       if(chips) noteHtml='<div class="chips">'+chips+'</div>'+noteHtml;
       return '<div class="day-card'+(isLate?" late":"")+(isToday?" today":"")+(closed?" closed":"")+(isPast&&!state.admin?" past":"")+'" style="--i:'+i+'">'
         +'<div class="day-head"><span class="name">'+DAY_NAMES[key]+(isToday?' <span style="color:var(--accent);font-size:.75rem">'+t("todayTag")+'</span>':"")+'</span><span class="date mono">'+dateShort(date)+'</span></div>'
@@ -2003,7 +2122,7 @@
     $("loginGo").disabled=true; $("loginErr").textContent="";
     var r=await api("/api/login",{method:"POST",body:{password:pw}});
     $("loginGo").disabled=false;
-    if(r.ok){ state.password=pw; state.admin=true; state.role=r.json.role||"manager"; storageSet(PW_KEY,pw); $("loginOverlay").classList.remove("show"); $("whoOverlay").classList.remove("show"); ensureActiveWeek(); applyLang(); $("saveStatus").textContent=t("statusReady"); toast(t(isChef()?"welcomeChef":"welcome"));
+    if(r.ok){ state.password=pw; state.admin=true; state.role=r.json.role||"manager"; storageSet(PW_KEY,pw); setTimeout(loadRequests,0); $("loginOverlay").classList.remove("show"); $("whoOverlay").classList.remove("show"); ensureActiveWeek(); applyLang(); $("saveStatus").textContent=t("statusReady"); toast(t(isChef()?"welcomeChef":"welcome"));
       if(!state.features.storage) toast(t("noDb"),5000); }
     else if(r.status===401){$("loginErr").textContent="Wrong password.";}
     else {$("loginErr").textContent="Couldn't verify the password. Please try again.";}
@@ -2491,7 +2610,7 @@
   }
 
   // ---------- personal access: name + PIN, remembered on this device ----------
-  function meSet(name,token){ state.me.name=name||null; state.me.token=token||null; state.deptView=null; if(!name){ state.me.rulesAck=undefined; state.me.docAcks=undefined; state.me.since=null; } storageSet(ME_NAME_KEY,name||null); storageSet(ME_TOKEN_KEY,token||null); syncPushName(); }
+  function meSet(name,token){ state.me.name=name||null; state.me.token=token||null; state.deptView=null; setTimeout(loadRequests,0); if(!name){ state.me.rulesAck=undefined; state.me.docAcks=undefined; state.me.since=null; } storageSet(ME_NAME_KEY,name||null); storageSet(ME_TOKEN_KEY,token||null); syncPushName(); }
   // Personal pushes go only to the phones signed in as that person: re-register this phone's subscription with the current token.
   async function syncPushName(){ try{ if(!("serviceWorker" in navigator)||!("PushManager" in window)) return; var reg=await navigator.serviceWorker.ready; var sub=await reg.pushManager.getSubscription(); if(sub) await api("/api/push",{method:"POST",body:{subscription:sub.toJSON()}}); }catch(e){} }
   // Chef / Management / Owner get their tools right after their own PIN (no second login). The password login stays the service door.
@@ -2915,7 +3034,7 @@
             +'<span class="mid"><span class="tm">'+range12(s.start,s.end)+(s.station?'<span class="st">'+h(s.station)+'</span>':'')+'</span>'
             +(closed?'<span class="sub">'+t("dayMarked",{s:h(statusLabel(dn.status))})+'</span>':clockTxt?'<span class="sub">'+clockTxt+'</span>':'')+'</span>'
             +(ok?'<span class="ok">✓</span>':isPast?'<span class="ok" aria-hidden="true"></span>':(me.name===state.me.name?'<span class="ok todo">'+t("confirmChip")+'</span>':'<span class="ok" aria-hidden="true"></span>'))
-            +'</button>');
+            +'</button>'+(isPast||closed?"":coverLine(wk,d,s,date)));
         });
       } else {
         // clocked in without a scheduled shift (covering, extra hours)
@@ -2930,6 +3049,9 @@
       +'<div class="tile'+(showWorked?" on":"")+'"><b>'+(showWorked?durText(workedMin*60000):"—")+'</b><span>'+t("worked")+(wk===currentMondayISO()&&showWorked?t("soFar"):"")+'</span></div>'
       +'<div class="tile diff'+(showWorked?(diff>=0?" plus":" minus"):"")+'"><b>'+(showWorked?diffTxt:"—")+'</b><span>'+t("difference")+(isCur&&showWorked?t("soFar"):"")+'</span></div>';
     list.innerHTML=rows.length?rows.join(""):'<div class="me-empty">'+(me.name===state.me.name?t("noShiftsMine"):t("noShiftsPerson"))+'</div>';
+    list.querySelectorAll("button[data-cover]").forEach(function(b){ b.addEventListener("click",function(e){ e.stopPropagation(); askCover(b.getAttribute("data-cover"),b.getAttribute("data-when")); }); });
+    list.querySelectorAll(".me-cov button[data-cancel]").forEach(function(b){ b.addEventListener("click",async function(e){ e.stopPropagation(); b.disabled=true; await api("/api/requests",{method:"POST",auth:true,body:{action:"cancel",id:b.getAttribute("data-cancel")}}); await loadRequests(); renderMePanel(); }); });
+    renderMeRequests();
     list.querySelectorAll(".me-row[data-id]").forEach(function(b){ b.addEventListener("click",function(){ if(me.name!==state.me.name) return; var d=b.getAttribute("data-day"); var isPastRow=b.classList.contains("past"); if(isPastRow) return; $("meOverlay").classList.remove("show"); state.activeWeek=wk; renderTabs(); renderDays(); onShiftTap(wk,d,b.getAttribute("data-id")); }); });
     if(!state.features.toast&&!(hrs&&hrs.appClock)) note.textContent=t("hoursNeedToast");
     else if(!hrs) note.textContent=me.hours[hk]&&me.hours[hk].error?t("toastDownShort"):t("loadingHours");
@@ -3042,7 +3164,7 @@
     var saved=storageGet(PW_KEY);
     if(saved&&state.features.admin){
       var r=await api("/api/login",{method:"POST",body:{password:saved}});
-      if(r.ok){state.password=saved;state.admin=true;state.role=r.json.role||"manager";ensureActiveWeek();applyLang();$("saveStatus").textContent=t("statusReady");}
+      if(r.ok){state.password=saved;state.admin=true;state.role=r.json.role||"manager";ensureActiveWeek();applyLang();$("saveStatus").textContent=t("statusReady");loadRequests();}
       else storageSet(PW_KEY,null);
     }
     await meWhoAmI();
