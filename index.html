@@ -895,6 +895,9 @@
   .who-logins{display:block;margin:12px 0 0;text-align:center}
   .who-logins .linkbtn.emerg{border:0;background:none;color:var(--ink-muted);font:inherit;font-size:.78rem;text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:6px 8px}
   .who-logins .linkbtn.emerg:hover{color:var(--ink)}
+  .clock.in.brk{background:var(--accent-soft);color:var(--accent-ink)}
+  .tc-row .nm small.brk{color:var(--accent-ink)}
+  .tc-row.on.onbreak{border-color:var(--accent);background:var(--accent-soft)}
 </style>
 </head>
 <body>
@@ -1382,7 +1385,7 @@
       thisWeek:"This week", nextWeek:"Next week", pastWeek:"Past week", weekTag:"Week", hidePast:"Hide past weeks", pastArchive:"Archive ({n})", noWeeks:"No weeks published yet.",
       todayTag:"· today", noShiftsClosed:"No shifts — closed", noShiftsAssigned:"No shifts assigned", allConfirmed:"✓ all confirmed", confirmedN:"{c}/{n} confirmed", bdayChip:"{n} birthday",
       stClosedLbl:"Closed", stHolidayLbl:"Holiday · closed", stHalfLbl:"Half day", stEventLbl:"Private event",
-      notClockedIn:"not clocked in", clockedIn:"clocked in {t}", lateBy:" · {t} late",
+      notClockedIn:"not clocked in", clockedIn:"clocked in {t}", lateBy:" · {t} late", onBreakSince:"on break · {t}", onBreakBadge:"on break since {t}",
       footStaff:"Tap your shift to confirm you've seen it. Your shifts are marked YOU.", copyBtn:"Copy as text", copied:"Copied to clipboard.", nothingToCopy:"Nothing to copy", copyFail:"Copy failed",
       tcTitle:"Time clock", tcLead:"Clock-ins and clock-outs from Toast, live.", today:"Today", yesterday:"Yesterday", tomorrow:"Tomorrow", onTheClock:"on the clock", people:"people", person:"person", totalHours:"total hours",
       nobodyPast:"Nobody clocked in on this day.", nobodyYet:"Nobody has clocked in yet today.", tcOff:"Time clock is not connected.", onClockNow:"on the clock now", shiftDone:"clocked out", nowWord:"now", updatedFromToast:"Updated {t} · from Toast", refresh:"↻ Refresh", toastDown:"Toast is not responding. Try again in a moment.",
@@ -1443,7 +1446,7 @@
       thisWeek:"Questa", nextWeek:"Prossima", pastWeek:"Scorsa", weekTag:"Settimana", hidePast:"Nascondi passate", pastArchive:"Archivio ({n})", noWeeks:"Nessuna settimana pubblicata.",
       todayTag:"· oggi", noShiftsClosed:"Nessun turno — chiuso", noShiftsAssigned:"Nessun turno assegnato", allConfirmed:"✓ tutti confermati", confirmedN:"{c}/{n} confermati", bdayChip:"compleanno di {n}",
       stClosedLbl:"Chiuso", stHolidayLbl:"Festivo · chiuso", stHalfLbl:"Mezza giornata", stEventLbl:"Evento privato",
-      notClockedIn:"non ha timbrato", clockedIn:"timbrato {t}", lateBy:" · {t} di ritardo",
+      notClockedIn:"non ha timbrato", clockedIn:"timbrato {t}", lateBy:" · {t} di ritardo", onBreakSince:"in pausa · {t}", onBreakBadge:"in pausa da {t}",
       footStaff:"Tocca il tuo turno per confermare di averlo visto. I tuoi turni sono segnati YOU.", copyBtn:"Copia come testo", copied:"Copiato negli appunti.", nothingToCopy:"Niente da copiare", copyFail:"Copia non riuscita",
       tcTitle:"Timbrature", tcLead:"Entrate e uscite da Toast, in tempo reale.", today:"Oggi", yesterday:"Ieri", tomorrow:"Domani", onTheClock:"al lavoro", people:"persone", person:"persona", totalHours:"ore totali",
       nobodyPast:"Nessuno ha timbrato questo giorno.", nobodyYet:"Nessuno ha ancora timbrato oggi.", tcOff:"Timbrature non collegate.", onClockNow:"al lavoro adesso", shiftDone:"uscita timbrata", nowWord:"adesso", updatedFromToast:"Aggiornato {t} · da Toast", refresh:"↻ Aggiorna", toastDown:"Toast non risponde. Riprova tra poco.",
@@ -1825,6 +1828,7 @@
     var first=list[0], last=list[list.length-1];
     var inD=new Date(first.in); var inMin=inD.getHours()*60+inD.getMinutes(); var lateBy=inMin-mins(s.start);
     var lateTxt=lateBy>10?t("lateBy",{t:(lateBy>=60?durText(lateBy*60000):lateBy+' min')}):'';
+    if(!last.out&&last.breakStart) return '<span class="clock in brk">'+t("onBreakBadge",{t:fmtClock(last.breakStart)})+'</span>';
     if(!last.out) return '<span class="clock in'+(lateBy>10?' late':'')+'">'+t("clockedIn",{t:fmtClock(first.in)})+lateTxt+'</span>';
     return '<span class="clock out">'+fmtClock(first.in)+' → '+fmtClock(last.out)+lateTxt+'</span>';
   }
@@ -2036,9 +2040,9 @@
       list.innerHTML=entries.map(function(e,i){
         var on=!e.out; var ms=entryMs(e,now);
         var showFull=e.full&&e.full!==e.name;
-        return '<div class="tc-row'+(on?" on":"")+'" style="animation-delay:'+Math.min(i*45,400)+'ms">'
+        return '<div class="tc-row'+(on?" on":"")+(on&&e.breakStart?" onbreak":"")+'" style="animation-delay:'+Math.min(i*45,400)+'ms">'
           +'<div class="av" style="background:'+avColor(e.full||e.name)+'">'+h(initials(e.name))+'</div>'
-          +'<div class="nm">'+h(e.name)+(showFull?'<small>'+h(e.full)+'</small>':(on?'<small>'+t("onClockNow")+'</small>':'<small>'+t("shiftDone")+'</small>'))+'</div>'
+          +'<div class="nm">'+h(e.name)+(showFull?'<small>'+h(e.full)+'</small>':(on&&e.breakStart?'<small class="brk">'+t("onBreakSince",{t:durText(now-Date.parse(e.breakStart))})+'</small>':on?'<small>'+t("onClockNow")+'</small>':'<small>'+t("shiftDone")+'</small>'))+'</div>'
           +'<div class="tm"><span class="io"><span class="in">'+fmtClock(e.in)+'</span> → '+(on?'<span class="in">'+t("nowWord")+'</span>':'<span class="out">'+fmtClock(e.out)+'</span>')+'</span><span class="dur">'+(on&&e.breakStart?'<span class="brk">on break</span> ':"")+durText(ms)+(e.breakMin||e.breakStart?'<small class="brk">'+h(breakTag(e).replace(/^ · /,""))+'</small>':"")+'</span></div>'
           +'</div>';
       }).join("");

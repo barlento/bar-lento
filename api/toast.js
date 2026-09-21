@@ -58,7 +58,7 @@ module.exports = async (req, res) => {
       const guidToShort = {}; Object.keys(map).forEach((n) => { guidToShort[map[n]] = n; });
       const list = entries
         .filter((t) => byGuid[t.employeeGuid] && !/^test\b/i.test(byGuid[t.employeeGuid].name))
-        .map((t) => ({ name: guidToShort[t.employeeGuid] || byGuid[t.employeeGuid].name, full: byGuid[t.employeeGuid].name, in: t.in, out: t.out }));
+        .map((t) => ({ name: guidToShort[t.employeeGuid] || byGuid[t.employeeGuid].name, full: byGuid[t.employeeGuid].name, in: t.in, out: t.out, breakMin: t.breakMin, breakStart: t.breakStart }));
       for (const n of await punch.appClockNames(doc.data)) { const l = await punch.between(n, b.start, b.end).catch(() => []); l.forEach((e) => list.push({ name: n, full: n, in: e.in, out: e.out, app: true, breakMin: e.breakMin, breakStart: e.breakStart })); }
       list.sort((a, b) => String(a.in).localeCompare(String(b.in)));
       return send(res, 200, { date, today, entries: list, fetchedAt: new Date().toISOString() });

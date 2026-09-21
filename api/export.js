@@ -176,8 +176,9 @@ async function collectPerson(name, doc, confirmations, fromISO, toISO) {
     try {
       (await toast.timeEntriesSpan(fromISO, toISO, 300)).filter((t) => t.employeeGuid === guid && t.in).forEach((t) => {
         const date = toast.shiftDate(t.in); if (date < fromISO || date > toISO) return;
-        const ms = t.out ? Date.parse(t.out) - Date.parse(t.in) : 0; const mm = M(date); mm.worked += ms / 3600000; mm.clockins++;
-        clock.push({ date, weekday: weekdayOf(date), source: "Toast POS", in: nyParts(t.in).time, out: t.out ? nyParts(t.out).time : "", hours: t.out ? round2(ms / 3600000) : null, note: t.out ? "" : "no clock-out recorded", recorded: nyParts(t.in).stamp, ref: `Toast time entry ${t.guid}` });
+        const brk = t.out ? (t.breakMin || 0) : 0; // unpaid breaks taken on the terminal, subtracted from the hours
+        const ms = t.out ? Math.max(0, Date.parse(t.out) - Date.parse(t.in) - brk * 60000) : 0; const mm = M(date); mm.worked += ms / 3600000; mm.clockins++;
+        clock.push({ date, weekday: weekdayOf(date), source: "Toast POS", in: nyParts(t.in).time, out: t.out ? nyParts(t.out).time : "", hours: t.out ? round2(ms / 3600000) : null, note: [t.out ? "" : "no clock-out recorded", brk ? `break ${Math.round(brk)} min (unpaid, not counted)` : ""].filter(Boolean).join(" · "), recorded: nyParts(t.in).stamp, ref: `Toast time entry ${t.guid}` });
       });
     } catch (e) { notes.push(`Toast clock-ins could not be read completely (${String(e.message || e).slice(0, 80)}) — export again later.`); }
   } else if (!guid) notes.push("Not linked to a Toast employee: clock-ins come from the app only.");

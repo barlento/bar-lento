@@ -68,17 +68,24 @@ function fakeEntries() {
     if (Date.parse(inISO) < Date.now()) out.push({ guid: "te-past-" + k, employeeReference: { guid: "guid-" + who }, inDate: inISO, outDate: outISO, deleted: false });
   });
   const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
-  Object.keys(seed.weeks).forEach((wk) => {
+  // the LIVE schedule (what the tests and the screenshot scripts post), not the static seed, so shifts added for today get clock-ins too
+  let weeks = seed.weeks; try { weeks = JSON.parse(kv.get("barlento:schedule")).data.weeks || seed.weeks; } catch (e) {}
+  Object.keys(weeks).forEach((wk) => {
     DAYS.forEach((d, i) => {
       const [y, m, dd] = wk.split("-").map(Number); const date = new Date(Date.UTC(y, m - 1, dd + i)).toISOString().slice(0, 10);
       if (date > today) return;
-      (seed.weeks[wk][d] || []).forEach((s) => {
+      (weeks[wk][d] || []).forEach((s) => {
         const [sh, sm] = s.start.split(":").map(Number); const [eh, em] = s.end.split(":").map(Number);
         const inISO = nyInstant(date, sh, sm + 3);
         let outISO = nyInstant(date, eh, em + 10);
         if (Date.parse(outISO) > Date.now()) outISO = null;
         if (Date.parse(inISO) > Date.now()) return;
-        out.push({ guid: "te-" + s.id, employeeReference: { guid: "guid-" + s.name.toLowerCase() }, inDate: inISO, outDate: outISO, deleted: false });
+        const te = { guid: "te-" + s.id, employeeReference: { guid: "guid-" + s.name.toLowerCase() }, inDate: inISO, outDate: outISO, deleted: false };
+        // Toast terminal breaks (owner 2026-09-21): Joe takes a 20-min unpaid break 10 min in; Astrea is on an open break while her shift runs
+        const inMs = Date.parse(inISO), bs = new Date(inMs + 600000).toISOString();
+        if (s.name === "Joe" && (outISO ? Date.parse(outISO) : Date.now()) > inMs + 1800000) te.breaks = [{ guid: "br-" + s.id, paid: false, inDate: bs, outDate: new Date(inMs + 1800000).toISOString(), missed: false }];
+        if (s.name === "Astrea" && !outISO && Date.now() > inMs + 900000) te.breaks = [{ guid: "br-" + s.id, paid: false, inDate: new Date(inMs + 900000).toISOString(), outDate: null, missed: false }];
+        out.push(te);
       });
     });
   });

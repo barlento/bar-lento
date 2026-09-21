@@ -128,7 +128,7 @@ async function weekSummary(data, name, guid, weekISO) {
   const entries = await toast.weekEntriesFor(guid, weekISO);
   const firstInByDay = {};
   entries.forEach((e) => {
-    out.workedMin += Math.max(0, (Date.parse(e.out || new Date().toISOString()) - Date.parse(e.in)) / 60000);
+    out.workedMin += Math.max(0, (Date.parse(e.out || new Date().toISOString()) - Date.parse(e.in)) / 60000 - (e.breakMin || 0) - (!e.out && e.breakStart ? Math.max(0, (Date.now() - Date.parse(e.breakStart)) / 60000) : 0));
     const m = nyMinutes(e.in); if (firstInByDay[e.day] == null || m < firstInByDay[e.day]) firstInByDay[e.day] = m;
   });
   out.workedMin = Math.round(out.workedMin);
@@ -142,8 +142,10 @@ async function weekSummary(data, name, guid, weekISO) {
   return out;
 }
 const openView = (e) => { const v = punch.view(e); return { in: v.in, breakStart: v.breakStart || null, breakMin: v.breakMin || 0 }; };
+// minutes worked = in → out (or now) minus unpaid breaks (Toast terminal breaks and app breaks alike)
 function sumMinutes(list) {
-  return list.reduce((a, s) => a + Math.max(0, (Date.parse(s.out || new Date().toISOString()) - Date.parse(s.in)) / 60000), 0);
+  const now = Date.now(); const brk = (s) => (s.breakMin || 0) + (!s.out && s.breakStart ? Math.max(0, (now - Date.parse(s.breakStart)) / 60000) : 0);
+  return list.reduce((a, s) => a + Math.max(0, (Date.parse(s.out || new Date(now).toISOString()) - Date.parse(s.in)) / 60000 - brk(s)), 0);
 }
 
 // Personal access (name + 4-digit PIN, remembered per device).
