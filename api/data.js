@@ -81,6 +81,22 @@ async function migrationTestFloor(doc) {
   return next;
 }
 
+// Owner 2026-09-21: Giordano (Executive Chef) and Luis (Sous Chef) are salaried and clock in from the phone like Marta.
+// Toast already marks them salaried (automatic app clock); the explicit list makes the button survive a Toast outage.
+async function migrationSalariedAppClock(doc) {
+  if (!store.hasStorage()) return doc;
+  const FLAG = "barlento:migr:2026-09-21-salaried-app";
+  if (await store._redis("GET", FLAG).catch(() => null)) return doc;
+  await store._redis("SET", FLAG, new Date().toISOString()).catch(() => {});
+  const list = Array.isArray(doc.data.appClock) ? doc.data.appClock.slice() : [];
+  const add = ["Giordano", "Luis"].filter((n) => (doc.data.staff || []).includes(n) && !list.includes(n));
+  if (!add.length) return doc;
+  const next = { version: (doc.version || 0) + 1, data: store.normalizeData(Object.assign({}, doc.data, { appClock: list.concat(add) })), updatedAt: doc.updatedAt };
+  await store.saveSchedule(next);
+  await store.appendLog({ at: new Date().toISOString(), version: next.version, changes: add.map((n) => `${n} clocks in from the app (salaried, owner's decision)`) }).catch(() => {});
+  return next;
+}
+
 module.exports = async (req, res) => {
   try {
     if (req.method === "GET") {
@@ -92,7 +108,8 @@ module.exports = async (req, res) => {
       const docM = await migrations(docS).catch(() => docS);
       await migrationMartaDays(docM).catch(() => {});
       const docE = await migrationEmptyWeeks(docM).catch(() => docM);
-      const doc = await migrationTestFloor(docE).catch(() => docE);
+      const docT = await migrationTestFloor(docE).catch(() => docE);
+      const doc = await migrationSalariedAppClock(docT).catch(() => docT);
       // Past weeks follow Toast by themselves (real clock-ins replace the plan; last 8 weeks, every 6 h).
       const doc1 = await backfill.auto(doc, doc0.updatedAt).catch(() => doc);
       // A signed-in device polling = that person has the app open: note it for the manager's live Staff list.

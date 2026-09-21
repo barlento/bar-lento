@@ -891,6 +891,10 @@
   details.former summary .chev{transition:transform .2s} details.former[open] summary .chev{transform:rotate(90deg)}
   .mestrip #meNextShift.onbreak{color:var(--accent-ink)}
   .tc-row .dur .brk{color:var(--ink-muted);font-weight:500;font-size:.72rem;display:block;text-align:right}
+  /* Emergency access: the shared manager password is the service door, not the everyday entrance (owner 2026-09-21) */
+  .who-logins{display:block;margin:12px 0 0;text-align:center}
+  .who-logins .linkbtn.emerg{border:0;background:none;color:var(--ink-muted);font:inherit;font-size:.78rem;text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:6px 8px}
+  .who-logins .linkbtn.emerg:hover{color:var(--ink)}
 </style>
 </head>
 <body>
@@ -1003,8 +1007,8 @@
 <!-- Login -->
 <div class="overlay" id="loginOverlay">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
-    <h2 id="loginTitle">Manager login</h2>
-    <p class="lead">Enter the manager password to edit the schedule.</p>
+    <h2 id="loginTitle">Emergency access</h2>
+    <p class="lead">Only for a locked PIN or a shared device. Every day, managers sign in with their own name and PIN: that gives the same tools, plus their own week and clock.</p>
     <div id="loginBody">
       <div class="field">
         <label for="pwInput">Password</label>
@@ -1261,9 +1265,9 @@
 <div class="overlay" id="whoOverlay">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="whoTitle">
     <h2 id="whoTitle">Who are you?</h2>
-    <div class="who-logins"><button class="btn primary boss" id="whoManager" type="button">Manager login</button></div>
     <p class="lead" id="whoLead">Tap your name to open the schedule, your shifts and your hours. The first time you'll create a 4-digit PIN — only you know it.</p>
     <div class="who-grid" id="whoGrid"></div>
+    <div class="who-logins"><button class="linkbtn emerg" id="whoManager" type="button">Emergency access · manager password</button></div>
     <div class="actions" id="whoActions" style="display:none"><span class="spacer"></span><button class="btn" id="whoCancel" type="button" style="display:none">Cancel</button></div>
   </div>
 </div>
@@ -1372,7 +1376,7 @@
       weekCreated:"Week of {r} created", weekCopied:"Week of {r} created with {k} shifts copied — adjust names and times", weekNoPrev:"Week created (no previous week to copy from)", noPrev:"There's no previous week to copy.", weekDeleted:"Week deleted",
       welcome:"Manager mode is on.", welcomeChef:"Chef mode is on: kitchen only.", noDb:"Note: the database is not connected; changes will not be saved.", loggedOut:"Logged out of manager mode.",
       conflict:"The schedule was changed from another device. The latest version has been reloaded; please redo your change.", pwInvalid:"Password no longer valid. Please log in again.", dbMissing:"The database isn't connected yet — changes can't be saved.", saveFail:"Couldn't save. Please try again.",
-      tagline:"Weekly schedule — New York", mgrLogin:"Manager login", whoBtn:"Who are you?", clockBtn:"Time clock", bellOff:"Notify me", bellOn:"Notifications on", bellBlocked:"Notifications blocked", bellIos:"Notifications",
+      tagline:"Weekly schedule — New York", mgrLogin:"Emergency access", whoBtn:"Who are you?", clockBtn:"Time clock", bellOff:"Notify me", bellOn:"Notifications on", bellBlocked:"Notifications blocked", bellIos:"Notifications",
       updatedAt:"Updated {d}", previewMode:"preview mode", scheduleUpdated:"Schedule updated", loadFail:"Couldn't load the schedule. Please try again.",
       openNow:"Open now", closedNow:"Closed now", closedToday:"Closed today", closedTodayHol:"Closed today · Holiday", closedFor:"Closed for {r}", holidayWord:"the holiday", privateEventTag:"Private event", halfDayWord:"Half day", halfDayTag:"(half day)", workingToday:"Working today:", noShiftsToday:"No shifts assigned for today",
       thisWeek:"This week", nextWeek:"Next week", pastWeek:"Past week", weekTag:"Week", hidePast:"Hide past weeks", pastArchive:"Archive ({n})", noWeeks:"No weeks published yet.",
@@ -1433,7 +1437,7 @@
       weekCreated:"Settimana {r} creata", weekCopied:"Settimana {r} creata con {k} turni copiati — sistema nomi e orari", weekNoPrev:"Settimana creata (nessuna precedente da copiare)", noPrev:"Non c'è una settimana precedente da copiare.", weekDeleted:"Settimana eliminata",
       welcome:"Modalità manager attiva.", welcomeChef:"Modalità chef attiva: solo cucina.", noDb:"Attenzione: database non collegato, le modifiche non verranno salvate.", loggedOut:"Uscita dalla modalità manager.",
       conflict:"I turni sono stati modificati da un altro dispositivo. È stata ricaricata l'ultima versione: ripeti la modifica.", pwInvalid:"Password non più valida. Accedi di nuovo.", dbMissing:"Il database non è ancora collegato — le modifiche non si salvano.", saveFail:"Salvataggio non riuscito. Riprova.",
-      tagline:"Turni settimanali — New York", mgrLogin:"Accesso manager", whoBtn:"Chi sei?", clockBtn:"Timbrature", bellOff:"Avvisami", bellOn:"Notifiche attive", bellBlocked:"Notifiche bloccate", bellIos:"Notifiche",
+      tagline:"Turni settimanali — New York", mgrLogin:"Accesso di emergenza", whoBtn:"Chi sei?", clockBtn:"Timbrature", bellOff:"Avvisami", bellOn:"Notifiche attive", bellBlocked:"Notifiche bloccate", bellIos:"Notifiche",
       updatedAt:"Aggiornato {d}", previewMode:"anteprima", scheduleUpdated:"Turni aggiornati", loadFail:"Impossibile caricare i turni. Riprova.",
       openNow:"Aperto ora", closedNow:"Chiuso ora", closedToday:"Chiuso oggi", closedTodayHol:"Chiuso oggi · Festivo", closedFor:"Chiuso per {r}", holidayWord:"festività", privateEventTag:"Evento privato", halfDayWord:"Mezza giornata", halfDayTag:"(mezza giornata)", workingToday:"Oggi lavorano:", noShiftsToday:"Nessun turno assegnato per oggi",
       thisWeek:"Questa", nextWeek:"Prossima", pastWeek:"Scorsa", weekTag:"Settimana", hidePast:"Nascondi passate", pastArchive:"Archivio ({n})", noWeeks:"Nessuna settimana pubblicata.",
