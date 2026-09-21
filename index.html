@@ -1008,7 +1008,7 @@
 <div class="overlay" id="loginOverlay">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
     <h2 id="loginTitle">Emergency access</h2>
-    <p class="lead">Only for a locked PIN or a shared device. Every day, managers sign in with their own name and PIN: that gives the same tools, plus their own week and clock.</p>
+    <p class="lead">The master key: the owner's full access, everything included. Use it only for a locked PIN or a shared device. Every day, managers sign in with their own name and PIN: same tools, plus their own week and clock.</p>
     <div id="loginBody">
       <div class="field">
         <label for="pwInput">Password</label>
@@ -2210,7 +2210,7 @@
     $("loginGo").disabled=true; $("loginErr").textContent="";
     var r=await api("/api/login",{method:"POST",body:{password:pw}});
     $("loginGo").disabled=false;
-    if(r.ok){ state.password=pw; state.admin=true; state.role=r.json.role||"manager"; storageSet(PW_KEY,pw); setTimeout(loadRequests,0); $("loginOverlay").classList.remove("show"); $("whoOverlay").classList.remove("show"); ensureActiveWeek(); applyLang(); $("saveStatus").textContent=t("statusReady"); toast(t(isChef()?"welcomeChef":"welcome"));
+    if(r.ok){ state.password=pw; state.admin=true; state.role=r.json.role||"owner"; storageSet(PW_KEY,pw); setTimeout(loadRequests,0); $("loginOverlay").classList.remove("show"); $("whoOverlay").classList.remove("show"); ensureActiveWeek(); applyLang(); $("saveStatus").textContent=t("statusReady"); toast(t(isChef()?"welcomeChef":"welcome"));
       if(!state.features.storage) toast(t("noDb"),5000); }
     else if(r.status===401){$("loginErr").textContent="Wrong password.";}
     else {$("loginErr").textContent="Couldn't verify the password. Please try again.";}
@@ -3274,7 +3274,7 @@
     var saved=storageGet(PW_KEY);
     if(saved&&state.features.admin){
       var r=await api("/api/login",{method:"POST",body:{password:saved}});
-      if(r.ok){state.password=saved;state.admin=true;state.role=r.json.role||"manager";ensureActiveWeek();applyLang();$("saveStatus").textContent=t("statusReady");loadRequests();}
+      if(r.ok){state.password=saved;state.admin=true;state.role=r.json.role||"owner";ensureActiveWeek();applyLang();$("saveStatus").textContent=t("statusReady");loadRequests();}
       else storageSet(PW_KEY,null);
     }
     await meWhoAmI();

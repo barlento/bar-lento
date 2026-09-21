@@ -15,5 +15,5 @@ module.exports = async (req, res) => {
   // Small fixed delay blunts brute-force attempts without hurting a real login.
   await new Promise((r) => setTimeout(r, 350));
   if (!auth.checkPassword(auth.passwordFrom(req))) return send(res, 401, { error: "unauthorized" });
-  return send(res, 200, { ok: true, role: "manager" });
+  return send(res, 200, { ok: true, role: "owner" });
 };
