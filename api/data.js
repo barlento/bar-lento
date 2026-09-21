@@ -64,6 +64,23 @@ async function migrationEmptyWeeks(doc) {
   return next;
 }
 
+// Test accounts are plain staff (owner 2026-09-21): whatever department they carry, they get no manager tools (auth.roleFrom),
+// and this one-time fix puts them back on the floor so the roster says so too.
+async function migrationTestFloor(doc) {
+  if (!store.hasStorage()) return doc;
+  const FLAG = "barlento:migr:2026-09-21-test-floor";
+  if (await store._redis("GET", FLAG).catch(() => null)) return doc;
+  await store._redis("SET", FLAG, new Date().toISOString()).catch(() => {});
+  const tests = (doc.data.staff || []).filter(auth.isTestName).filter((n) => ((doc.data.dept || {})[n] || "floor") !== "floor");
+  if (!tests.length) return doc;
+  const dept = Object.assign({}, doc.data.dept); tests.forEach((n) => { dept[n] = "floor"; });
+  const deptManual = [...new Set((doc.data.deptManual || []).concat(tests))];
+  const next = { version: (doc.version || 0) + 1, data: store.normalizeData(Object.assign({}, doc.data, { dept, deptManual })), updatedAt: doc.updatedAt };
+  await store.saveSchedule(next);
+  await store.appendLog({ at: new Date().toISOString(), version: next.version, changes: [`Test accounts back to Floor: ${tests.join(", ")}`] }).catch(() => {});
+  return next;
+}
+
 module.exports = async (req, res) => {
   try {
     if (req.method === "GET") {
@@ -74,7 +91,8 @@ module.exports = async (req, res) => {
       const docS = await staffsync.syncFromToast(doc0).then((r) => r.doc).catch(() => doc0);
       const docM = await migrations(docS).catch(() => docS);
       await migrationMartaDays(docM).catch(() => {});
-      const doc = await migrationEmptyWeeks(docM).catch(() => docM);
+      const docE = await migrationEmptyWeeks(docM).catch(() => docM);
+      const doc = await migrationTestFloor(docE).catch(() => docE);
       // Past weeks follow Toast by themselves (real clock-ins replace the plan; last 8 weeks, every 6 h).
       const doc1 = await backfill.auto(doc, doc0.updatedAt).catch(() => doc);
       // A signed-in device polling = that person has the app open: note it for the manager's live Staff list.

@@ -210,7 +210,7 @@ module.exports = async (req, res) => {
         const docsOut = {}; if (docAcks) DOC_IDS.forEach((id) => { docsOut[id] = ackView(docAcks[id]); });
         const appClock = await punch.isAppClock(doc.data, name);
         const openP = appClock ? await punch.openEntry(name).catch(() => null) : null;
-        return send(res, 200, { name, role: auth.roleOfDept((doc.data.dept || {})[name]), appClock, open: openP ? { in: openP.in } : null, rulesAck: ackView(ack), rulesVersion: RULES.version || null, docAcks: docAcks ? docsOut : undefined, docsVersions: docVersions(), since: pinRec && pinRec.createdAt || null, fullName: ident ? ident.fullName : null, email: ident ? ident.email : null, mail: mail.enabled() });
+        return send(res, 200, { name, role: auth.isTestName(name) ? null : auth.roleOfDept((doc.data.dept || {})[name]), appClock, open: openP ? { in: openP.in } : null, rulesAck: ackView(ack), rulesVersion: RULES.version || null, docAcks: docAcks ? docsOut : undefined, docsVersions: docVersions(), since: pinRec && pinRec.createdAt || null, fullName: ident ? ident.fullName : null, email: ident ? ident.email : null, mail: mail.enabled() });
       }
       if (action === "hours") {
         const asked = String(url.searchParams.get("name") || "");
