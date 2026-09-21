@@ -40,7 +40,7 @@ module.exports = async (req, res) => {
       const status = await toast.dayStatus(date, map);
       // people who clock in from the app (not in Toast) join the same day view
       const b = toast.dayBounds(date);
-      for (const n of await punch.appClockNames(doc.data)) { const l = await punch.between(n, b.start, b.end).catch(() => []); if (l.length) status.byName[n] = l.map((e) => ({ in: e.in, out: e.out })); }
+      for (const n of await punch.appClockNames(doc.data)) { const l = await punch.between(n, b.start, b.end).catch(() => []); if (l.length) status.byName[n] = l.map((e) => ({ in: e.in, out: e.out, breakMin: e.breakMin, breakStart: e.breakStart })); }
       return send(res, 200, status);
     }
     // Public time clock: everyone who punched in on that day (Toast names), newest day first. Last 31 days only.
@@ -59,7 +59,7 @@ module.exports = async (req, res) => {
       const list = entries
         .filter((t) => byGuid[t.employeeGuid] && !/^test\b/i.test(byGuid[t.employeeGuid].name))
         .map((t) => ({ name: guidToShort[t.employeeGuid] || byGuid[t.employeeGuid].name, full: byGuid[t.employeeGuid].name, in: t.in, out: t.out }));
-      for (const n of await punch.appClockNames(doc.data)) { const l = await punch.between(n, b.start, b.end).catch(() => []); l.forEach((e) => list.push({ name: n, full: n, in: e.in, out: e.out, app: true })); }
+      for (const n of await punch.appClockNames(doc.data)) { const l = await punch.between(n, b.start, b.end).catch(() => []); l.forEach((e) => list.push({ name: n, full: n, in: e.in, out: e.out, app: true, breakMin: e.breakMin, breakStart: e.breakStart })); }
       list.sort((a, b) => String(a.in).localeCompare(String(b.in)));
       return send(res, 200, { date, today, entries: list, fetchedAt: new Date().toISOString() });
     }

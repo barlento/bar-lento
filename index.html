@@ -889,6 +889,8 @@
   details.former summary{list-style:none;cursor:pointer;font-size:.7rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-muted);margin:6px 0 6px;display:flex;align-items:center;gap:6px}
   details.former summary::-webkit-details-marker{display:none}
   details.former summary .chev{transition:transform .2s} details.former[open] summary .chev{transform:rotate(90deg)}
+  .mestrip #meNextShift.onbreak{color:var(--accent-ink)}
+  .tc-row .dur .brk{color:var(--ink-muted);font-weight:500;font-size:.72rem;display:block;text-align:right}
 </style>
 </head>
 <body>
@@ -930,7 +932,7 @@
 
   <div class="mestrip" id="meStrip" role="region" aria-label="Your shifts">
     <div class="hi"><span class="av" id="meAv">?</span><div class="txt"><b id="meHi">Hi!</b><span id="meNextShift"></span></div></div>
-    <div class="mebtns"><button class="btn primary" id="meOpenBtn" type="button" data-t="myWeek">My week</button><button class="btn" id="meStatsBtn" type="button" data-t="myStats">My stats</button><button class="btn good" id="mePunchBtn" type="button" style="display:none">Clock in</button></div>
+    <div class="mebtns"><button class="btn primary" id="meOpenBtn" type="button" data-t="myWeek">My week</button><button class="btn" id="meStatsBtn" type="button" data-t="myStats">My stats</button><button class="btn" id="meBreakBtn" type="button" style="display:none">Break</button><button class="btn good" id="mePunchBtn" type="button" style="display:none">Clock in</button></div>
   </div>
 
   <div class="viewasbar" id="viewAsBar" style="display:none"><span id="viewAsTxt"></span><span class="spacer"></span><button class="btn" id="viewAsWeek" type="button" data-t="myWeek">My week</button><button class="btn" id="viewAsStats" type="button" data-t="myStats">My stats</button><button class="btn primary" id="viewAsExit" type="button" data-t="viewAsExit">Exit</button></div>
@@ -2016,7 +2018,7 @@
     if(!data){ list.innerHTML='<div class="tc-empty">'+t("loadingWord")+'</div>'; sum.innerHTML=""; $("tcUpdated").textContent=""; return; }
     var now=Date.now(); var entries=data.entries.slice(); // the Time clock shows EVERYONE, floor and kitchen: who is on shift and when they clocked (owner's rule 2026-09-20)
     var onNow=entries.filter(function(e){return !e.out;}).length;
-    var totalMs=entries.reduce(function(a,e){ return a+((e.out?Date.parse(e.out):now)-Date.parse(e.in)); },0);
+    var totalMs=entries.reduce(function(a,e){ return a+entryMs(e,now); },0);
     var people=Object.keys(entries.reduce(function(m,e){m[e.name]=1;return m;},{})).length;
     sum.innerHTML='<div class="tile'+(onNow?" on":"")+'"><b>'+onNow+'</b><span>'+t("onTheClock")+'</span></div>'
       +'<div class="tile"><b>'+people+'</b><span>'+(people===1?t("person"):t("people"))+'</span></div>'
@@ -2028,12 +2030,12 @@
       // people still on the clock first, then by clock-in time
       entries.sort(function(a,b){ if(!a.out!==!b.out) return a.out?1:-1; return String(a.in).localeCompare(String(b.in)); });
       list.innerHTML=entries.map(function(e,i){
-        var on=!e.out; var ms=(on?now:Date.parse(e.out))-Date.parse(e.in);
+        var on=!e.out; var ms=entryMs(e,now);
         var showFull=e.full&&e.full!==e.name;
         return '<div class="tc-row'+(on?" on":"")+'" style="animation-delay:'+Math.min(i*45,400)+'ms">'
           +'<div class="av" style="background:'+avColor(e.full||e.name)+'">'+h(initials(e.name))+'</div>'
           +'<div class="nm">'+h(e.name)+(showFull?'<small>'+h(e.full)+'</small>':(on?'<small>'+t("onClockNow")+'</small>':'<small>'+t("shiftDone")+'</small>'))+'</div>'
-          +'<div class="tm"><span class="io"><span class="in">'+fmtClock(e.in)+'</span> → '+(on?'<span class="in">'+t("nowWord")+'</span>':'<span class="out">'+fmtClock(e.out)+'</span>')+'</span><span class="dur">'+(on?"":"")+durText(ms)+'</span></div>'
+          +'<div class="tm"><span class="io"><span class="in">'+fmtClock(e.in)+'</span> → '+(on?'<span class="in">'+t("nowWord")+'</span>':'<span class="out">'+fmtClock(e.out)+'</span>')+'</span><span class="dur">'+(on&&e.breakStart?'<span class="brk">on break</span> ':"")+durText(ms)+(e.breakMin||e.breakStart?'<small class="brk">'+h(breakTag(e).replace(/^ · /,""))+'</small>':"")+'</span></div>'
           +'</div>';
       }).join("");
     }
@@ -2143,13 +2145,28 @@
   }
 
   // ---------- app time clock (people not in Toast, enabled per person by the manager) ----------
+  // The clock is personal (owner 2026-09-21): only the person signed in with their own PIN sees it — never the password
+  // (Manager login) session on a shared device, never while the owner is viewing as someone else.
+  function canPunch(){ return !!(state.me.name&&state.me.appClock&&!state.password&&!state.viewAs); }
+  // worked time of one clock entry = in → out (or now) minus the breaks (breakMin from the server, plus the break still running)
+  function entryMs(e,now){ var t=now||Date.now(); var end=e.out?Date.parse(e.out):t; var brk=(e.breakMin||0)*60000; if(!e.out&&e.breakStart) brk+=Math.max(0,t-Date.parse(e.breakStart)); return Math.max(0,end-Date.parse(e.in)-brk); }
+  function breakTag(e){ var m=e.breakMin||0; if(!e.out&&e.breakStart) m+=Math.max(0,Math.round((Date.now()-Date.parse(e.breakStart))/60000)); return m?' · break '+durText(m*60000):''; }
+  async function doBreak(){
+    if(!canPunch()||!state.me.open) return; var on=!state.me.open.breakStart; var bb=$("meBreakBtn"); bb.disabled=true;
+    var r=await api("/api/me",{method:"POST",body:{action:"break",on:on}});
+    if(r.ok){ state.me.open=r.json.open||state.me.open; renderMe(); toast(on?"Break started at "+fmtClock(r.json.open.breakStart)+". Tap Back to work when you return.":"Back to work. Break: "+durText((r.json.open.breakMin||0)*60000)+" total today.",4200); delete tc.cache[nyTodayISO()]; loadToastToday(); if(me.name===state.me.name) delete me.hours[me.week]; }
+    else if(r.status===409){ if(r.json&&r.json.error==="not_in") state.me.open=null; else if(r.json&&r.json.open) state.me.open=r.json.open; renderMe(); toast(r.json&&r.json.error==="on_break"?"You are already on break.":r.json&&r.json.error==="not_on_break"?"You are not on break.":"You are not clocked in."); }
+    else if(r.status===401){ meSet(null,null); renderMe(); maybeWhoPopup(); }
+    else if(r.status===403){ state.me.appClock=false; renderMe(); }
+    else { bb.disabled=false; toast("Could not save. Check your connection and try again."); }
+  }
   function openPunch(){
-    if(!state.me.name||!state.me.appClock) return;
+    if(!canPunch()) return;
     var on=!state.me.open, now=new Date();
     $("punchTitle").textContent=on?"Clock in now?":"Clock out now?";
     $("punchName").textContent=state.me.fullName||state.me.name;
     $("punchWhen").textContent=fmtClock(now.toISOString())+" · "+dateLabel(now);
-    $("punchLead").textContent=on?"Your clock-in is recorded with the exact time and shows in your week and in the time clock.":"You have been on the clock for "+durText(Date.now()-Date.parse(state.me.open.in))+".";
+    $("punchLead").textContent=on?"Your clock-in is recorded with the exact time and shows in your week and in the time clock.":"You have worked "+durText(entryMs(state.me.open))+" today"+(state.me.open.breakStart?". Your break ends now too.":(state.me.open.breakMin?" (break of "+durText(state.me.open.breakMin*60000)+" not counted).":"."));
     $("punchErr").textContent=""; var g=$("punchGo"); g.textContent=on?"Clock in":"Clock out"; g.className="btn "+(on?"good":"danger"); g.disabled=false;
     $("punchOverlay").classList.add("show");
   }
@@ -2158,13 +2175,13 @@
     var r=await api("/api/me",{method:"POST",body:{action:"punch",on:on}});
     if(r.ok){
       state.me.open=r.json.open||null; $("punchOverlay").classList.remove("show"); renderMe();
-      var e=r.json.entry; toast(on?"Clocked in at "+fmtClock(e.in)+".":"Clocked out at "+fmtClock(e.out)+" · "+durText(Date.parse(e.out)-Date.parse(e.in))+".",4200);
+      var e=r.json.entry; toast(on?"Clocked in at "+fmtClock(e.in)+".":"Clocked out at "+fmtClock(e.out)+" · "+durText(entryMs(e))+" worked"+(e.breakMin?" · break "+durText(e.breakMin*60000):"")+".",4200);
       delete tc.cache[nyTodayISO()]; loadToastToday(); if(me.name===state.me.name) delete me.hours[me.week];
     } else if(r.status===403&&r.json&&r.json.error==="owner_only"){
       toast(t("ownerOnly"),4500); await load(true); $("saveStatus").textContent=t("statusReady");
     } else if(r.status===403&&r.json&&r.json.error==="chef_forbidden"){
       toast(t("chefForbidden"),4500); await load(true); $("saveStatus").textContent=t("statusReady");
-    } else if(r.status===409){ state.me.open=r.json.entry&&!r.json.entry.out?{in:r.json.entry.in}:null; $("punchOverlay").classList.remove("show"); renderMe(); toast(r.json.error==="already_in"?"You are already clocked in.":"You are not clocked in."); }
+    } else if(r.status===409){ state.me.open=r.json.entry&&!r.json.entry.out?{in:r.json.entry.in,breakStart:r.json.entry.breakStart||null,breakMin:r.json.entry.breakMin||0}:null; $("punchOverlay").classList.remove("show"); renderMe(); toast(r.json.error==="already_in"?"You are already clocked in.":"You are not clocked in."); }
     else if(r.status===401){ $("punchOverlay").classList.remove("show"); meSet(null,null); renderMe(); maybeWhoPopup(); }
     else if(r.status===403){ $("punchOverlay").classList.remove("show"); state.me.appClock=false; renderMe(); toast("Your clock-ins are on Toast. Ask the manager."); }
     else { $("punchErr").textContent="Could not save. Check your connection and try again."; g.disabled=false; }
@@ -2474,8 +2491,8 @@
     if(!es.length){ box.innerHTML='<div class="hint" style="margin-top:6px">'+h(t("punchNone"))+'</div>'; return; }
     var days={}; es.forEach(function(e){days[e.date]=1;});
     box.innerHTML=es.slice().reverse().map(function(e){
-      var on=!e.out, ms=(on?now:Date.parse(e.out))-Date.parse(e.in); var dt=fromISO(e.date);
-      return '<div class="pr"><span class="dim">'+h(DAY_SHORT[DAY_KEY_BY_JSDAY[dt.getDay()]]+" "+dt.getDate()+" "+MONTHS[dt.getMonth()])+'</span><span class="mono" style="font-family:var(--mono);font-weight:500">'+fmtClock(e.in)+' → '+(on?'<span class="ok">'+h(t("nowWord"))+'</span>':fmtClock(e.out))+'</span><span class="'+(on?"ok":"")+'">'+durText(ms)+(on?' · '+h(t("stillIn")):(e.auto?' · '+h(t("autoOut")):''))+'</span></div>';
+      var on=!e.out, ms=entryMs(e,now); var dt=fromISO(e.date);
+      return '<div class="pr"><span class="dim">'+h(DAY_SHORT[DAY_KEY_BY_JSDAY[dt.getDay()]]+" "+dt.getDate()+" "+MONTHS[dt.getMonth()])+'</span><span class="mono" style="font-family:var(--mono);font-weight:500">'+fmtClock(e.in)+' → '+(on?'<span class="ok">'+h(t("nowWord"))+'</span>':fmtClock(e.out))+'</span><span class="'+(on?"ok":"")+'">'+durText(ms)+h(breakTag(e))+(on?' · '+h(e.breakStart?"on break":t("stillIn")):(e.auto?' · '+h(t("autoOut")):''))+'</span></div>';
     }).join("")+'<div class="pr" style="margin-top:10px;border-top:1px solid var(--border);padding-top:8px"><span class="dim">'+h(t("totalHours"))+'</span><span>'+h(t("punchTotal",{h:durText(d.totalMinutes*60000),n:Object.keys(days).length,d:t(Object.keys(days).length===1?"dayWord":"daysWord")}))+'</span></div>';
   }
   function removePerson(){
@@ -2627,10 +2644,10 @@
   $("clockBtn").addEventListener("click",openClock);
   $("lbBtn").addEventListener("click",openLb);
   $("meStatsBtn").addEventListener("click",function(){ openStats(null); });
-  $("mePunchBtn").addEventListener("click",openPunch);
+  $("mePunchBtn").addEventListener("click",openPunch); $("meBreakBtn").addEventListener("click",doBreak);
   $("punchCancel").addEventListener("click",function(){ $("punchOverlay").classList.remove("show"); });
   $("punchGo").addEventListener("click",doPunch);
-  setInterval(function(){ if(state.me.appClock&&state.me.open&&!anyModalOpen()) renderMe(); },60000);
+  setInterval(function(){ if(state.me.appClock&&state.me.open&&!anyModalOpen()) renderMe(); },state.me.open&&state.me.open.breakStart?15000:60000);
   $("statsClose").addEventListener("click",function(){ $("statsOverlay").classList.remove("show"); });
   $("statsWeekBtn").addEventListener("click",function(){ $("statsOverlay").classList.remove("show"); openMe(st.name===state.me.name?null:st.name); });
   $("statsRefresh").addEventListener("click",function(){ loadStats(false); });
@@ -2755,11 +2772,12 @@
     b.style.display=""; b.className="mebtn on"; b.innerHTML='<span class="mav" style="background:'+col+'">'+ini+'</span>'+h(n.split(/\s+/)[0]);
     $("meAv").textContent=initials(n); $("meAv").style.background=col;
     $("meHi").textContent=t("hi",{n:n.split(/\s+/)[0]});
-    var pb=$("mePunchBtn"), sb=$("meStatsBtn");
-    if(state.me.appClock){ sb.style.display="none"; pb.style.display=""; pb.textContent=state.me.open?"Clock out":"Clock in"; pb.className="btn "+(state.me.open?"danger":"good"); }
-    else { sb.style.display=""; pb.style.display="none"; }
+    var pb=$("mePunchBtn"), sb=$("meStatsBtn"), bb=$("meBreakBtn"), op=state.me.open, onBrk=!!(op&&op.breakStart);
+    if(canPunch()){ sb.style.display="none"; pb.style.display=""; pb.textContent=op?"Clock out":"Clock in"; pb.className="btn "+(op?"danger":"good");
+      bb.style.display=op?"":"none"; bb.textContent=onBrk?"Back to work":"Break"; bb.className="btn "+(onBrk?"primary":""); bb.disabled=false; }
+    else { sb.style.display=""; pb.style.display="none"; bb.style.display="none"; }
     var nx=nextShiftOf(n), el=$("meNextShift"); el.className="";
-    if(state.me.appClock&&state.me.open){ el.textContent="Clocked in since "+fmtClock(state.me.open.in)+" · "+durText(Date.now()-Date.parse(state.me.open.in)); }
+    if(canPunch()&&op){ var brkMs=(op.breakMin||0)*60000+(onBrk?Date.now()-Date.parse(op.breakStart):0); var worked=durText(Math.max(0,Date.now()-Date.parse(op.in)-brkMs)); el.textContent=onBrk?"On break since "+fmtClock(op.breakStart)+" · "+durText(Date.now()-Date.parse(op.breakStart))+" · worked "+worked:"Clocked in since "+fmtClock(op.in)+" · "+worked+(brkMs?" · break "+durText(brkMs):""); if(onBrk) el.className="onbreak"; }
     else if(!nx){ el.textContent=t("noUpcoming"); }
     else {
       var now=new Date(), todayISO=toISO(now), m=now.getHours()*60+now.getMinutes(), tomorrowISO=toISO(addDays(now,1));
@@ -3107,13 +3125,13 @@
       var mine=sortShifts((week[d]||[]).filter(function(s){return s.name===me.name;}));
       var punches=byDay[d]||[];
       mine.forEach(function(s){ var len=mins(s.end)-mins(s.start); schedMin+=len; if(isPast) schedSoFarMin+=len; else if(isToday&&nowMin>mins(s.start)) schedSoFarMin+=Math.min(len,nowMin-mins(s.start)); });
-      punches.forEach(function(e){ workedMs+=(e.out?Date.parse(e.out):nowMs)-Date.parse(e.in); });
+      punches.forEach(function(e){ workedMs+=entryMs(e,nowMs); });
       if(!mine.length&&!punches.length) return;
       if(mine.length){
         mine.forEach(function(s){
           var ok=!!state.confirmations[shiftKey(wk,d,s.id)];
           var clockTxt="";
-          if(punches.length){ var f=punches[0], la=punches[punches.length-1]; var ms=punches.reduce(function(a,e){return a+((e.out?Date.parse(e.out):nowMs)-Date.parse(e.in));},0); clockTxt=''+fmtClock(f.in)+' → '+(la.out?fmtClock(la.out):t("nowWord"))+' · '+durText(ms)+(la.out?'':t("soFar")); }
+          if(punches.length){ var f=punches[0], la=punches[punches.length-1]; var ms=punches.reduce(function(a,e){return a+entryMs(e,nowMs);},0); clockTxt=''+fmtClock(f.in)+' → '+(la.out?fmtClock(la.out):t("nowWord"))+' · '+durText(ms)+(la.out?'':t("soFar"))+punches.map(breakTag).join(""); }
           else if(isPast&&hrs&&hrs.linked) clockTxt=t("noClockIn");
           else if(isToday&&hrs&&hrs.linked) clockTxt=t("notClockedYet");
           var dn=dayNote(wk,d); var closed=dn&&isClosedStatus(dn.status);
@@ -3126,7 +3144,7 @@
         });
       } else {
         // clocked in without a scheduled shift (covering, extra hours)
-        var f2=punches[0], la2=punches[punches.length-1]; var ms2=punches.reduce(function(a,e){return a+((e.out?Date.parse(e.out):nowMs)-Date.parse(e.in));},0);
+        var f2=punches[0], la2=punches[punches.length-1]; var ms2=punches.reduce(function(a,e){return a+entryMs(e,nowMs);},0);
         rows.push('<div class="me-row past" style="cursor:default"><span class="dy">'+DAY_SHORT[d]+'<small>'+dateShort(date)+'</small></span><span class="mid"><span class="tm">'+durText(ms2)+'</span><span class="sub">'+fmtClock(f2.in)+' → '+(la2.out?fmtClock(la2.out):t("nowWord"))+' · '+t("notOnSchedule")+'</span></span><span></span></div>');
       }
     });

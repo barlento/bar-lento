@@ -38,8 +38,19 @@ async function signAll(p){ // rules + packet, stop at training
   // double clock-in refused by the server
   const dbl=await p.evaluate(async()=>{const r=await fetch("/api/me",{method:"POST",headers:{"Content-Type":"application/json","x-staff-token":localStorage.getItem("bl_me_token")},body:JSON.stringify({action:"punch",on:true})});return r.status;});
   console.log("6 second clock-in →", dbl, "(expect 409)");
+  // break: one tap to start, one tap to come back (owner 2026-09-21); hours are net of the break
+  console.log("6b break button:", await p.textContent("#meBreakBtn"), "| visible:", await p.evaluate(()=>document.getElementById("meBreakBtn").style.display!=="none"));
+  await p.click("#meBreakBtn"); await p.waitForFunction(()=>document.getElementById("meBreakBtn").textContent==="Back to work",null,{timeout:8000});
+  console.log("6c on break:", (await p.textContent("#meNextShift")).slice(0,60));
+  const dblB=await p.evaluate(async()=>{const r=await fetch("/api/me",{method:"POST",headers:{"Content-Type":"application/json","x-staff-token":localStorage.getItem("bl_me_token")},body:JSON.stringify({action:"break",on:true})});return r.status;});
+  console.log("6d second break start →", dblB, "(expect 409)");
+  await p.waitForTimeout(1200);
+  await p.click("#meBreakBtn"); await p.waitForFunction(()=>document.getElementById("meBreakBtn").textContent==="Break",null,{timeout:8000});
+  const who=await p.evaluate(async()=>{const r=await fetch("/api/me?action=who",{headers:{"x-staff-token":localStorage.getItem("bl_me_token")}});return r.json();});
+  console.log("6e back to work · open:", JSON.stringify(who.open));
+  await p.screenshot({path:require("path").join(__dirname,"..","out","punch-break.png")});
   // someone else (Joe, on Toast) cannot punch
-  await p.waitForTimeout(1500);
+  await p.waitForTimeout(800);
   await p.click("#mePunchBtn"); await p.waitForSelector("#punchOverlay.show"); console.log("7 sheet:", await p.textContent("#punchTitle"), "|", await p.textContent("#punchLead"));
   await p.click("#punchGo"); await p.waitForFunction(()=>!document.getElementById("punchOverlay").classList.contains("show")); await p.waitForTimeout(600);
   console.log("8 after out:", await p.textContent("#mePunchBtn"));
@@ -50,6 +61,11 @@ async function signAll(p){ // rules + packet, stop at training
   await p.evaluate(()=>{document.querySelectorAll(".overlay.show").forEach(o=>o.classList.remove("show"))});
   await p.click("#meOpenBtn"); await p.waitForSelector("#meOverlay.show"); await p.waitForTimeout(1200);
   console.log("10 my week:", (await p.textContent("#meSum")).replace(/\s+/g," ").slice(0,80), "| note:", await p.textContent("#meNote"), "| lead:", await p.textContent("#meLead"));
+  // the password (Manager login) session on a shared device never shows the clock, even with Pietro signed in (owner 2026-09-21)
+  const tokP=await p.evaluate(()=>localStorage.getItem("bl_me_token"));
+  await m.evaluate((t)=>{localStorage.setItem("bl_me_token",t);localStorage.setItem("bl_me_name","Pietro");},tokP); await m.reload(); await m.waitForTimeout(2000);
+  console.log("10b password session + Pietro PIN → clock hidden:", await m.evaluate(()=>document.getElementById("mePunchBtn").style.display==="none"&&document.getElementById("meBreakBtn").style.display==="none"), "| strip name:", (await m.textContent("#meHi")).trim());
+  await m.evaluate(()=>{localStorage.removeItem("bl_me_token");localStorage.removeItem("bl_me_name");}); await m.reload(); await m.waitForTimeout(1500);
   // 3. manager sees the month
   await m.click("#personOverlay .btn.ghost, #personClose").catch(()=>{});
   await m.evaluate(()=>{document.querySelectorAll(".overlay.show").forEach(o=>o.classList.remove("show"))});

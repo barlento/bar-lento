@@ -141,6 +141,7 @@ async function weekSummary(data, name, guid, weekISO) {
   if (out.matched) { out.avgDev = Math.round(out.devSum / out.matched); out.onTimePct = Math.round(out.onTime / out.matched * 100); }
   return out;
 }
+const openView = (e) => { const v = punch.view(e); return { in: v.in, breakStart: v.breakStart || null, breakMin: v.breakMin || 0 }; };
 function sumMinutes(list) {
   return list.reduce((a, s) => a + Math.max(0, (Date.parse(s.out || new Date().toISOString()) - Date.parse(s.in)) / 60000), 0);
 }
@@ -210,7 +211,7 @@ module.exports = async (req, res) => {
         const docsOut = {}; if (docAcks) DOC_IDS.forEach((id) => { docsOut[id] = ackView(docAcks[id]); });
         const appClock = await punch.isAppClock(doc.data, name);
         const openP = appClock ? await punch.openEntry(name).catch(() => null) : null;
-        return send(res, 200, { name, role: auth.isTestName(name) ? null : auth.roleOfDept((doc.data.dept || {})[name]), appClock, open: openP ? { in: openP.in } : null, rulesAck: ackView(ack), rulesVersion: RULES.version || null, docAcks: docAcks ? docsOut : undefined, docsVersions: docVersions(), since: pinRec && pinRec.createdAt || null, fullName: ident ? ident.fullName : null, email: ident ? ident.email : null, mail: mail.enabled() });
+        return send(res, 200, { name, role: auth.isTestName(name) ? null : auth.roleOfDept((doc.data.dept || {})[name]), appClock, open: openP ? openView(openP) : null, rulesAck: ackView(ack), rulesVersion: RULES.version || null, docAcks: docAcks ? docsOut : undefined, docsVersions: docVersions(), since: pinRec && pinRec.createdAt || null, fullName: ident ? ident.fullName : null, email: ident ? ident.email : null, mail: mail.enabled() });
       }
       if (action === "hours") {
         const asked = String(url.searchParams.get("name") || "");
@@ -220,7 +221,7 @@ module.exports = async (req, res) => {
         if (!/^\d{4}-\d{2}-\d{2}$/.test(week)) return send(res, 400, { error: "bad_week" });
         if (await punch.isAppClock(doc.data, name)) {
           const entries = await punch.weekEntries(name, week);
-          return send(res, 200, { name, week, toast: false, appClock: true, linked: true, entries, workedMinutes: Math.round(sumMinutes(entries)), fetchedAt: new Date().toISOString() });
+          return send(res, 200, { name, week, toast: false, appClock: true, linked: true, entries, workedMinutes: Math.round(punch.minutes(entries)), fetchedAt: new Date().toISOString() });
         }
         if (!toast.enabled()) return send(res, 200, { name, week, toast: false, linked: false, entries: [] });
         const emps = await toast.employees(true);
@@ -280,7 +281,17 @@ module.exports = async (req, res) => {
       if (!(await punch.isAppClock(doc0.data, who))) return send(res, 403, { error: "not_app_clock" });
       const r = await punch.punch(who, body.on === true, req.headers["user-agent"]);
       if (r.error) return send(res, 409, { error: r.error, entry: r.entry || null });
-      return send(res, 200, { ok: true, entry: r.entry, open: r.entry.out ? null : { in: r.entry.in } });
+      return send(res, 200, { ok: true, entry: r.entry, open: r.entry.out ? null : openView(r.entry) });
+    }
+    // Break from the app clock (owner 2026-09-21): start or end a break inside the open entry. One tap, no confirmation.
+    if (action === "break") {
+      const doc0 = await store.getSchedule();
+      const who = await accounts.whoIs(tokenFrom(req), doc0.data.staff);
+      if (!who) return send(res, 401, { error: "unauthorized" });
+      if (!(await punch.isAppClock(doc0.data, who))) return send(res, 403, { error: "not_app_clock" });
+      const r = await punch.pause(who, body.on === true, req.headers["user-agent"]);
+      if (r.error) return send(res, 409, { error: r.error, entry: r.entry || null, open: r.entry && !r.entry.out ? openView(r.entry) : null });
+      return send(res, 200, { ok: true, entry: r.entry, open: openView(r.entry) });
     }
 
     // House Rules read & acknowledged (once per version). Recorded with the email the person typed, the time, and the device.
