@@ -296,6 +296,23 @@ module.exports = async (req, res) => {
       const path = `/api/cal?t=${tok}`;
       return send(res, 200, { ok: true, https: `https://${host}${path}`, webcal: `webcal://${host}${path}` });
     }
+    // Email the calendar link to the person (Google Calendar subscribes by URL only from a computer): once per 10 min.
+    if (action === "calendarMail") {
+      const doc0 = await store.getSchedule();
+      const who = await accounts.whoIs(tokenFrom(req), doc0.data.staff);
+      if (!who) return send(res, 401, { error: "unauthorized" });
+      if (!mail.enabled()) return send(res, 503, { error: "mail_off" });
+      const ident = await toastIdentity(doc0.data, who); const to = (ident && ident.email) || await signingEmail(who, "");
+      if (!to) return send(res, 404, { error: "no_email" });
+      const gate = await store._redis("SET", "barlento:calmail:" + who, "1", "NX", "EX", 600).catch(() => "OK");
+      if (gate !== "OK" && gate !== true) return send(res, 429, { error: "wait" });
+      const tok = await cal.tokenFor(who);
+      const host = String(req.headers["x-forwarded-host"] || req.headers.host || "bar-lento.vercel.app").split(",")[0].trim();
+      const link = `https://${host}/api/cal?t=${tok}`;
+      const text = `Hi ${who},\n\nThis is your private Bar Lento calendar link. It shows only your shifts and stays up to date by itself.\n\n${link}\n\nGoogle Calendar (from a computer): open calendar.google.com, next to "Other calendars" click + → From URL, paste the link, click Add calendar. It then appears in the Google Calendar app on your phone too.\n\nApple Calendar: on iPhone or Mac open this link and tap Subscribe: ${link.replace(/^https:/, "webcal:")}\n\nKeep this link to yourself.\n\nBar Lento`;
+      await mail.send({ to, subject: "Your Bar Lento calendar link", text, html: `<p>Hi ${who},</p><p>This is your private Bar Lento calendar link. It shows only your shifts and stays up to date by itself.</p><p><a href="${link}">${link}</a></p><p><b>Google Calendar</b> (from a computer): open calendar.google.com, next to “Other calendars” click <b>+</b> → <b>From URL</b>, paste the link, click <b>Add calendar</b>. It then appears in the Google Calendar app on your phone too.</p><p><b>Apple Calendar</b>: on iPhone or Mac <a href="${link.replace(/^https:/, "webcal:")}">open this link</a> and tap Subscribe.</p><p>Keep this link to yourself.</p><p>Bar Lento</p>` });
+      return send(res, 200, { ok: true, to });
+    }
     // Break from the app clock (owner 2026-09-21): start or end a break inside the open entry. One tap, no confirmation.
     if (action === "break") {
       const doc0 = await store.getSchedule();

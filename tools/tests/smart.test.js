@@ -22,6 +22,11 @@ async function j(p,o){const r=await fetch(B+p,o);let x=null,txt="";try{txt=await
   const events=(feed.txt.match(/BEGIN:VEVENT/g)||[]).length; console.log("3 feed:",feed.s,feed.h.get("content-type"),"| events:",events,"| has Astrea S1:",/SUMMARY:Bar Lento · S1/.test(feed.txt),"| Pietro only as colleague:",!/SUMMARY:[^\n]*Pietro/.test(feed.txt),"| sunday skipped (closed):",events===6);
   if(feed.s!==200||events!==6) errors.push("feed wrong");
   const r2=await j("/api/me",{method:"POST",headers:{"Content-Type":"application/json","x-staff-token":ta},body:JSON.stringify({action:"calendar"})}); console.log("4 same token twice:",r2.j.https===r.j.https);
+  const cm=await j("/api/me",{method:"POST",headers:{"Content-Type":"application/json","x-staff-token":ta},body:JSON.stringify({action:"calendarMail"})});
+  const mails=await j("/__mail"); const calMail=(mails.j||[]).filter(m=>/calendar link/i.test(m.subject||""));
+  console.log("4b calendar link by email:",cm.s,"to",cm.j&&cm.j.to,"| mails with the link:",calMail.length,"| link inside:",calMail.some(m=>/\/api\/cal\?t=[a-f0-9]{40}/.test(m.text||"")));
+  if(cm.s!==200||!calMail.length) errors.push("calendar mail not sent");
+  const cm2=await j("/api/me",{method:"POST",headers:{"Content-Type":"application/json","x-staff-token":ta},body:JSON.stringify({action:"calendarMail"})}); console.log("4c second send within 10 min →",cm2.s,"(expect 429)");
   const bad=await j("/api/cal?t=0000000000000000000000000000000000000000"); console.log("5 unknown token →",bad.s,"(expect 404)");
   // ---- reminders (force = build now, whatever the hour)
   r=await j("/api/remind?force=1",{headers:M}); console.log("6 remind:",r.s,"| morning to:",(r.j.morning.messages||[]).map(m=>m.name+": "+m.body).join(" / "));
