@@ -9,6 +9,7 @@ const punch = require("../lib/punch");
 const former = require("../lib/former");
 const backfill = require("../lib/backfill");
 const presence = require("../lib/presence");
+const remind = require("../lib/remind");
 
 function send(res, status, body) {
   res.setHeader("Cache-Control", "no-store");
@@ -114,6 +115,8 @@ module.exports = async (req, res) => {
       const doc1 = await backfill.auto(doc, doc0.updatedAt).catch(() => doc);
       // A signed-in device polling = that person has the app open: note it for the manager's live Staff list.
       { const tok = String(req.headers["x-staff-token"] || ""); if (tok) accounts.whoIs(tok, doc1.data.staff).then((n) => presence.touch(n)).catch(() => {}); }
+      // Morning reminders and "not clocked in" alerts ride on the polls (lib/remind, once per day / per person, cheap otherwise).
+      await remind.tick(doc1).catch(() => {});
       return send(res, 200, {
         version: doc1.version,
         updatedAt: doc1.updatedAt,

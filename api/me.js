@@ -4,6 +4,7 @@ const accounts = require("../lib/accounts");
 const toast = require("../lib/toast");
 const staffsync = require("../lib/staffsync");
 const punch = require("../lib/punch");
+const cal = require("../lib/cal");
 const former = require("../lib/former");
 const presence = require("../lib/presence");
 const crypto = require("crypto");
@@ -284,6 +285,16 @@ module.exports = async (req, res) => {
       const r = await punch.punch(who, body.on === true, req.headers["user-agent"]);
       if (r.error) return send(res, 409, { error: r.error, entry: r.entry || null });
       return send(res, 200, { ok: true, entry: r.entry, open: r.entry.out ? null : openView(r.entry) });
+    }
+    // Personal calendar feed (owner 2026-09-22): a private link the person subscribes to from iPhone / Google Calendar.
+    if (action === "calendar") {
+      const doc0 = await store.getSchedule();
+      const who = await accounts.whoIs(tokenFrom(req), doc0.data.staff);
+      if (!who) return send(res, 401, { error: "unauthorized" });
+      const tok = await cal.tokenFor(who);
+      const host = String(req.headers["x-forwarded-host"] || req.headers.host || "bar-lento.vercel.app").split(",")[0].trim();
+      const path = `/api/cal?t=${tok}`;
+      return send(res, 200, { ok: true, https: `https://${host}${path}`, webcal: `webcal://${host}${path}` });
     }
     // Break from the app clock (owner 2026-09-21): start or end a break inside the open entry. One tap, no confirmation.
     if (action === "break") {

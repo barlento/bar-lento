@@ -899,6 +899,22 @@
   .tc-row .nm small.brk{color:var(--accent-ink)}
   .tc-row.on.onbreak{border-color:var(--accent);background:var(--accent-soft)}
   .me-cov.late span{color:var(--ink-muted);font-size:.78rem;font-weight:400}
+  /* My week: calendar row + sheet; week checks card (owner 2026-09-22) */
+  .me-cal{display:flex;align-items:center;gap:10px;margin:12px 0 0;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--surface);font-size:.85rem}
+  .me-cal .lbl{flex:1;color:var(--ink-muted)}
+  .cal-steps{display:none}
+  #calOverlay .me-actions{margin:6px 0 10px}
+  #calOverlay .hint{font-size:.8rem;color:var(--ink-muted);line-height:1.45}
+  .checks{display:none;margin:0 0 14px;padding:12px 14px;border-radius:14px;background:var(--surface);border:1px solid var(--border)}
+  body.mgr .checks.show{display:block}
+  .checks .ch{display:flex;align-items:center;justify-content:space-between;gap:10px;font-weight:600;letter-spacing:-.01em;font-size:.92rem}
+  .checks .ch .n{font-size:.74rem;color:var(--ink-muted);font-weight:500}
+  .checks .ok{color:var(--good);font-size:.84rem;margin-top:4px}
+  .checks ul{margin:6px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:5px}
+  .checks li{display:flex;gap:8px;align-items:flex-start;font-size:.84rem;line-height:1.35}
+  .checks li::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--danger);flex:none;margin-top:6px;opacity:.8}
+  .checks li.info::before{background:var(--ink-muted)}
+  body.viewstaff .checks,body.chef.ro .checks{display:none}
 </style>
 </head>
 <body>
@@ -959,6 +975,7 @@
     </div>
   </div>
 
+  <div class="checks" id="checksCard"></div>
   <div class="days" id="daysGrid"></div>
 
   <footer class="note">
@@ -1160,6 +1177,18 @@
 </div>
 
 <!-- Leaderboard (everyone) -->
+<!-- Personal calendar feed: subscribe the phone's calendar to your own shifts (owner 2026-09-22) -->
+<div class="overlay" id="calOverlay">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="calTitle">
+    <h2 id="calTitle" data-t="calTitle">Shifts in your calendar</h2>
+    <p class="lead" data-t="calLead">Your shifts appear in your phone's calendar and update by themselves when the schedule changes. Only you can see them. Days off approved by the manager are included.</p>
+    <div class="cal-steps" id="calSteps"></div>
+    <div class="me-actions"><a class="btn primary" id="calOpen" href="#" data-t="calOpen">Open in Calendar</a><button class="btn" id="calCopy" type="button" data-t="calCopy">Copy link</button></div>
+    <p class="hint" id="calHint" data-t="calHint">iPhone: tap Open in Calendar, then Subscribe. Google Calendar or Android: copy the link, then in Google Calendar on a computer choose Other calendars → From URL and paste it.</p>
+    <div class="actions"><button class="btn" id="calClose" type="button" data-t="close">Close</button></div>
+  </div>
+</div>
+
 <div class="overlay" id="reqOverlay">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="reqTitleH">
     <h2 id="reqTitleH" data-t="reqTitle">Requests</h2>
@@ -1307,6 +1336,7 @@
     <p class="me-note" id="meNote"></p>
     <div id="meReq"></div>
     <div class="me-bday" id="meBday" style="display:none"><span class="lbl" id="meBdayLbl"></span><input type="date" id="meBdayInput" required placeholder="Pick a date" aria-label="Your birthday"><button class="btn" id="meBdaySave" type="button" data-t="save">Save</button></div>
+    <div class="me-cal" id="meCal" style="display:none"><span class="lbl" data-t="calRow">My shifts in my phone calendar</span><button class="btn" id="meCalBtn" type="button" data-t="calAdd">Add</button></div>
     <div class="me-actions">
       <button class="btn" id="meRules" type="button" style="display:none">Documents</button>
       <button class="btn" id="meStatsLink" type="button" data-t="myStats">My stats</button>
@@ -1358,7 +1388,7 @@
   var I18N={
     en:{
       myBday:"My birthday", myBdayNone:"Not set yet. Add it and the team celebrates you.", myBdayIs:"My birthday: {d}", bdaySavedMe:"Birthday saved. See you on {d}.", save:"Save",
-      chefMode:"Chef mode · kitchen only", ownerMode:"Owner mode", viewingAs:"Viewing as {n}", viewAsTxt:"You are seeing the app as {n} ({r}) sees it. Nothing you tap here changes anything.", viewAsTxtTools:"You are seeing the app as {n} ({r}) sees it, with their tools. What you change here is saved.", floorReadOnly:"The floor is planned by the manager. You can edit the kitchen.", reqTitle:"Requests", reqLead:"Time off and shift covers asked by the team. Approving a cover changes the shift in the schedule.", reqOpenShifts:"Open shifts", reqOpenLead:"A colleague can't make it. Offer to take it; the manager decides.", reqTake:"I can take it", reqOffered:"You offered", reqWithdraw:"Withdraw", reqWaiting:"{n} waiting for you", reqWaiting1:"1 waiting for you", reqOpenBtn:"Open", reqCantMake:"Can't make it? Ask for cover", reqCoverWait:"Cover requested · the manager decides", reqCoveredBy:"Covered by {n}", reqCancel:"Cancel", reqTooLate:"Covers can be asked up to {h} hours before the shift. Talk to the manager.", reqTimeOff:"Time off", reqFrom:"From", reqTo:"To", reqNoteHint:"Reason (optional)", reqSend:"Request", reqMine:"My requests", reqStatusPending:"Waiting", reqStatusApproved:"Approved", reqStatusDeclined:"Declined", reqStatusCancelled:"Withdrawn", reqStatusExpired:"Expired", reqCoverOf:"Cover · {d}", reqOffOf:"Time off · {d}", reqSent:"Request sent. The manager will see it.", reqCoverSent:"Cover requested. Colleagues and the manager have been told.", reqOfferedToast:"Thanks. The manager decides who covers.", reqAssign:"Assign {n}", reqAssignOther:"Someone else…", reqAssignBtn:"Assign", reqApprove:"Approve", reqDecline:"Decline", reqDone:"Done.", reqNone:"Nothing waiting.", reqVolunteers:"Can take it: {n}", reqNoVolunteers:"Nobody has offered yet.", reqRecent:"Recent decisions", reqOffChip:"Off: {n}", reqOffReqChip:"Off requested: {n}", reqCantMakeTitle:"Ask for cover?", reqCantMakeTxt:"Your colleagues will be asked to take {d}. The manager decides who covers; until then the shift is yours.", reqAskBtn:"Ask for cover", reqRule:"Requests close {h} hours before the shift.", reqCantMakeShort:"{n} can't make {d}", reqAsksOff:"{n} asks for time off · {d}", reqDup:"Already requested.", reqFail:"Could not send. Try again.", reqPick:"Pick a date", aiTitle:"Ask Bar Lento", aiSub:"The app, your shifts, the rules, the menu", aiFoot:"Answers only about the app, your own data, the rules and the menu. It cannot change anything.", aiPlaceholder:"Ask anything…", aiLead:"Ask me, for example:", aiSug1:"When do I work this week?", aiSug2:"How do I set my birthday?", aiSug3:"What does the sick leave policy say?", aiSugMgr:"How do I close a day for a private event?", aiSugChef:"How do I plan the kitchen for next week?", aiError:"Something went wrong. Try again in a moment.", aiBusy:"Too many questions today. Try again tomorrow.", aiOpen:"Open {s}", aiTimeClock:"Time clock", aiStaff:"Staff", aiRanking:"Team ranking", aiDocs:"My documents", iconNotice:"New app icon. iPhone keeps the old one: remove Bar Lento from the Home Screen and add it again from Safari (Share, Add to Home Screen).", viewAsBtn:"View as {n}", viewAsExit:"Exit", lvlStaffWord:"Staff", ownerOnly:"Only the owner can make someone Management or Owner.", chefForbidden:"Kitchen only: this change is for the manager.", showPin:"Show", hidePin:"Hide", deptRoleHint:"Chef, Management and Owner get the manager tools after their own PIN: Chef for the kitchen only, Management for everything, Owner for everything plus View as and these promotions.", appClockSalary:"Clocks in from the app (salaried in Toast)",
+      chefMode:"Chef mode · kitchen only", ownerMode:"Owner mode", viewingAs:"Viewing as {n}", viewAsTxt:"You are seeing the app as {n} ({r}) sees it. Nothing you tap here changes anything.", viewAsTxtTools:"You are seeing the app as {n} ({r}) sees it, with their tools. What you change here is saved.", floorReadOnly:"The floor is planned by the manager. You can edit the kitchen.", reqTitle:"Requests", reqLead:"Time off and shift covers asked by the team. Approving a cover changes the shift in the schedule.", reqOpenShifts:"Open shifts", reqOpenLead:"A colleague can't make it. Offer to take it; the manager decides.", reqTake:"I can take it", reqOffered:"You offered", reqWithdraw:"Withdraw", reqWaiting:"{n} waiting for you", reqWaiting1:"1 waiting for you", reqOpenBtn:"Open", calRow:"My shifts in my phone calendar", calAdd:"Add", calTitle:"Shifts in your calendar", calLead:"Your shifts appear in your phone's calendar and update by themselves when the schedule changes. Only you can see them. Days off approved by the manager are included.", calOpen:"Open in Calendar", calCopy:"Copy link", calCopied:"Link copied. Paste it in Google Calendar → Other calendars → From URL.", calHint:"iPhone: tap Open in Calendar, then Subscribe. Google Calendar or Android: copy the link, then in Google Calendar on a computer choose Other calendars → From URL and paste it.", calFail:"Could not create your calendar link. Try again.", checksTitle:"Checks", checksClear:"All clear: no overtime, no gaps, no conflicts this week.", chkOver:"{n}: {h} scheduled, over 40 h (overtime)", chkSeven:"{n} is scheduled all 7 days (one day of rest is required)", chkLong:"{n} {d}: {h} shift (10 h or more)", chkLongMany:"{n}: {k} shifts of 10 h or more this week", chkEmpty:"{d}: open, nobody scheduled", chkClosed:"{d} is closed but {k} shifts are scheduled", chkClosed1:"{d} is closed but a shift is scheduled", chkOverlap:"{n} {d}: two overlapping shifts", chkOff:"{n} is off {d} ({s}) but is scheduled", chkOffApproved:"approved", chkOffPending:"requested", reqCantMake:"Can't make it? Ask for cover", reqCoverWait:"Cover requested · the manager decides", reqCoveredBy:"Covered by {n}", reqCancel:"Cancel", reqTooLate:"Covers can be asked up to {h} hours before the shift. Talk to the manager.", reqTimeOff:"Time off", reqFrom:"From", reqTo:"To", reqNoteHint:"Reason (optional)", reqSend:"Request", reqMine:"My requests", reqStatusPending:"Waiting", reqStatusApproved:"Approved", reqStatusDeclined:"Declined", reqStatusCancelled:"Withdrawn", reqStatusExpired:"Expired", reqCoverOf:"Cover · {d}", reqOffOf:"Time off · {d}", reqSent:"Request sent. The manager will see it.", reqCoverSent:"Cover requested. Colleagues and the manager have been told.", reqOfferedToast:"Thanks. The manager decides who covers.", reqAssign:"Assign {n}", reqAssignOther:"Someone else…", reqAssignBtn:"Assign", reqApprove:"Approve", reqDecline:"Decline", reqDone:"Done.", reqNone:"Nothing waiting.", reqVolunteers:"Can take it: {n}", reqNoVolunteers:"Nobody has offered yet.", reqRecent:"Recent decisions", reqOffChip:"Off: {n}", reqOffReqChip:"Off requested: {n}", reqCantMakeTitle:"Ask for cover?", reqCantMakeTxt:"Your colleagues will be asked to take {d}. The manager decides who covers; until then the shift is yours.", reqAskBtn:"Ask for cover", reqRule:"Requests close {h} hours before the shift.", reqCantMakeShort:"{n} can't make {d}", reqAsksOff:"{n} asks for time off · {d}", reqDup:"Already requested.", reqFail:"Could not send. Try again.", reqPick:"Pick a date", aiTitle:"Ask Bar Lento", aiSub:"The app, your shifts, the rules, the menu", aiFoot:"Answers only about the app, your own data, the rules and the menu. It cannot change anything.", aiPlaceholder:"Ask anything…", aiLead:"Ask me, for example:", aiSug1:"When do I work this week?", aiSug2:"How do I set my birthday?", aiSug3:"What does the sick leave policy say?", aiSugMgr:"How do I close a day for a private event?", aiSugChef:"How do I plan the kitchen for next week?", aiError:"Something went wrong. Try again in a moment.", aiBusy:"Too many questions today. Try again tomorrow.", aiOpen:"Open {s}", aiTimeClock:"Time clock", aiStaff:"Staff", aiRanking:"Team ranking", aiDocs:"My documents", iconNotice:"New app icon. iPhone keeps the old one: remove Bar Lento from the Home Screen and add it again from Safari (Share, Add to Home Screen).", viewAsBtn:"View as {n}", viewAsExit:"Exit", lvlStaffWord:"Staff", ownerOnly:"Only the owner can make someone Management or Owner.", chefForbidden:"Kitchen only: this change is for the manager.", showPin:"Show", hidePin:"Hide", deptRoleHint:"Chef, Management and Owner get the manager tools after their own PIN: Chef for the kitchen only, Management for everything, Owner for everything plus View as and these promotions.", appClockSalary:"Clocks in from the app (salaried in Toast)",
       adminMode:"Manager mode", lbBtn:"Team ranking", staffBtn:"Staff", historyBtn:"History", exportBtn:"Export PDF", logoutBtn:"Log out",
       newWeekBtn:"＋ New week", deleteWeekBtn:"Delete week", nwTitle:"New week", nwLead:"Create the week of {r}", nwCopy:"Copy last week's shifts ({k} shifts)", nwCopySub:"Same people and times as {r}; adjust as needed", nwEmpty:"Start empty", nwEmptySub:"Add every shift by hand",
       copyConfirm:"Tap again to replace the current shifts", deleteWeekConfirm:"Tap again to delete", deleteWeekConfirmN:"Tap again: deletes {k} shifts", deleteWeekLocked:"Past week · archived", pastLocked:"Past weeks are archived and can't be deleted", onlyEmpty:"Only an empty week can be deleted",
@@ -1419,7 +1449,7 @@
     },
     it:{
       myBday:"Il mio compleanno", myBdayNone:"Non ancora inserito. Aggiungilo e il team ti festeggia.", myBdayIs:"Il mio compleanno: {d}", bdaySavedMe:"Compleanno salvato. Ci vediamo il {d}.", save:"Salva",
-      chefMode:"Modalità chef · solo cucina", ownerMode:"Modalità titolare", viewingAs:"Stai vedendo come {n}", viewAsTxt:"Stai vedendo l'app come la vede {n} ({r}). Qui non cambi niente.", viewAsTxtTools:"Stai vedendo l'app come la vede {n} ({r}), con i suoi strumenti. Quello che cambi qui viene salvato.", floorReadOnly:"La sala la pianifica la direzione. Tu puoi modificare la cucina.", reqTitle:"Richieste", reqLead:"Giorni liberi e cambi turno chiesti dal team. Approvare un cambio modifica il turno nel calendario.", reqOpenShifts:"Turni scoperti", reqOpenLead:"Un collega non può. Offriti di coprirlo; decide la direzione.", reqTake:"Posso coprirlo", reqOffered:"Ti sei offerto", reqWithdraw:"Ritira", reqWaiting:"{n} in attesa", reqWaiting1:"1 in attesa", reqOpenBtn:"Apri", reqCantMake:"Non puoi? Chiedi una copertura", reqCoverWait:"Copertura richiesta · decide la direzione", reqCoveredBy:"Coperto da {n}", reqCancel:"Annulla", reqTooLate:"La copertura si chiede fino a {h} ore prima del turno. Parla con la direzione.", reqTimeOff:"Giorni liberi", reqFrom:"Dal", reqTo:"Al", reqNoteHint:"Motivo (facoltativo)", reqSend:"Richiedi", reqMine:"Le mie richieste", reqStatusPending:"In attesa", reqStatusApproved:"Approvata", reqStatusDeclined:"Rifiutata", reqStatusCancelled:"Ritirata", reqStatusExpired:"Scaduta", reqCoverOf:"Copertura · {d}", reqOffOf:"Giorni liberi · {d}", reqSent:"Richiesta inviata. La direzione la vedrà.", reqCoverSent:"Copertura richiesta. Colleghi e direzione sono stati avvisati.", reqOfferedToast:"Grazie. Decide la direzione.", reqAssign:"Assegna a {n}", reqAssignOther:"Qualcun altro…", reqAssignBtn:"Assegna", reqApprove:"Approva", reqDecline:"Rifiuta", reqDone:"Fatto.", reqNone:"Niente in attesa.", reqVolunteers:"Disponibili: {n}", reqNoVolunteers:"Nessuno si è ancora offerto.", reqRecent:"Decisioni recenti", reqOffChip:"Libero: {n}", reqOffReqChip:"Libero richiesto: {n}", reqCantMakeTitle:"Chiedere una copertura?", reqCantMakeTxt:"I colleghi saranno avvisati per coprire {d}. Decide la direzione; fino ad allora il turno è tuo.", reqAskBtn:"Chiedi copertura", reqRule:"Le richieste chiudono {h} ore prima del turno.", reqCantMakeShort:"{n} non può fare {d}", reqAsksOff:"{n} chiede giorni liberi · {d}", reqDup:"Già richiesto.", reqFail:"Invio non riuscito. Riprova.", reqPick:"Scegli una data", aiTitle:"Chiedi a Bar Lento", aiSub:"L'app, i tuoi turni, le regole, il menu", aiFoot:"Risponde solo sull'app, sui tuoi dati, sulle regole e sul menu. Non può cambiare niente.", aiPlaceholder:"Chiedi quello che vuoi…", aiLead:"Chiedimi, per esempio:", aiSug1:"Quando lavoro questa settimana?", aiSug2:"Come imposto il mio compleanno?", aiSug3:"Cosa dice la policy sulla malattia?", aiSugMgr:"Come chiudo un giorno per un evento privato?", aiSugChef:"Come pianifico la cucina della prossima settimana?", aiError:"Qualcosa è andato storto. Riprova tra un attimo.", aiBusy:"Troppe domande per oggi. Riprova domani.", aiOpen:"Apri {s}", aiTimeClock:"Time clock", aiStaff:"Staff", aiRanking:"Classifica team", aiDocs:"I miei documenti", iconNotice:"Nuova icona. iPhone tiene quella vecchia: togli Bar Lento dalla Home e aggiungila di nuovo da Safari (Condividi, Aggiungi alla schermata Home).", viewAsBtn:"Vedi come {n}", viewAsExit:"Esci", lvlStaffWord:"Staff", ownerOnly:"Solo il titolare può rendere qualcuno Direzione o Titolare.", chefForbidden:"Solo cucina: questa modifica spetta alla manager.", showPin:"Mostra", hidePin:"Nascondi", deptRoleHint:"Chef, Direzione e Titolare hanno gli strumenti del manager dopo il proprio PIN: Chef solo per la cucina, Direzione per tutto, Titolare per tutto più Vedi come e queste promozioni.", appClockSalary:"Timbra dall'app (a stipendio su Toast)",
+      chefMode:"Modalità chef · solo cucina", ownerMode:"Modalità titolare", viewingAs:"Stai vedendo come {n}", viewAsTxt:"Stai vedendo l'app come la vede {n} ({r}). Qui non cambi niente.", viewAsTxtTools:"Stai vedendo l'app come la vede {n} ({r}), con i suoi strumenti. Quello che cambi qui viene salvato.", floorReadOnly:"La sala la pianifica la direzione. Tu puoi modificare la cucina.", reqTitle:"Richieste", reqLead:"Giorni liberi e cambi turno chiesti dal team. Approvare un cambio modifica il turno nel calendario.", reqOpenShifts:"Turni scoperti", reqOpenLead:"Un collega non può. Offriti di coprirlo; decide la direzione.", reqTake:"Posso coprirlo", reqOffered:"Ti sei offerto", reqWithdraw:"Ritira", reqWaiting:"{n} in attesa", reqWaiting1:"1 in attesa", reqOpenBtn:"Apri", calRow:"I miei turni nel calendario del telefono", calAdd:"Aggiungi", calTitle:"Turni nel tuo calendario", calLead:"I tuoi turni compaiono nel calendario del telefono e si aggiornano da soli quando il piano cambia. Li vedi solo tu. I permessi approvati sono inclusi.", calOpen:"Apri in Calendario", calCopy:"Copia link", calCopied:"Link copiato. Incollalo in Google Calendar → Altri calendari → Da URL.", calHint:"iPhone: tocca Apri in Calendario, poi Iscriviti. Google Calendar o Android: copia il link e in Google Calendar da computer scegli Altri calendari → Da URL.", calFail:"Non riesco a creare il link del calendario. Riprova.", checksTitle:"Controlli", checksClear:"Tutto a posto: niente straordinari, buchi o conflitti questa settimana.", chkOver:"{n}: {h} in programma, oltre 40 h (straordinario)", chkSeven:"{n} è in turno tutti i 7 giorni (serve un giorno di riposo)", chkLong:"{n} {d}: turno di {h} (10 h o più)", chkLongMany:"{n}: {k} turni da 10 h o più questa settimana", chkEmpty:"{d}: aperto, nessuno in turno", chkClosed:"{d} è chiuso ma ci sono {k} turni", chkClosed1:"{d} è chiuso ma c'è un turno", chkOverlap:"{n} {d}: due turni sovrapposti", chkOff:"{n} è in permesso {d} ({s}) ma è in turno", chkOffApproved:"approvato", chkOffPending:"richiesto", reqCantMake:"Non puoi? Chiedi una copertura", reqCoverWait:"Copertura richiesta · decide la direzione", reqCoveredBy:"Coperto da {n}", reqCancel:"Annulla", reqTooLate:"La copertura si chiede fino a {h} ore prima del turno. Parla con la direzione.", reqTimeOff:"Giorni liberi", reqFrom:"Dal", reqTo:"Al", reqNoteHint:"Motivo (facoltativo)", reqSend:"Richiedi", reqMine:"Le mie richieste", reqStatusPending:"In attesa", reqStatusApproved:"Approvata", reqStatusDeclined:"Rifiutata", reqStatusCancelled:"Ritirata", reqStatusExpired:"Scaduta", reqCoverOf:"Copertura · {d}", reqOffOf:"Giorni liberi · {d}", reqSent:"Richiesta inviata. La direzione la vedrà.", reqCoverSent:"Copertura richiesta. Colleghi e direzione sono stati avvisati.", reqOfferedToast:"Grazie. Decide la direzione.", reqAssign:"Assegna a {n}", reqAssignOther:"Qualcun altro…", reqAssignBtn:"Assegna", reqApprove:"Approva", reqDecline:"Rifiuta", reqDone:"Fatto.", reqNone:"Niente in attesa.", reqVolunteers:"Disponibili: {n}", reqNoVolunteers:"Nessuno si è ancora offerto.", reqRecent:"Decisioni recenti", reqOffChip:"Libero: {n}", reqOffReqChip:"Libero richiesto: {n}", reqCantMakeTitle:"Chiedere una copertura?", reqCantMakeTxt:"I colleghi saranno avvisati per coprire {d}. Decide la direzione; fino ad allora il turno è tuo.", reqAskBtn:"Chiedi copertura", reqRule:"Le richieste chiudono {h} ore prima del turno.", reqCantMakeShort:"{n} non può fare {d}", reqAsksOff:"{n} chiede giorni liberi · {d}", reqDup:"Già richiesto.", reqFail:"Invio non riuscito. Riprova.", reqPick:"Scegli una data", aiTitle:"Chiedi a Bar Lento", aiSub:"L'app, i tuoi turni, le regole, il menu", aiFoot:"Risponde solo sull'app, sui tuoi dati, sulle regole e sul menu. Non può cambiare niente.", aiPlaceholder:"Chiedi quello che vuoi…", aiLead:"Chiedimi, per esempio:", aiSug1:"Quando lavoro questa settimana?", aiSug2:"Come imposto il mio compleanno?", aiSug3:"Cosa dice la policy sulla malattia?", aiSugMgr:"Come chiudo un giorno per un evento privato?", aiSugChef:"Come pianifico la cucina della prossima settimana?", aiError:"Qualcosa è andato storto. Riprova tra un attimo.", aiBusy:"Troppe domande per oggi. Riprova domani.", aiOpen:"Apri {s}", aiTimeClock:"Time clock", aiStaff:"Staff", aiRanking:"Classifica team", aiDocs:"I miei documenti", iconNotice:"Nuova icona. iPhone tiene quella vecchia: togli Bar Lento dalla Home e aggiungila di nuovo da Safari (Condividi, Aggiungi alla schermata Home).", viewAsBtn:"Vedi come {n}", viewAsExit:"Esci", lvlStaffWord:"Staff", ownerOnly:"Solo il titolare può rendere qualcuno Direzione o Titolare.", chefForbidden:"Solo cucina: questa modifica spetta alla manager.", showPin:"Mostra", hidePin:"Nascondi", deptRoleHint:"Chef, Direzione e Titolare hanno gli strumenti del manager dopo il proprio PIN: Chef solo per la cucina, Direzione per tutto, Titolare per tutto più Vedi come e queste promozioni.", appClockSalary:"Timbra dall'app (a stipendio su Toast)",
       adminMode:"Modalità manager", lbBtn:"Classifica team", staffBtn:"Staff", historyBtn:"Cronologia", exportBtn:"Esporta PDF", logoutBtn:"Esci",
       newWeekBtn:"＋ Nuova settimana", deleteWeekBtn:"Elimina settimana", nwTitle:"Nuova settimana", nwLead:"Crea la settimana {r}", nwCopy:"Copia i turni della settimana scorsa ({k} turni)", nwCopySub:"Stesse persone e orari di {r}; poi modifica ciò che cambia", nwEmpty:"Parti da zero", nwEmptySub:"Aggiungi ogni turno a mano",
       copyConfirm:"Tocca di nuovo per sostituire i turni", deleteWeekConfirm:"Tocca di nuovo per eliminare", deleteWeekConfirmN:"Tocca di nuovo: elimina {k} turni", deleteWeekLocked:"Settimana passata · archivio", pastLocked:"Le settimane passate sono in archivio e non si eliminano", onlyEmpty:"Si può eliminare solo una settimana vuota",
@@ -1663,7 +1693,7 @@
   async function loadRequests(){
     if(!state.features.storage||!(state.me.token||state.password)){ state.requests=null; renderRequests(); return; }
     var r=await api("/api/requests",{auth:true}); if(!r.ok){ return; }
-    state.requests=r.json||null; renderRequests();
+    state.requests=r.json||null; renderRequests(); renderChecks();
   }
   function reqDate(iso){ return dateShort(fromISO(iso)); }
   function reqWhen(r){ return r.type==="cover" ? reqDate(r.date)+" · "+range12(r.start,r.end)+(r.station?" · "+r.station:"") : (r.from===r.to?reqDate(r.from):reqDate(r.from)+" – "+reqDate(r.to)); }
@@ -1774,7 +1804,7 @@
   }
 
   // ---------- rendering ----------
-  function renderAll(){renderUpdated();renderHero();renderTabs();renderDays();renderAdminUI();renderMe();renderAiFab();}
+  function renderAll(){renderUpdated();renderHero();renderTabs();renderDays();renderAdminUI();renderMe();renderAiFab();renderChecks();}
 
   function renderUpdated(){
     var el=$("updatedNote");
@@ -2057,7 +2087,7 @@
   }
   function tcShift(n){ var today=nyTodayISO(); var d=toISO(addDays(fromISO(tc.date||today),n)); if(d>today) return; tc.date=d; renderClockPanel(); if(!tc.cache[d]) loadClock(false); }
 
-  function renderDays(){
+  function renderDays(){ setTimeout(renderChecks,0);
     var grid=$("daysGrid"); var wk=state.activeWeek;
     if(!wk){grid.innerHTML="";return;}
     var start=fromISO(wk), today=new Date(), week=state.data.weeks[wk]||emptyWeek();
@@ -2528,6 +2558,49 @@
     var w=document.createElement("div"); w.className="sheet-xw"; var x=document.createElement("button"); x.type="button"; x.className="sheet-x"; x.setAttribute("aria-label","Close"); x.textContent="\u00d7"; w.appendChild(x); sh.insertBefore(w,h2); sh.classList.add("hasx");
     x.addEventListener("click",function(){ btn.click(); });
   });
+
+  // ---------- personal calendar feed (owner 2026-09-22): My week → Add → subscribe the phone's calendar ----------
+  var calUrls=null;
+  async function openCal(){
+    if(!state.me.name) return; var b=$("meCalBtn"); b.disabled=true;
+    var r=await api("/api/me",{method:"POST",body:{action:"calendar"}}); b.disabled=false;
+    if(!r.ok){ toast(t("calFail")); return; }
+    calUrls=r.json; $("calOpen").setAttribute("href",calUrls.webcal); $("meOverlay").classList.remove("show"); $("calOverlay").classList.add("show");
+  }
+  $("meCalBtn").addEventListener("click",openCal);
+  $("calClose").addEventListener("click",function(){ $("calOverlay").classList.remove("show"); });
+  $("calCopy").addEventListener("click",async function(){ if(!calUrls) return; try{ await navigator.clipboard.writeText(calUrls.https); toast(t("calCopied"),4500); }catch(e){ prompt("Copy this link:",calUrls.https); } });
+
+  // ---------- week checks (owner 2026-09-22): overtime, 7 days in a row, 10 h+ shifts, empty open days, closed days with shifts, overlaps, time off conflicts ----------
+  function weekChecks(wk){
+    var week=state.data.weeks[wk]; if(!week) return [];
+    var out=[], start=fromISO(wk), todayISO=nyTodayISO(), perName={}, daysOf={}, longBy={};
+    var offs=(state.requests&&state.requests.off)||[];
+    DAY_KEYS.forEach(function(d,i){
+      var date=addDays(start,i), iso=toISO(date), note=dayNote(wk,d), closed=note&&isClosedStatus(note.status);
+      var shifts=(week[d]||[]).filter(function(x){return x&&x.name&&!x.src&&canSee(x.name);});
+      var lbl=DAY_SHORT[d]+" "+dateShort(date);
+      if(closed&&shifts.length) out.push({lvl:"warn",txt:shifts.length===1?t("chkClosed1",{d:lbl}):t("chkClosed",{d:lbl,k:shifts.length})});
+      if(!closed&&!shifts.length&&iso>=todayISO) out.push({lvl:"info",txt:t("chkEmpty",{d:lbl})});
+      shifts.forEach(function(x,k){
+        var len=mins(x.end)-mins(x.start); if(len<=0) len+=1440;
+        perName[x.name]=(perName[x.name]||0)+len; (daysOf[x.name]=daysOf[x.name]||{})[d]=1;
+        if(len>=600){ longBy[x.name]=(longBy[x.name]||[]); longBy[x.name].push({d:lbl,h:durText(len*60000)}); }
+        for(var j=k+1;j<shifts.length;j++){ var y=shifts[j]; if(y.name!==x.name) continue; var a1=mins(x.start),a2=a1+len,b1=mins(y.start),b2=b1+((mins(y.end)-b1)<=0?mins(y.end)-b1+1440:mins(y.end)-b1); if(a1<b2&&b1<a2) out.push({lvl:"warn",txt:t("chkOverlap",{n:x.name,d:lbl})}); }
+        if(!closed) offs.forEach(function(o){ if(o.name===x.name&&o.from<=iso&&iso<=o.to) out.push({lvl:"warn",txt:t("chkOff",{n:x.name,d:lbl,s:t(o.status==="approved"?"chkOffApproved":"chkOffPending")})}); });
+      });
+    });
+    Object.keys(longBy).forEach(function(n){ var L=longBy[n]; if(L.length>=3) out.push({lvl:"warn",txt:t("chkLongMany",{n:n,k:L.length})}); else L.forEach(function(x){ out.push({lvl:"warn",txt:t("chkLong",{n:n,d:x.d,h:x.h})}); }); });
+    Object.keys(perName).forEach(function(n){ if(perName[n]>2400) out.push({lvl:"warn",txt:t("chkOver",{n:n,h:durText(perName[n]*60000)})}); if(Object.keys(daysOf[n]||{}).length>=7) out.push({lvl:"warn",txt:t("chkSeven",{n:n})}); });
+    var seen={}; return out.filter(function(c){ if(seen[c.txt]) return false; seen[c.txt]=1; return true; }).sort(function(a,b){ return (a.lvl==="warn"?0:1)-(b.lvl==="warn"?0:1); });
+  }
+  function renderChecks(){
+    var el=$("checksCard"); if(!el) return; var wk=state.activeWeek;
+    if(!isMgr()||readOnlyView()||!wk||wk<currentMondayISO()){ el.classList.remove("show"); el.innerHTML=""; return; } // the past is an archive: nothing to fix
+    var list=weekChecks(wk); var warns=list.filter(function(c){return c.lvl==="warn";}).length;
+    el.innerHTML='<div class="ch"><span>'+h(t("checksTitle"))+'</span><span class="n">'+(list.length?(warns?warns+" · ":"")+list.length:"✓")+'</span></div>'+(list.length?'<ul>'+list.map(function(c){return '<li class="'+c.lvl+'">'+h(c.txt)+'</li>';}).join("")+'</ul>':'<div class="ok">'+h(t("checksClear"))+'</div>');
+    el.classList.add("show");
+  }
   // ---------- history + export (admin) ----------
   async function openHistory(){
     $("logList").innerHTML='<div class="empty-note">'+t("loading")+'</div>'; $("historyOverlay").classList.add("show");
@@ -3091,7 +3164,7 @@
     me.name=name; me.week=null;
     var keys=meWeeks(), cur=currentMondayISO();
     me.week=keys.indexOf(cur)!==-1?cur:(keys.filter(function(k){return k>=cur;})[0]||keys[keys.length-1]||null);
-    meTitles(); $("meRules").style.display=((rulesActive()||(DOCS.list||[]).length)&&!asName&&!docsExempt(name))?"":"none"; $("meRules").innerHTML=docsButtonLabel();
+    meTitles(); $("meRules").style.display=((rulesActive()||(DOCS.list||[]).length)&&!asName&&!docsExempt(name))?"":"none"; $("meCal").style.display=(name&&!asName&&state.features.storage&&!state.viewAs)?"":"none"; $("meRules").innerHTML=docsButtonLabel();
     var other=asName&&asName!==state.me.name; $("meSwitch").style.display=other?"none":""; $("meLogout").style.display=other?"none":""; $("meReport").style.display=other?"none":"";
     $("meStatsLink").style.display=(!other&&state.me.appClock)?"none":"";
     renderMeBday(other?null:name);
