@@ -44,7 +44,7 @@ async function j(p,o){const r=await fetch(B+p,o);let x=null,txt="";try{txt=await
   console.log("10 staff sees no checks card:", await p.evaluate(()=>!document.getElementById("checksCard").classList.contains("show")));
   await p.evaluate(()=>document.getElementById("meOpenBtn").click()); await p.waitForSelector("#meOverlay.show"); await p.waitForTimeout(600);
   console.log("11 calendar row:", await p.evaluate(()=>document.getElementById("meCal").style.display!=="none"));
-  await p.click("#meCalBtn"); await p.waitForSelector("#calOverlay.show",{timeout:8000}); const href=await p.getAttribute("#calOpen","href"); console.log("12 sheet open, webcal link:",/^webcal:\/\/.+\/api\/cal\?t=[a-f0-9]{40}$/.test(href));
+  await p.click("#meCalBtn"); await p.waitForSelector("#calOverlay.show",{timeout:8000}); const href=await p.getAttribute("#calApple","href"), g=await p.getAttribute("#calGoogle","href"); console.log("12 sheet open, Apple webcal:",/^webcal:\/\/.+\/api\/cal\?t=[a-f0-9]{40}$/.test(href),"| Google:",/^https:\/\/calendar\.google\.com\/calendar\/r\?cid=webcal/.test(g));
   await p.screenshot({path:require("path").join(__dirname,"..","out","smart-cal.png")});
   await b.close();
   console.log("ERRORS:",errors.length?JSON.stringify(errors):"none"); process.exit(errors.length?1:0);
