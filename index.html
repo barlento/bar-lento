@@ -898,6 +898,7 @@
   .clock.in.brk{background:var(--accent-soft);color:var(--accent-ink)}
   .tc-row .nm small.brk{color:var(--accent-ink)}
   .tc-row.on.onbreak{border-color:var(--accent);background:var(--accent-soft)}
+  .me-cov.late span{color:var(--ink-muted);font-size:.78rem;font-weight:400}
 </style>
 </head>
 <body>
@@ -1691,7 +1692,7 @@
     var q=state.requests; var minH=(q&&q.coverMinHours)||24; var start=new Date(date.getFullYear(),date.getMonth(),date.getDate(),mins(s.start)/60|0,mins(s.start)%60);
     var st=coverStateFor(wk,d,s.id);
     if(st&&st.status==="pending") return '<div class="me-cov"><span>'+h(t("reqCoverWait"))+'</span><button type="button" data-cancel="'+h(st.id)+'">'+h(t("reqCancel"))+'</button></div>';
-    if(start.getTime()-Date.now()<minH*3600000) return "";
+    if(start.getTime()-Date.now()<minH*3600000) return start.getTime()>Date.now()?'<div class="me-cov late"><span>'+h(t("reqTooLate",{h:minH}))+'</span></div>':"";
     return '<div class="me-cov"><button type="button" data-cover="'+h(wk)+'|'+h(d)+'|'+h(s.id)+'" data-when="'+h(dateShort(date)+", "+range12(s.start,s.end))+'">'+h(t("reqCantMake"))+'</button></div>';
   }
   function renderMeRequests(){
