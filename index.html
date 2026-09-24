@@ -2169,6 +2169,7 @@
   }
 
   function renderAdminUI(){
+    var xb=$("exportBtn"); if(xb) xb.style.display=(isOwner()&&!state.me.name)?"":"none"; // Reports: owner only; with his PIN the button lives in his strip, so the bar shows it only for the password session
     document.body.classList.toggle("admin",state.admin); document.body.classList.toggle("chef",isChef());
     document.body.classList.toggle("owner",isOwner()); document.body.classList.toggle("viewing",!!state.viewAs); document.body.classList.toggle("viewstaff",!!state.viewAs&&!viewRole(state.viewAs)); document.body.classList.toggle("mgr",isMgr());
     var modeEl=$("adminBar").querySelector("[data-t=adminMode]"); if(modeEl) modeEl.textContent=state.viewAs?t("viewingAs",{n:state.viewAs}):t(isOwner()?"ownerMode":isChef()?"chefMode":"adminMode");
@@ -2481,7 +2482,7 @@
     $("rosterImport").style.display=state.features.toast?"":"none";
     var fs=$("rosterFormer"), former=state.formerStaff||[];
     if(former.length){
-      fs.innerHTML='<details class="former"><summary><span class="chev">›</span>'+h(t("formerHead"))+' · '+former.length+'</summary>'+former.map(function(f,i){ return '<div class="pcard" style="padding:8px 12px"><div class="pr"><span><b>'+h(f.name)+'</b> <span class="dim" style="font-size:.8rem">'+h(t("formerLine",{d:ackDate(f.removedAt),w:t(f.by==="toast"?"formerByToast":"formerByManager")}))+'</span></span><button type="button" class="pinbtn record" data-i="'+i+'">'+h(t("recordBtn"))+'</button></div></div>'; }).join("")+'</details>';
+      fs.innerHTML='<details class="former"><summary><span class="chev">›</span>'+h(t("formerHead"))+' · '+former.length+'</summary>'+former.map(function(f,i){ return '<div class="pcard" style="padding:8px 12px"><div class="pr"><span><b>'+h(f.name)+'</b> <span class="dim" style="font-size:.8rem">'+h(t("formerLine",{d:ackDate(f.removedAt),w:t(f.by==="toast"?"formerByToast":"formerByManager")}))+'</span></span>'+(isOwner()?'<button type="button" class="pinbtn record" data-i="'+i+'">'+h(t("recordBtn"))+'</button>':'')+'</div></div>'; }).join("")+'</details>';
       fs.style.display="";
       fs.querySelectorAll(".pinbtn.record").forEach(function(b){ b.addEventListener("click",function(){ var f=former[Number(b.getAttribute("data-i"))]; if(f) downloadRecord(f.name,b); }); });
     } else fs.style.display="none";
@@ -2518,7 +2519,7 @@
       if(anyAck&&state.mailEnabled) html+='<div class="pr"><span class="dim" style="font-size:.78rem">'+(ra&&ra.email?""+h(ra.email):"")+'</span><button type="button" class="pinbtn mail">'+h(t("sendCopies"))+'</button></div>';
       html+='</div>';
     }
-    html+='<div class="pcard"><div class="ph">'+h(t("phRecord"))+'</div><div class="pr"><span class="dim">'+h(t("recordLead"))+'</span><button type="button" class="pinbtn record">'+h(t("recordBtn"))+'</button></div></div>';
+    if(isOwner()) html+='<div class="pcard"><div class="ph">'+h(t("phRecord"))+'</div><div class="pr"><span class="dim">'+h(t("recordLead"))+'</span><button type="button" class="pinbtn record">'+h(t("recordBtn"))+'</button></div></div>'; // the personnel PDF is the owner's (owner 2026-09-24)
     html+='<div class="pcard"><div class="ph">'+h(t("phWeek"))+'</div><div class="pr"><span class="dim">'+h(t("viewWeek",{n:n}))+'</span><button type="button" class="pinbtn view">'+h(t("viewWeekBtn"))+'</button></div>'+(isOwner()?'<div class="pr"><span class="dim">'+h(t("viewAsTxt",{n:n,r:t(viewRole(n)==="chef"?"deptChef":viewRole(n)==="manager"?"deptManagement":"lvlStaffWord")}).split(".")[0])+'.</span><button type="button" class="pinbtn viewas">'+h(t("viewAsBtn",{n:n}))+'</button></div>':'')+'</div>';
     var body=$("personBody"); body.innerHTML=html;
     var rm=$("personRemove"); rm.textContent=t("removeName",{n:n}); rm.dataset.arm=""; rm.classList.remove("arm"); rm.dataset.name=n;
@@ -2669,7 +2670,7 @@
     $("repSum").innerHTML=r?h(who)+'<small>'+h(r.label)+'</small>':h(who)+'<small>'+h(t("repBadDates"))+'</small>';
     $("repGo").disabled=!r; $("repArchive").style.display=isChef()?"none":"";
   }
-  function openReports(){ if(!isMgr()) return; renderRep(); $("repOverlay").classList.add("show"); }
+  function openReports(){ if(!isOwner()) return; renderRep(); $("repOverlay").classList.add("show"); }
   $("repSeg").addEventListener("click",function(ev){ var b=ev.target.closest("button"); if(!b) return; rep.period=b.getAttribute("data-p"); renderRep(); });
   $("repWho").addEventListener("change",renderRep); $("repFrom").addEventListener("change",renderRep); $("repTo").addEventListener("change",renderRep);
   $("repClose").addEventListener("click",function(){ $("repOverlay").classList.remove("show"); });

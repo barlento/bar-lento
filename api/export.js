@@ -312,8 +312,8 @@ module.exports = async (req, res) => {
     if (!role) return res.status(401).send("unauthorized");
     if (!store.hasStorage()) return res.status(503).send("storage_missing");
 
+    if (role !== "owner") return res.status(403).send("owner_only"); // Reports belong to the owner alone (owner 2026-09-24, "che ce l'abbia solo io"); managers and the chef have none
     const person = String(url.searchParams.get("person") || "").trim().slice(0, 60);
-    if (role === "chef" && (!person || !auth.kitchenNames((await store.getSchedule()).data).includes(person))) return res.status(403).send("chef_forbidden"); // kitchen people only, no schedule archive, no team report
     if (url.searchParams.get("team") === "1") { // everyone, one period (owner 2026-09-24)
       const isD = (v) => /^\d{4}-\d{2}-\d{2}$/.test(v || "");
       let from = url.searchParams.get("from"), to = url.searchParams.get("to");
