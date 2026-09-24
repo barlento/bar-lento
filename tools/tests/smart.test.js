@@ -38,6 +38,9 @@ async function j(p,o){const r=await fetch(B+p,o);let x=null,txt="";try{txt=await
   const tp=await fetch(B+"/api/export?team=1&from="+wk+"&to="+wk.slice(0,8)+String(Number(wk.slice(8))+6).padStart(2,"0")+"&label=Test%20week",{headers:M}); const tb=Buffer.from(await tp.arrayBuffer());
   console.log("8b team PDF:",tp.status,tp.headers.get("content-type"),"| bytes:",tb.length,"| is PDF:",tb.slice(0,5).toString()==="%PDF-"); if(tp.status!==200||tb.length<3000) errors.push("team pdf failed");
   const pp=await fetch(B+"/api/export?person=Astrea&from="+wk+"&to="+wk,{headers:M}); console.log("8c person PDF one day:",pp.status,pp.headers.get("content-type")); if(pp.status!==200) errors.push("person pdf failed");
+  // Marta: manager AND worker → team report with her PIN, plus her own report for one day (owner 2026-09-24)
+  const tm=await tokOf("Marta","6161"); const mt=await fetch(B+"/api/export?team=1&from="+wk+"&to="+wk,{headers:{"x-staff-token":tm}}); const mm=await fetch(B+"/api/export?mine=1&from="+wk+"&to="+wk+"&label=Today",{headers:{"x-staff-token":tm}});
+  console.log("8c2 Marta team PDF:",mt.status,"| Marta own report (today):",mm.status,mm.headers.get("content-type")); if(mt.status!==200||mm.status!==200) errors.push("Marta reports wrong");
   const lg=await j("/api/me",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"login",name:"Astrea",pin:"1111"})}); console.log("8d login carries the profile:",!!(lg.j&&lg.j.who&&lg.j.who.name==="Astrea"),"| appClock:",lg.j&&lg.j.who&&lg.j.who.appClock); if(!(lg.j&&lg.j.who)) errors.push("login without who");
   // ---- checks card (manager) + calendar sheet (staff)
   const b=await chromium.launch();
@@ -58,6 +61,10 @@ async function j(p,o){const r=await fetch(B+p,o);let x=null,txt="";try{txt=await
   await p.evaluate(()=>{document.querySelectorAll(".overlay.show").forEach(o=>o.classList.remove("show"))});
   console.log("10 staff sees no checks card:", await p.evaluate(()=>!document.getElementById("checksCard").classList.contains("show")));
   await p.evaluate(()=>document.getElementById("meOpenBtn").click()); await p.waitForSelector("#meOverlay.show"); await p.waitForTimeout(600);
+  await p.click("#meReport"); await p.waitForSelector("#repOverlay.show"); await p.waitForTimeout(300);
+  console.log("10b My report sheet:", await p.textContent("#repTitle"), "| who hidden:", await p.evaluate(()=>document.getElementById("repWho").style.display==="none"), "| periods:", await p.evaluate(()=>document.querySelectorAll("#repSeg button").length));
+  await p.click('#repSeg button[data-p="today"]'); await p.waitForTimeout(200); console.log("10c today:",(await p.textContent("#repSum")).replace(/\s+/g," ")); await p.screenshot({path:require("path").join(__dirname,"..","out","smart-myreport.png")}); await p.click("#repClose");
+  await p.evaluate(()=>document.getElementById("meOpenBtn").click()); await p.waitForSelector("#meOverlay.show"); await p.waitForTimeout(400);
   console.log("11 calendar row:", await p.evaluate(()=>document.getElementById("meCal").style.display!=="none"));
   await p.click("#meCalBtn"); await p.waitForSelector("#calOverlay.show",{timeout:8000}); const href=await p.getAttribute("#calApple","href"), g=await p.getAttribute("#calGoogle","href"); console.log("12 sheet open, Apple webcal:",/^webcal:\/\/.+\/api\/cal\?t=[a-f0-9]{40}$/.test(href),"| Google:",/^https:\/\/calendar\.google\.com\/calendar\/r\?cid=webcal/.test(g));
   await p.screenshot({path:require("path").join(__dirname,"..","out","smart-cal.png")});

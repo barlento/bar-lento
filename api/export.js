@@ -302,7 +302,8 @@ module.exports = async (req, res) => {
       if (!isD(to)) { const d = new Date(from + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + 6); to = d.toISOString().slice(0, 10); }
       if (to < from) to = from;
       const maxTo = new Date(from + "T12:00:00Z"); maxTo.setUTCMonth(maxTo.getUTCMonth() + 12); if (to > maxTo.toISOString().slice(0, 10)) to = maxTo.toISOString().slice(0, 10);
-      const out = await employeeReport(who, from, to, `Week ${from} to ${to}`.replace(/^Week (\S+) to (\S+)$/, (m, a, b) => (Date.parse(b) - Date.parse(a) === 6 * 86400000 ? `Week of ${a} to ${b}` : `Period ${a} to ${b}`)));
+      const label = String(url.searchParams.get("label") || "").slice(0, 60);
+      const out = await employeeReport(who, from, to, label || `Week ${from} to ${to}`.replace(/^Week (\S+) to (\S+)$/, (m, a, b) => (Date.parse(b) - Date.parse(a) === 6 * 86400000 ? `Week of ${a} to ${b}` : `Period ${a} to ${b}`)));
       res.setHeader("Cache-Control", "no-store"); res.setHeader("Content-Type", "application/pdf");
       res.setHeader("Content-Disposition", `attachment; filename="${out.filename}"`);
       return res.status(200).send(Buffer.from(out.buf));
@@ -312,7 +313,7 @@ module.exports = async (req, res) => {
     if (!role) return res.status(401).send("unauthorized");
     if (!store.hasStorage()) return res.status(503).send("storage_missing");
 
-    if (role !== "owner") return res.status(403).send("owner_only"); // Reports belong to the owner alone (owner 2026-09-24, "che ce l'abbia solo io"); managers and the chef have none
+    if (!auth.isManagerish(role)) return res.status(403).send("manager_only"); // Reports: owner and manager (Marta manages AND works); the chef has none (owner 2026-09-24)
     const person = String(url.searchParams.get("person") || "").trim().slice(0, 60);
     if (url.searchParams.get("team") === "1") { // everyone, one period (owner 2026-09-24)
       const isD = (v) => /^\d{4}-\d{2}-\d{2}$/.test(v || "");
