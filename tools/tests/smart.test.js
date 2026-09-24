@@ -34,6 +34,11 @@ async function j(p,o){const r=await fetch(B+p,o);let x=null,txt="";try{txt=await
   if(!(r.j.late.alerts||[]).some(a=>a.name==="Pietro")) errors.push("no late alert for Pietro");
   if((r.j.late.alerts||[]).some(a=>a.name==="Astrea")) errors.push("Astrea clocked in on Toast but flagged late");
   const noauth=await j("/api/remind"); console.log("8 remind without password →",noauth.s,"(expect 401)");
+  // ---- reports: team PDF over a period (password), person PDF over a period; login carries the profile (one round-trip)
+  const tp=await fetch(B+"/api/export?team=1&from="+wk+"&to="+wk.slice(0,8)+String(Number(wk.slice(8))+6).padStart(2,"0")+"&label=Test%20week",{headers:M}); const tb=Buffer.from(await tp.arrayBuffer());
+  console.log("8b team PDF:",tp.status,tp.headers.get("content-type"),"| bytes:",tb.length,"| is PDF:",tb.slice(0,5).toString()==="%PDF-"); if(tp.status!==200||tb.length<3000) errors.push("team pdf failed");
+  const pp=await fetch(B+"/api/export?person=Astrea&from="+wk+"&to="+wk,{headers:M}); console.log("8c person PDF one day:",pp.status,pp.headers.get("content-type")); if(pp.status!==200) errors.push("person pdf failed");
+  const lg=await j("/api/me",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"login",name:"Astrea",pin:"1111"})}); console.log("8d login carries the profile:",!!(lg.j&&lg.j.who&&lg.j.who.name==="Astrea"),"| appClock:",lg.j&&lg.j.who&&lg.j.who.appClock); if(!(lg.j&&lg.j.who)) errors.push("login without who");
   // ---- checks card (manager) + calendar sheet (staff)
   const b=await chromium.launch();
   const m=await (await b.newContext({viewport:{width:1200,height:900}})).newPage(); m.on("pageerror",e=>errors.push("mgr pageerror: "+e.message));
@@ -43,6 +48,11 @@ async function j(p,o){const r=await fetch(B+p,o);let x=null,txt="";try{txt=await
   console.log("9 checks:",txt.slice(0,400));
   ["over 40 h","all 7 days","closed but","shifts of 10 h or more"].forEach(k=>{ if(!txt.includes(k)) errors.push("check missing: "+k); });
   await m.screenshot({path:require("path").join(__dirname,"..","out","smart-checks.png")});
+  await m.click("#exportBtn"); await m.waitForSelector("#repOverlay.show"); await m.waitForTimeout(400);
+  const repOpts=await m.evaluate(()=>Array.from(document.querSelectorAll?[]:document.querySelectorAll("#repWho option")).map(o=>o.value)); console.log("9b reports sheet: options",repOpts.length,"| Everyone first:",repOpts[0]==="*","| summary:",(await m.textContent("#repSum")).replace(/\s+/g," "));
+  if(!repOpts.includes("*")||!repOpts.includes("Astrea")) errors.push("reports options wrong");
+  await m.click('#repSeg button[data-p="lastmonth"]'); await m.waitForTimeout(200); console.log("9c last month:",(await m.textContent("#repSum")).replace(/\s+/g," "));
+  await m.screenshot({path:require("path").join(__dirname,"..","out","smart-reports.png")}); await m.click("#repClose");
   const p=await (await b.newContext({...devices["iPhone 13"]})).newPage(); p.on("pageerror",e=>errors.push("pageerror: "+e.message));
   await p.goto(B+"/?v=sm2"); await p.waitForTimeout(300); await p.evaluate((t)=>{localStorage.setItem("bl_me_token",t);localStorage.setItem("bl_me_name","Astrea");},ta); await p.reload(); await p.waitForTimeout(2000);
   await p.evaluate(()=>{document.querySelectorAll(".overlay.show").forEach(o=>o.classList.remove("show"))});

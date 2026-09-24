@@ -924,6 +924,20 @@
   .checks li::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--danger);flex:none;margin-top:6px;opacity:.8}
   .checks li.info::before{background:var(--ink-muted)}
   body.viewstaff .checks,body.chef.ro .checks{display:none}
+  /* Reports sheet */
+  .rep-lbl{font-size:.7rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-muted);margin:10px 0 6px}
+  .rep-sel{width:100%;box-sizing:border-box;padding:12px 12px;border:1px solid var(--border);border-radius:12px;background:var(--surface);font:inherit;font-size:1rem;color:var(--ink);-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236E6E73' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='m6 9 6 6 6-6'/></svg>");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
+  .rep-seg{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;background:var(--surface-2);padding:4px;border-radius:12px}
+  .rep-seg button{border:0;background:none;padding:9px 2px;border-radius:9px;font:inherit;font-size:.74rem;font-weight:600;color:var(--ink-muted);cursor:pointer;line-height:1.15}
+  .rep-seg button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  .rep-custom{display:flex;align-items:center;gap:8px;margin-top:10px}
+  .rep-custom input{flex:1;min-width:0;font:inherit;padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:inherit;position:relative}
+  .rep-custom input[type=date]:invalid::-webkit-datetime-edit{color:transparent}
+  .rep-custom input[type=date]:invalid::before{content:attr(placeholder);color:var(--ink-muted);position:absolute;left:10px;pointer-events:none}
+  .rep-sum{margin:12px 0 4px;padding:12px 14px;border-radius:12px;background:var(--surface-2);font-size:.92rem;font-weight:600;letter-spacing:-.01em}
+  .rep-sum small{display:block;font-weight:400;color:var(--ink-muted);margin-top:2px}
+  #repOverlay .me-actions{margin:8px 0 8px}
+  .rep-arch{display:block;margin:0 auto 8px;font-size:.82rem}
 </style>
 </head>
 <body>
@@ -1201,6 +1215,23 @@
   </div>
 </div>
 
+<!-- Reports (owner 2026-09-24, "super semplice"): who + period → one PDF -->
+<div class="overlay" id="repOverlay">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="repTitle">
+    <h2 id="repTitle" data-t="repTitle">Reports</h2>
+    <p class="lead" data-t="repLead">Pick who and when, then download the PDF. Hours come from real clock-ins.</p>
+    <div class="rep-lbl" data-t="repWho">Who</div>
+    <select id="repWho" class="rep-sel" aria-label="Who"></select>
+    <div class="rep-lbl" data-t="repWhen">Period</div>
+    <div class="rep-seg" id="repSeg"><button type="button" data-p="week" class="on" data-t="repWeek">This week</button><button type="button" data-p="lastweek" data-t="repLastWeek">Last week</button><button type="button" data-p="month" data-t="repMonth">This month</button><button type="button" data-p="lastmonth" data-t="repLastMonth">Last month</button><button type="button" data-p="custom" data-t="repCustom">Custom</button></div>
+    <div class="rep-custom" id="repCustom" style="display:none"><input type="date" id="repFrom" required placeholder="Pick a date" aria-label="From"><span>–</span><input type="date" id="repTo" required placeholder="Pick a date" aria-label="To"></div>
+    <div class="rep-sum" id="repSum"></div>
+    <div class="me-actions"><button class="btn primary" id="repGo" type="button" data-t="repGo">Download PDF</button></div>
+    <button class="linkbtn rep-arch" id="repArchive" type="button" data-t="repArchive">Whole schedule archive (PDF)</button>
+    <div class="actions"><button class="btn" id="repClose" type="button" data-t="close">Close</button></div>
+  </div>
+</div>
+
 <div class="overlay" id="reqOverlay">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="reqTitleH">
     <h2 id="reqTitleH" data-t="reqTitle">Requests</h2>
@@ -1401,7 +1432,7 @@
     en:{
       myBday:"My birthday", myBdayNone:"Not set yet. Add it and the team celebrates you.", myBdayIs:"My birthday: {d}", bdaySavedMe:"Birthday saved. See you on {d}.", save:"Save",
       chefMode:"Chef mode · kitchen only", ownerMode:"Owner mode", viewingAs:"Viewing as {n}", viewAsTxt:"You are seeing the app as {n} ({r}) sees it. Nothing you tap here changes anything.", viewAsTxtTools:"You are seeing the app as {n} ({r}) sees it, with their tools. What you change here is saved.", floorReadOnly:"The floor is planned by the manager. You can edit the kitchen.", reqTitle:"Requests", reqLead:"Time off and shift covers asked by the team. Approving a cover changes the shift in the schedule.", reqOpenShifts:"Open shifts", reqOpenLead:"A colleague can't make it. Offer to take it; the manager decides.", reqTake:"I can take it", reqOffered:"You offered", reqWithdraw:"Withdraw", reqWaiting:"{n} waiting for you", reqWaiting1:"1 waiting for you", reqOpenBtn:"Open", calAdd:"Add to calendar", calTitle:"Add to calendar", calLead:"Pick your calendar app. Your shifts appear there and stay up to date by themselves. Only you see them.", calAppleSub:"iPhone, iPad, Mac", calGoogleSub:"Android, Gmail", calCopy:"Another app? Copy the link", calCopied:"Link copied. In your calendar app choose Add calendar → From URL and paste it.", calGoogleHelp:"Google Calendar accepts new calendars by link only from a computer. The link is copied: on a computer open calendar.google.com → next to “Other calendars” tap + → From URL → paste → Add calendar. It then shows in the Google Calendar app on your phone too.", calMail:"Email me the link", calMailed:"Sent to {e}. Open it from a computer and follow the two steps.", calMailWait:"Already sent a few minutes ago. Check your inbox.", calMailNo:"No email on file for you. Copy the link instead.", calFail:"Could not create your calendar link. Try again.", checksTitle:"Checks", checksClear:"All clear: no overtime, no gaps, no conflicts this week.", chkOver:"{n}: {h} scheduled, over 40 h (overtime)", chkSeven:"{n} is scheduled all 7 days (one day of rest is required)", chkLong:"{n} {d}: {h} shift (10 h or more)", chkLongMany:"{n}: {k} shifts of 10 h or more this week", chkEmpty:"{d}: open, nobody scheduled", chkClosed:"{d} is closed but {k} shifts are scheduled", chkClosed1:"{d} is closed but a shift is scheduled", chkOverlap:"{n} {d}: two overlapping shifts", chkOff:"{n} is off {d} ({s}) but is scheduled", chkOffApproved:"approved", chkOffPending:"requested", reqCantMake:"Can't make it? Ask for cover", reqCoverWait:"Cover requested · the manager decides", reqCoveredBy:"Covered by {n}", reqCancel:"Cancel", reqTooLate:"Covers can be asked up to {h} hours before the shift. Talk to the manager.", reqTimeOff:"Time off", reqFrom:"From", reqTo:"To", reqNoteHint:"Reason (optional)", reqSend:"Request", reqMine:"My requests", reqStatusPending:"Waiting", reqStatusApproved:"Approved", reqStatusDeclined:"Declined", reqStatusCancelled:"Withdrawn", reqStatusExpired:"Expired", reqCoverOf:"Cover · {d}", reqOffOf:"Time off · {d}", reqSent:"Request sent. The manager will see it.", reqCoverSent:"Cover requested. Colleagues and the manager have been told.", reqOfferedToast:"Thanks. The manager decides who covers.", reqAssign:"Assign {n}", reqAssignOther:"Someone else…", reqAssignBtn:"Assign", reqApprove:"Approve", reqDecline:"Decline", reqDone:"Done.", reqNone:"Nothing waiting.", reqVolunteers:"Can take it: {n}", reqNoVolunteers:"Nobody has offered yet.", reqRecent:"Recent decisions", reqOffChip:"Off: {n}", reqOffReqChip:"Off requested: {n}", reqCantMakeTitle:"Ask for cover?", reqCantMakeTxt:"Your colleagues will be asked to take {d}. The manager decides who covers; until then the shift is yours.", reqAskBtn:"Ask for cover", reqRule:"Requests close {h} hours before the shift.", reqCantMakeShort:"{n} can't make {d}", reqAsksOff:"{n} asks for time off · {d}", reqDup:"Already requested.", reqFail:"Could not send. Try again.", reqPick:"Pick a date", aiTitle:"Ask Bar Lento", aiSub:"The app, your shifts, the rules, the menu", aiFoot:"Answers only about the app, your own data, the rules and the menu. It cannot change anything.", aiPlaceholder:"Ask anything…", aiLead:"Ask me, for example:", aiSug1:"When do I work this week?", aiSug2:"How do I set my birthday?", aiSug3:"What does the sick leave policy say?", aiSugMgr:"How do I close a day for a private event?", aiSugChef:"How do I plan the kitchen for next week?", aiError:"Something went wrong. Try again in a moment.", aiBusy:"Too many questions today. Try again tomorrow.", aiOpen:"Open {s}", aiTimeClock:"Time clock", aiStaff:"Staff", aiRanking:"Team ranking", aiDocs:"My documents", iconNotice:"New app icon. iPhone keeps the old one: remove Bar Lento from the Home Screen and add it again from Safari (Share, Add to Home Screen).", viewAsBtn:"View as {n}", viewAsExit:"Exit", lvlStaffWord:"Staff", ownerOnly:"Only the owner can make someone Management or Owner.", chefForbidden:"Kitchen only: this change is for the manager.", showPin:"Show", hidePin:"Hide", deptRoleHint:"Chef, Management and Owner get the manager tools after their own PIN: Chef for the kitchen only, Management for everything, Owner for everything plus View as and these promotions.", appClockSalary:"Clocks in from the app (salaried in Toast)",
-      adminMode:"Manager mode", lbBtn:"Team ranking", staffBtn:"Staff", historyBtn:"History", exportBtn:"Export PDF", logoutBtn:"Log out",
+      adminMode:"Manager mode", lbBtn:"Team ranking", staffBtn:"Staff", historyBtn:"History", exportBtn:"Reports", repTitle:"Reports", repLead:"Pick who and when, then download the PDF. Hours come from real clock-ins.", repWho:"Who", repWhen:"Period", repEveryone:"Everyone", repWeek:"This week", repLastWeek:"Last week", repMonth:"This month", repLastMonth:"Last month", repCustom:"Custom", repGo:"Download PDF", repArchive:"Whole schedule archive (PDF)", repWait:"Preparing the PDF…", repDone:"PDF ready.", repBadDates:"Pick both dates.", repBtn:"Reports", logoutBtn:"Log out",
       newWeekBtn:"＋ New week", deleteWeekBtn:"Delete week", nwTitle:"New week", nwLead:"Create the week of {r}", nwCopy:"Copy last week's shifts ({k} shifts)", nwCopySub:"Same people and times as {r}; adjust as needed", nwEmpty:"Start empty", nwEmptySub:"Add every shift by hand",
       copyConfirm:"Tap again to replace the current shifts", deleteWeekConfirm:"Tap again to delete", deleteWeekConfirmN:"Tap again: deletes {k} shifts", deleteWeekLocked:"Past week · archived", pastLocked:"Past weeks are archived and can't be deleted", onlyEmpty:"Only an empty week can be deleted",
       footAdmin:"Tap a shift to edit it. Changes save automatically.", exitMode:"Log out", addShift:"＋ Add shift", daySettings:"Day settings",
@@ -1462,7 +1493,7 @@
     it:{
       myBday:"Il mio compleanno", myBdayNone:"Non ancora inserito. Aggiungilo e il team ti festeggia.", myBdayIs:"Il mio compleanno: {d}", bdaySavedMe:"Compleanno salvato. Ci vediamo il {d}.", save:"Salva",
       chefMode:"Modalità chef · solo cucina", ownerMode:"Modalità titolare", viewingAs:"Stai vedendo come {n}", viewAsTxt:"Stai vedendo l'app come la vede {n} ({r}). Qui non cambi niente.", viewAsTxtTools:"Stai vedendo l'app come la vede {n} ({r}), con i suoi strumenti. Quello che cambi qui viene salvato.", floorReadOnly:"La sala la pianifica la direzione. Tu puoi modificare la cucina.", reqTitle:"Richieste", reqLead:"Giorni liberi e cambi turno chiesti dal team. Approvare un cambio modifica il turno nel calendario.", reqOpenShifts:"Turni scoperti", reqOpenLead:"Un collega non può. Offriti di coprirlo; decide la direzione.", reqTake:"Posso coprirlo", reqOffered:"Ti sei offerto", reqWithdraw:"Ritira", reqWaiting:"{n} in attesa", reqWaiting1:"1 in attesa", reqOpenBtn:"Apri", calAdd:"Aggiungi al calendario", calTitle:"Aggiungi al calendario", calLead:"Scegli la tua app calendario. I turni compaiono lì e si aggiornano da soli. Li vedi solo tu.", calAppleSub:"iPhone, iPad, Mac", calGoogleSub:"Android, Gmail", calCopy:"Un'altra app? Copia il link", calCopied:"Link copiato. Nella tua app calendario scegli Aggiungi calendario → Da URL e incollalo.", calGoogleHelp:"Google Calendar accetta nuovi calendari da link solo da computer. Il link è copiato: da computer apri calendar.google.com → accanto a “Altri calendari” tocca + → Da URL → incolla → Aggiungi calendario. Poi compare anche nell'app Google Calendar del telefono.", calMail:"Mandami il link via email", calMailed:"Inviato a {e}. Aprilo da computer e segui i due passaggi.", calMailWait:"Già inviato pochi minuti fa. Controlla la posta.", calMailNo:"Nessuna email registrata per te. Copia il link.", calFail:"Non riesco a creare il link del calendario. Riprova.", checksTitle:"Controlli", checksClear:"Tutto a posto: niente straordinari, buchi o conflitti questa settimana.", chkOver:"{n}: {h} in programma, oltre 40 h (straordinario)", chkSeven:"{n} è in turno tutti i 7 giorni (serve un giorno di riposo)", chkLong:"{n} {d}: turno di {h} (10 h o più)", chkLongMany:"{n}: {k} turni da 10 h o più questa settimana", chkEmpty:"{d}: aperto, nessuno in turno", chkClosed:"{d} è chiuso ma ci sono {k} turni", chkClosed1:"{d} è chiuso ma c'è un turno", chkOverlap:"{n} {d}: due turni sovrapposti", chkOff:"{n} è in permesso {d} ({s}) ma è in turno", chkOffApproved:"approvato", chkOffPending:"richiesto", reqCantMake:"Non puoi? Chiedi una copertura", reqCoverWait:"Copertura richiesta · decide la direzione", reqCoveredBy:"Coperto da {n}", reqCancel:"Annulla", reqTooLate:"La copertura si chiede fino a {h} ore prima del turno. Parla con la direzione.", reqTimeOff:"Giorni liberi", reqFrom:"Dal", reqTo:"Al", reqNoteHint:"Motivo (facoltativo)", reqSend:"Richiedi", reqMine:"Le mie richieste", reqStatusPending:"In attesa", reqStatusApproved:"Approvata", reqStatusDeclined:"Rifiutata", reqStatusCancelled:"Ritirata", reqStatusExpired:"Scaduta", reqCoverOf:"Copertura · {d}", reqOffOf:"Giorni liberi · {d}", reqSent:"Richiesta inviata. La direzione la vedrà.", reqCoverSent:"Copertura richiesta. Colleghi e direzione sono stati avvisati.", reqOfferedToast:"Grazie. Decide la direzione.", reqAssign:"Assegna a {n}", reqAssignOther:"Qualcun altro…", reqAssignBtn:"Assegna", reqApprove:"Approva", reqDecline:"Rifiuta", reqDone:"Fatto.", reqNone:"Niente in attesa.", reqVolunteers:"Disponibili: {n}", reqNoVolunteers:"Nessuno si è ancora offerto.", reqRecent:"Decisioni recenti", reqOffChip:"Libero: {n}", reqOffReqChip:"Libero richiesto: {n}", reqCantMakeTitle:"Chiedere una copertura?", reqCantMakeTxt:"I colleghi saranno avvisati per coprire {d}. Decide la direzione; fino ad allora il turno è tuo.", reqAskBtn:"Chiedi copertura", reqRule:"Le richieste chiudono {h} ore prima del turno.", reqCantMakeShort:"{n} non può fare {d}", reqAsksOff:"{n} chiede giorni liberi · {d}", reqDup:"Già richiesto.", reqFail:"Invio non riuscito. Riprova.", reqPick:"Scegli una data", aiTitle:"Chiedi a Bar Lento", aiSub:"L'app, i tuoi turni, le regole, il menu", aiFoot:"Risponde solo sull'app, sui tuoi dati, sulle regole e sul menu. Non può cambiare niente.", aiPlaceholder:"Chiedi quello che vuoi…", aiLead:"Chiedimi, per esempio:", aiSug1:"Quando lavoro questa settimana?", aiSug2:"Come imposto il mio compleanno?", aiSug3:"Cosa dice la policy sulla malattia?", aiSugMgr:"Come chiudo un giorno per un evento privato?", aiSugChef:"Come pianifico la cucina della prossima settimana?", aiError:"Qualcosa è andato storto. Riprova tra un attimo.", aiBusy:"Troppe domande per oggi. Riprova domani.", aiOpen:"Apri {s}", aiTimeClock:"Time clock", aiStaff:"Staff", aiRanking:"Classifica team", aiDocs:"I miei documenti", iconNotice:"Nuova icona. iPhone tiene quella vecchia: togli Bar Lento dalla Home e aggiungila di nuovo da Safari (Condividi, Aggiungi alla schermata Home).", viewAsBtn:"Vedi come {n}", viewAsExit:"Esci", lvlStaffWord:"Staff", ownerOnly:"Solo il titolare può rendere qualcuno Direzione o Titolare.", chefForbidden:"Solo cucina: questa modifica spetta alla manager.", showPin:"Mostra", hidePin:"Nascondi", deptRoleHint:"Chef, Direzione e Titolare hanno gli strumenti del manager dopo il proprio PIN: Chef solo per la cucina, Direzione per tutto, Titolare per tutto più Vedi come e queste promozioni.", appClockSalary:"Timbra dall'app (a stipendio su Toast)",
-      adminMode:"Modalità manager", lbBtn:"Classifica team", staffBtn:"Staff", historyBtn:"Cronologia", exportBtn:"Esporta PDF", logoutBtn:"Esci",
+      adminMode:"Modalità manager", lbBtn:"Classifica team", staffBtn:"Staff", historyBtn:"Cronologia", exportBtn:"Report", repTitle:"Report", repLead:"Scegli chi e quando, poi scarica il PDF. Le ore vengono dalle timbrature reali.", repWho:"Chi", repWhen:"Periodo", repEveryone:"Tutti", repWeek:"Questa settimana", repLastWeek:"Settimana scorsa", repMonth:"Questo mese", repLastMonth:"Mese scorso", repCustom:"Date", repGo:"Scarica PDF", repArchive:"Archivio completo dei turni (PDF)", repWait:"Preparo il PDF…", repDone:"PDF pronto.", repBadDates:"Scegli entrambe le date.", repBtn:"Report", logoutBtn:"Esci",
       newWeekBtn:"＋ Nuova settimana", deleteWeekBtn:"Elimina settimana", nwTitle:"Nuova settimana", nwLead:"Crea la settimana {r}", nwCopy:"Copia i turni della settimana scorsa ({k} turni)", nwCopySub:"Stesse persone e orari di {r}; poi modifica ciò che cambia", nwEmpty:"Parti da zero", nwEmptySub:"Aggiungi ogni turno a mano",
       copyConfirm:"Tocca di nuovo per sostituire i turni", deleteWeekConfirm:"Tocca di nuovo per eliminare", deleteWeekConfirmN:"Tocca di nuovo: elimina {k} turni", deleteWeekLocked:"Settimana passata · archivio", pastLocked:"Le settimane passate sono in archivio e non si eliminano", onlyEmpty:"Si può eliminare solo una settimana vuota",
       footAdmin:"Tocca un turno per modificarlo. Le modifiche si salvano da sole.", exitMode:"Esci", addShift:"＋ Aggiungi turno", daySettings:"Impostazioni giorno",
@@ -2616,6 +2647,44 @@
     el.innerHTML='<div class="ch"><span>'+h(t("checksTitle"))+'</span><span class="n">'+(list.length?(warns?warns+" · ":"")+list.length:"✓")+'</span></div>'+(list.length?'<ul>'+list.map(function(c){return '<li class="'+c.lvl+'">'+h(c.txt)+'</li>';}).join("")+'</ul>':'<div class="ok">'+h(t("checksClear"))+'</div>');
     el.classList.add("show");
   }
+
+  // ---------- Reports (owner 2026-09-24): who + period → PDF. Everyone = team hours; one person = personnel record for that period ----------
+  var rep={period:"week"};
+  function repRange(){
+    var today=fromISO(nyTodayISO()); var from,to;
+    if(rep.period==="week"){ from=mondayOf(today); to=addDays(from,6); }
+    else if(rep.period==="lastweek"){ from=addDays(mondayOf(today),-7); to=addDays(from,6); }
+    else if(rep.period==="month"){ from=new Date(today.getFullYear(),today.getMonth(),1); to=new Date(today.getFullYear(),today.getMonth()+1,0); }
+    else if(rep.period==="lastmonth"){ from=new Date(today.getFullYear(),today.getMonth()-1,1); to=new Date(today.getFullYear(),today.getMonth(),0); }
+    else { var f=$("repFrom").value, tt=$("repTo").value; if(!/^\d{4}-\d{2}-\d{2}$/.test(f)||!/^\d{4}-\d{2}-\d{2}$/.test(tt)) return null; from=fromISO(f); to=fromISO(tt); if(to<from){ var x=from; from=to; to=x; } }
+    return {from:toISO(from),to:toISO(to),label:dateShort(from)+" – "+dateShort(to)+", "+to.getFullYear()};
+  }
+  function repPeople(){ return state.data.staff.filter(function(n){ return !/^test\b/i.test(n)&&(!isChef()||isKitchenName(n)); }).sort(function(a,b){return a.localeCompare(b);}); }
+  function renderRep(){
+    var sel=$("repWho"), cur=sel.value; var opts=(isChef()?"":'<option value="*">'+h(t("repEveryone"))+'</option>')+repPeople().map(function(n){return '<option value="'+h(n)+'">'+h(n)+'</option>';}).join("");
+    sel.innerHTML=opts; if(cur&&Array.prototype.some.call(sel.options,function(o){return o.value===cur;})) sel.value=cur;
+    $("repSeg").querySelectorAll("button").forEach(function(b){ b.classList.toggle("on",b.getAttribute("data-p")===rep.period); });
+    $("repCustom").style.display=rep.period==="custom"?"":"none";
+    var r=repRange(); var who=sel.value==="*"?t("repEveryone"):sel.value;
+    $("repSum").innerHTML=r?h(who)+'<small>'+h(r.label)+'</small>':h(who)+'<small>'+h(t("repBadDates"))+'</small>';
+    $("repGo").disabled=!r; $("repArchive").style.display=isChef()?"none":"";
+  }
+  function openReports(){ if(!isMgr()) return; renderRep(); $("repOverlay").classList.add("show"); }
+  $("repSeg").addEventListener("click",function(ev){ var b=ev.target.closest("button"); if(!b) return; rep.period=b.getAttribute("data-p"); renderRep(); });
+  $("repWho").addEventListener("change",renderRep); $("repFrom").addEventListener("change",renderRep); $("repTo").addEventListener("change",renderRep);
+  $("repClose").addEventListener("click",function(){ $("repOverlay").classList.remove("show"); });
+  $("repArchive").addEventListener("click",function(){ $("repOverlay").classList.remove("show"); exportCSV(); });
+  $("repGo").addEventListener("click",async function(){
+    var r=repRange(); if(!r) return; var who=$("repWho").value; var b=$("repGo"); b.disabled=true; toast(t("repWait"),4000);
+    try{
+      var url=who==="*"?"/api/export?team=1&from="+r.from+"&to="+r.to+"&label="+encodeURIComponent(r.label):"/api/export?person="+encodeURIComponent(who)+"&from="+r.from+"&to="+r.to;
+      var res=await fetch(url,{headers:adminHeaders(),cache:"no-store"});
+      if(!res.ok){ var why=""; try{ why=(await res.text()).slice(0,140); }catch(e){} toast(t("exportFail")+(why?" ("+why+")":""),6000); return; }
+      var blob=await res.blob(); var a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+      a.download="bar-lento-"+(who==="*"?"team-hours":who.replace(/[^A-Za-z0-9]+/g,"-").toLowerCase())+"-"+r.from+"-to-"+r.to+".pdf"; document.body.appendChild(a); a.click(); document.body.removeChild(a); setTimeout(function(){URL.revokeObjectURL(a.href);},2000);
+      toast(t("repDone"),2500);
+    }catch(e){ toast(t("exportFail")); } finally{ b.disabled=false; }
+  });
   // ---------- history + export (admin) ----------
   async function openHistory(){
     $("logList").innerHTML='<div class="empty-note">'+t("loading")+'</div>'; $("historyOverlay").classList.add("show");
@@ -2740,7 +2809,7 @@
   document.addEventListener("keydown",function(e){ if(!$("pinOverlay").classList.contains("show")) return; if(/^[0-9]$/.test(e.key)){ e.preventDefault(); pinPress(e.key); } else if(e.key==="Backspace"){ e.preventDefault(); pinPress("del"); } });
   $("clockBtn").addEventListener("click",openClock);
   $("lbBtn").addEventListener("click",openLb);
-  $("meStatsBtn").addEventListener("click",function(){ openStats(null); });
+  $("meStatsBtn").addEventListener("click",function(){ if(this.dataset.rep) return openReports(); openStats(null); });
   $("mePunchBtn").addEventListener("click",openPunch); $("meBreakBtn").addEventListener("click",doBreak);
   $("punchCancel").addEventListener("click",function(){ $("punchOverlay").classList.remove("show"); });
   $("punchGo").addEventListener("click",doPunch);
@@ -2772,7 +2841,7 @@
   $("newStaffInput").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();addStaff();}});
   $("historyBtn").addEventListener("click",openHistory);
   $("historyClose").addEventListener("click",function(){$("historyOverlay").classList.remove("show");});
-  $("exportBtn").addEventListener("click",exportCSV);
+  $("exportBtn").addEventListener("click",openReports);
   $("newWeekBtn").addEventListener("click",openNewWeek);
   $("nwCancel").addEventListener("click",function(){$("newWeekOverlay").classList.remove("show");});
   $("bdayClose").addEventListener("click",function(){$("bdayOverlay").classList.remove("show");if(!maybeWeekPopup()) maybeRecapPopup();});
@@ -2827,10 +2896,11 @@
   $("viewAsExit").addEventListener("click",stopViewAs);
   $("viewAsWeek").addEventListener("click",function(){ if(state.viewAs) openMe(state.viewAs); });
   $("viewAsStats").addEventListener("click",function(){ if(state.viewAs&&typeof openStats==="function") openStats(state.viewAs); });
+  function applyWho(w){ meSet(w.name,state.me.token); applyPinRole(w.role||null); state.me.rulesAck=w.rulesAck||null; state.me.docAcks=w.docAcks||undefined; state.me.since=w.since||null; state.me.email=w.email||""; state.me.fullName=w.fullName||""; state.me.appClock=!!w.appClock; state.me.open=w.open||null; }
   async function meWhoAmI(){
     if(!state.me.token) return;
     var r; try{ r=await api("/api/me?action=who"); }catch(e){ r={ok:false,status:0,json:{}}; }
-    if(r.ok&&r.json.name){ meSet(r.json.name,state.me.token); applyPinRole(r.json.role||null); state.me.rulesAck=r.json.rulesAck||null; state.me.docAcks=r.json.docAcks||undefined; state.me.since=r.json.since||null; state.me.email=r.json.email||""; state.me.fullName=r.json.fullName||""; state.me.appClock=!!r.json.appClock; state.me.open=r.json.open||null; }
+    if(r.ok&&r.json.name){ applyWho(r.json); }
     else if(r.status===401||r.status===404){ meSet(null,null); state.me.rulesAck=undefined; state.me.docAcks=undefined; }
     else { state.me.rulesAck=undefined; state.me.docAcks=undefined; } // server hiccup: unknown → never force the rules on a guess
     renderMe();
@@ -2872,7 +2942,7 @@
     var pb=$("mePunchBtn"), sb=$("meStatsBtn"), bb=$("meBreakBtn"), op=state.me.open, onBrk=!!(op&&op.breakStart);
     if(canPunch()){ sb.style.display="none"; pb.style.display=""; pb.textContent=op?"Clock out":"Clock in"; pb.className="btn "+(op?"danger":"good");
       bb.style.display=op?"":"none"; bb.textContent=onBrk?"Back to work":"Break"; bb.className="btn "+(onBrk?"primary":""); bb.disabled=false; }
-    else { sb.style.display=""; pb.style.display="none"; bb.style.display="none"; }
+    else { sb.style.display=""; pb.style.display="none"; bb.style.display="none"; var ownerish=docsExempt(n)&&isMgr(); sb.textContent=t(ownerish?"repBtn":"myStats"); sb.dataset.rep=ownerish?"1":""; } // the owner (dept owner) gets Reports instead of his own stats (owner 2026-09-24)
     var nx=nextShiftOf(n), el=$("meNextShift"); el.className="";
     if(canPunch()&&op){ var brkMs=(op.breakMin||0)*60000+(onBrk?Date.now()-Date.parse(op.breakStart):0); var worked=durText(Math.max(0,Date.now()-Date.parse(op.in)-brkMs)); el.textContent=onBrk?"On break since "+fmtClock(op.breakStart)+" · "+durText(Date.now()-Date.parse(op.breakStart))+" · worked "+worked:"Clocked in since "+fmtClock(op.in)+" · "+worked+(brkMs?" · break "+durText(brkMs):""); if(onBrk) el.className="onbreak"; }
     else if(!nx){ el.textContent=t("noUpcoming"); }
@@ -3126,7 +3196,7 @@
     if(k==="del"){ pin.buf=pin.buf.slice(0,-1); pinDots(); $("pinErr").textContent=""; return; }
     if(pin.buf.length>=4) return;
     pin.buf+=k; pinDots(); $("pinErr").textContent="";
-    if(pin.buf.length===4) setTimeout(pinSubmit,120);
+    if(pin.buf.length===4) pinSubmit();
   }
   async function pinSubmit(){
     if(pin.busy||pin.buf.length!==4) return;
@@ -3153,12 +3223,13 @@
     $("pinDots").classList.add("ok");
     if(state.me.token&&state.me.token!==j.token) api("/api/me",{method:"POST",body:{action:"logout"}}); // this device was someone else's — close that access
     meSet(j.name,j.token); pin.name=null;
+    if(j.who&&j.who.name) applyWho(j.who); // the login already carried the profile: no second round-trip
     setTimeout(async function(){
       $("pinOverlay").classList.remove("show"); $("whoOverlay").classList.remove("show"); renderMe(); renderDays();
       toast(created?"PIN saved. Welcome, "+j.name.split(/\s+/)[0]+".":"Welcome back, "+j.name.split(/\s+/)[0]+".");
-      state.me.rulesAck=undefined; await meWhoAmI();
+      if(!(j.who&&j.who.name)){ state.me.rulesAck=undefined; await meWhoAmI(); }
       afterLoginFlow();
-    },350);
+    },180);
   }
   async function meLogout(){
     var tok=state.me.token; $("meOverlay").classList.remove("show");
@@ -3180,8 +3251,8 @@
     var keys=meWeeks(), cur=currentMondayISO();
     me.week=keys.indexOf(cur)!==-1?cur:(keys.filter(function(k){return k>=cur;})[0]||keys[keys.length-1]||null);
     meTitles(); $("meRules").style.display=((rulesActive()||(DOCS.list||[]).length)&&!asName&&!docsExempt(name))?"":"none"; $("meCal").style.display=(name&&!asName&&state.features.storage&&!state.viewAs)?"":"none"; $("meRules").innerHTML=docsButtonLabel();
-    var other=asName&&asName!==state.me.name; $("meSwitch").style.display=other?"none":""; $("meLogout").style.display=other?"none":""; $("meReport").style.display=other?"none":"";
-    $("meStatsLink").style.display=(!other&&state.me.appClock)?"none":"";
+    var other=asName&&asName!==state.me.name, ownerSelf=!other&&docsExempt(name); $("meSwitch").style.display=other?"none":""; $("meLogout").style.display=other?"none":""; $("meReport").style.display=(other||ownerSelf)?"none":"";
+    $("meStatsLink").style.display=((!other&&state.me.appClock)||ownerSelf)?"none":"";
     renderMeBday(other?null:name);
     renderMePanel(); $("meOverlay").classList.add("show"); loadMeHours();
   }

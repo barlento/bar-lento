@@ -142,6 +142,14 @@ async function weekSummary(data, name, guid, weekISO) {
   if (out.matched) { out.avgDev = Math.round(out.devSum / out.matched); out.onTimePct = Math.round(out.onTime / out.matched * 100); }
   return out;
 }
+// Everything the app needs about a signed-in person (the "who" answer); also returned by login/create so the PIN screen
+// needs ONE round-trip instead of two (owner 2026-09-24, "il PIN sembra lento").
+async function whoPayload(doc, name) {
+  const [ack, ident, docAcks, pinRec, appClock] = await Promise.all([accounts.getRulesAck(name).catch(() => null), toastIdentity(doc.data, name), accounts.docAcksFor(name, DOC_IDS).catch(() => null), accounts.getPinRecord(name).catch(() => null), punch.isAppClock(doc.data, name).catch(() => false)]);
+  const docsOut = {}; if (docAcks) DOC_IDS.forEach((id) => { docsOut[id] = ackView(docAcks[id]); });
+  const openP = appClock ? await punch.openEntry(name).catch(() => null) : null;
+  return { name, role: auth.isTestName(name) ? null : auth.roleOfDept((doc.data.dept || {})[name]), appClock, open: openP ? openView(openP) : null, rulesAck: ackView(ack), rulesVersion: RULES.version || null, docAcks: docAcks ? docsOut : undefined, docsVersions: docVersions(), since: pinRec && pinRec.createdAt || null, fullName: ident ? ident.fullName : null, email: ident ? ident.email : null, mail: mail.enabled() };
+}
 const openView = (e) => { const v = punch.view(e); return { in: v.in, breakStart: v.breakStart || null, breakMin: v.breakMin || 0 }; };
 // minutes worked = in → out (or now) minus unpaid breaks (Toast terminal breaks and app breaks alike)
 function sumMinutes(list) {
@@ -210,11 +218,7 @@ module.exports = async (req, res) => {
       if (name) presence.touch(name).catch(() => {}); // any call from a signed-in device = the app is open
       if (action === "who") {
         if (!name) return send(res, 401, { error: "unauthorized" });
-        const [ack, ident, docAcks, pinRec] = await Promise.all([accounts.getRulesAck(name).catch(() => null), toastIdentity(doc.data, name), accounts.docAcksFor(name, DOC_IDS).catch(() => null), accounts.getPinRecord(name).catch(() => null)]);
-        const docsOut = {}; if (docAcks) DOC_IDS.forEach((id) => { docsOut[id] = ackView(docAcks[id]); });
-        const appClock = await punch.isAppClock(doc.data, name);
-        const openP = appClock ? await punch.openEntry(name).catch(() => null) : null;
-        return send(res, 200, { name, role: auth.isTestName(name) ? null : auth.roleOfDept((doc.data.dept || {})[name]), appClock, open: openP ? openView(openP) : null, rulesAck: ackView(ack), rulesVersion: RULES.version || null, docAcks: docAcks ? docsOut : undefined, docsVersions: docVersions(), since: pinRec && pinRec.createdAt || null, fullName: ident ? ident.fullName : null, email: ident ? ident.email : null, mail: mail.enabled() });
+        return send(res, 200, await whoPayload(doc, name));
       }
       if (action === "hours") {
         const asked = String(url.searchParams.get("name") || "");
@@ -482,18 +486,20 @@ module.exports = async (req, res) => {
     // Small fixed delay blunts guessing without hurting a real login.
     await new Promise((r) => setTimeout(r, 350));
     if (action === "create") {
-      const r = await accounts.createPin(name, body.pin, ua);
+      const docW = await store.getSchedule();
+      const [r, who] = await Promise.all([accounts.createPin(name, body.pin, ua), whoPayload(docW, name).catch(() => null)]); // profile built in parallel with the hashing
       if (r.error === "bad_pin") return send(res, 400, { error: "bad_pin" });
       if (r.error === "pin_exists") return send(res, 409, { error: "pin_exists" });
-      return send(res, 200, { ok: true, name, token: r.token });
+      return send(res, 200, { ok: true, name, token: r.token, who: who && Object.assign(who, { since: who.since || new Date().toISOString() }) });
     }
     if (action === "login") {
-      const r = await accounts.login(name, body.pin, ua);
+      const docW = await store.getSchedule();
+      const [r, who] = await Promise.all([accounts.login(name, body.pin, ua), whoPayload(docW, name).catch(() => null)]);
       if (r.error === "no_pin") return send(res, 404, { error: "no_pin" });
       if (r.error === "bad_pin") return send(res, 400, { error: "bad_pin" });
       if (r.error === "locked") return send(res, 423, { error: "locked", retryIn: r.retryIn });
       if (r.error === "wrong_pin") return send(res, 401, { error: "wrong_pin", attemptsLeft: r.attemptsLeft });
-      return send(res, 200, { ok: true, name, token: r.token });
+      return send(res, 200, { ok: true, name, token: r.token, who }); // the profile travels with the token: no second call
     }
     return send(res, 400, { error: "bad_action" });
   } catch (err) {

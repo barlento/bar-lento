@@ -266,6 +266,22 @@ async function personPdfFile(name, fromISO, toISO) {
   return { buf: out.buf, filename: `bar-lento-record-${name.replace(/[^A-Za-z0-9]+/g, "-").toLowerCase()}-${fromISO}-to-${toISO}.pdf` };
 }
 
+// Team hours (owner/manager): every person on staff (test accounts excluded) over one period, from clock-ins. Max 3 months.
+async function teamPdfFile(fromISO, toISO, periodLabel) {
+  const [doc, confirmations] = await Promise.all([store.getSchedule(), store.getConfirmations()]);
+  const names = (doc.data.staff || []).filter((n) => !auth.isTestName(n));
+  const people = [];
+  for (const name of names) {
+    const r = await collectPerson(name, doc, confirmations, fromISO, toISO);
+    const totals = r.months.reduce((a, m) => ({ worked: a.worked + m.worked, scheduled: a.scheduled + m.scheduled, clockins: a.clockins + m.clockins }), { worked: 0, scheduled: 0, clockins: 0 });
+    const days = {}; let breakMin = 0;
+    r.clock.forEach((c) => { const d = (days[c.date] = days[c.date] || { date: c.date, weekday: c.weekday, n: 0, hours: 0 }); d.n++; d.hours += c.hours || 0; const m = /break (\d+) min/.exec(c.note || ""); if (m) breakMin += Number(m[1]); });
+    const dept = (doc.data.dept || {})[name] || "floor";
+    people.push({ name, fullName: r.fullName, dept: { floor: "Floor", kitchen: "Kitchen", chef: "Kitchen", management: "Management", owner: "Owner" }[dept] || "Floor", worked: round2(totals.worked), scheduled: round2(totals.scheduled), clockins: totals.clockins, days: Object.keys(days).length, breakMin, dayRows: Object.keys(days).sort().map((k) => days[k]) });
+  }
+  const out = await pdf.teamPdf({ fromISO, toISO, periodLabel, people }, nyParts(new Date().toISOString()).stamp);
+  return { buf: out.buf, filename: `bar-lento-team-hours-${fromISO}-to-${toISO}.pdf` };
+}
 module.exports = async (req, res) => {
   try {
     if (req.method !== "GET") { res.setHeader("Allow", "GET"); return res.status(405).send("method_not_allowed"); }
@@ -297,7 +313,19 @@ module.exports = async (req, res) => {
     if (!store.hasStorage()) return res.status(503).send("storage_missing");
 
     const person = String(url.searchParams.get("person") || "").trim().slice(0, 60);
-    if (role === "chef" && (!person || !auth.kitchenNames((await store.getSchedule()).data).includes(person))) return res.status(403).send("chef_forbidden"); // kitchen people only, no schedule archive
+    if (role === "chef" && (!person || !auth.kitchenNames((await store.getSchedule()).data).includes(person))) return res.status(403).send("chef_forbidden"); // kitchen people only, no schedule archive, no team report
+    if (url.searchParams.get("team") === "1") { // everyone, one period (owner 2026-09-24)
+      const isD = (v) => /^\d{4}-\d{2}-\d{2}$/.test(v || "");
+      let from = url.searchParams.get("from"), to = url.searchParams.get("to");
+      if (!isD(to)) to = todayNY();
+      if (!isD(from)) { const d = new Date(to + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() - 6); from = d.toISOString().slice(0, 10); }
+      if (to < from) to = from;
+      const maxTo = new Date(from + "T12:00:00Z"); maxTo.setUTCMonth(maxTo.getUTCMonth() + 3); if (to > maxTo.toISOString().slice(0, 10)) to = maxTo.toISOString().slice(0, 10);
+      const out = await teamPdfFile(from, to, String(url.searchParams.get("label") || "").slice(0, 60) || `${from} to ${to}`);
+      res.setHeader("Cache-Control", "no-store"); res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `attachment; filename="${out.filename}"`);
+      return res.status(200).send(Buffer.from(out.buf));
+    }
     const format = url.searchParams.get("format") === "xlsx" ? "xlsx" : "pdf"; // PDF by default: opens everywhere, not editable
     let out;
     if (person) {
