@@ -66,6 +66,14 @@ async function j(p,o){const r=await fetch(B+p,o);let x=null,txt="";try{txt=await
   await p.click('#repSeg button[data-p="today"]'); await p.waitForTimeout(200); console.log("10c today:",(await p.textContent("#repSum")).replace(/\s+/g," ")); await p.screenshot({path:require("path").join(__dirname,"..","out","smart-myreport.png")}); await p.click("#repClose");
   await p.evaluate(()=>document.getElementById("meOpenBtn").click()); await p.waitForSelector("#meOverlay.show"); await p.waitForTimeout(400);
   console.log("11 calendar row:", await p.evaluate(()=>document.getElementById("meCal").style.display!=="none"));
+  await p.evaluate(()=>document.getElementById("meClose").click()); await p.waitForTimeout(300);
+  const bell=await p.evaluate(()=>({shown:document.getElementById("todoBtn").style.display!=="none", n:document.getElementById("todoCnt").textContent})); console.log("11b to-do bell:",JSON.stringify(bell)); if(!bell.shown||Number(bell.n)<1) errors.push("to-do bell missing");
+  await p.click("#todoBtn"); await p.waitForSelector("#todoOverlay.show"); await p.waitForTimeout(300); const rows=await p.evaluate(()=>Array.from(document.querySelectorAll("#todoList .todo-row b")).map(b=>b.textContent)); console.log("11c tasks:",JSON.stringify(rows)); if(!rows.some(r=>/birthday/i.test(r))) errors.push("birthday task missing");
+  await p.screenshot({path:require("path").join(__dirname,"..","out","smart-todo.png")});
+  if(await p.$('#todoList [data-todo="bday"]')){ await p.click('#todoList [data-todo="bday"]'); await p.waitForSelector("#meOverlay.show"); await p.waitForTimeout(600); console.log("11d birthday row focused:", await p.evaluate(()=>document.activeElement&&document.activeElement.id==="meBdayInput"));
+  await p.fill("#meBdayInput","1995-06-14"); await p.click("#meBdaySave"); await p.waitForTimeout(900); } else { await p.click("#todoClose"); console.log("11d birthday already set on this server"); }
+  const bell2=await p.evaluate(()=>({shown:document.getElementById("todoBtn").style.display!=="none", n:document.getElementById("todoCnt").textContent, rows:Array.from(document.querySelectorAll("#todoList .todo-row b")).map(b=>b.textContent)})); console.log("11e after saving the birthday:",JSON.stringify(bell2)); if(rows.some(r=>/birthday/i.test(r))&&Number(bell2.n)!==Number(bell.n)-1&&bell2.shown) errors.push("to-do count did not drop");
+  await p.evaluate(()=>document.getElementById("meClose").click()); await p.waitForTimeout(200);
   await p.click("#meCalBtn"); await p.waitForSelector("#calOverlay.show",{timeout:8000}); const href=await p.getAttribute("#calApple","href"), g=await p.getAttribute("#calGoogle","href"); console.log("12 sheet open, Apple webcal:",/^webcal:\/\/.+\/api\/cal\?t=[a-f0-9]{40}$/.test(href),"| Google:",/^https:\/\/calendar\.google\.com\/calendar\/r\?cid=webcal/.test(g));
   await p.screenshot({path:require("path").join(__dirname,"..","out","smart-cal.png")});
   await b.close();
