@@ -11,7 +11,8 @@ async function j(p,o){const r=await fetch(B+p,o);let x=null,txt="";try{txt=await
   let r=await j("/api/data"); const d=JSON.parse(JSON.stringify(r.j.data)); if(!d.weeks[wk]){d.weeks[wk]={notes:{}};DAYS.forEach(x=>d.weeks[wk][x]=[]);}
   DAYS.forEach((k,i)=>{ d.weeks[wk][k]=[{id:"sm-a"+i,name:"Astrea",start:"12:00",end:"22:00",station:"S1"}]; });
   d.weeks[wk][todayKey].push({id:"sm-p",name:"Pietro",start:back(30),end:"23:30",station:"Bar"});
-  d.weeks[wk].notes={sun:{status:"closed",text:"Staff party"}};
+  if(!d.staff.includes("Nico")) d.staff.push("Nico"); d.weeks[wk][todayKey].push({id:"sm-n",name:"Nico",start:back(30),end:"23:30",station:"Bar"}); // added by hand = app clock, never punched (Pietro may have clocked in during the punch suite)
+  const closedKey=todayKey==="sun"?"sat":"sun"; d.weeks[wk].notes={}; d.weeks[wk].notes[closedKey]={status:"closed",text:"Staff party"}; // one closed day with a shift, never today (a closed day has no late alerts)
   r=await j("/api/data",{method:"POST",headers:M,body:JSON.stringify({version:r.j.version,data:d})}); console.log("1 schedule saved:",r.s);
   // ---- calendar feed
   const tokOf=async(n,pin)=>{ let x=await j("/api/me",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"login",name:n,pin})}); if(x.s!==200) x=await j("/api/me",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"create",name:n,pin})}); return x.j.token; };
@@ -29,10 +30,9 @@ async function j(p,o){const r=await fetch(B+p,o);let x=null,txt="";try{txt=await
   const cm2=await j("/api/me",{method:"POST",headers:{"Content-Type":"application/json","x-staff-token":ta},body:JSON.stringify({action:"calendarMail"})}); console.log("4c second send within 10 min →",cm2.s,"(expect 429)");
   const bad=await j("/api/cal?t=0000000000000000000000000000000000000000"); console.log("5 unknown token →",bad.s,"(expect 404)");
   // ---- reminders (force = build now, whatever the hour)
-  { const tp=await tokOf("Pietro","3131"); if(tp) await j("/api/me",{method:"POST",headers:{"Content-Type":"application/json","x-staff-token":tp},body:JSON.stringify({action:"punch",on:false})}); } // the punch suite may leave Pietro clocked in → no late alert
   r=await j("/api/remind?force=1",{headers:M}); console.log("6 remind:",r.s,"| morning to:",(r.j.morning.messages||[]).map(m=>m.name+": "+m.body).join(" / "));
   console.log("7 late alerts:",JSON.stringify((r.j.late.alerts||[]).map(a=>({who:a.name,to:a.to,body:a.body}))));
-  if(!(r.j.late.alerts||[]).some(a=>a.name==="Pietro")) errors.push("no late alert for Pietro");
+  if(!(r.j.late.alerts||[]).some(a=>a.name==="Nico")) errors.push("no late alert for Nico");
   if((r.j.late.alerts||[]).some(a=>a.name==="Astrea")) errors.push("Astrea clocked in on Toast but flagged late");
   const noauth=await j("/api/remind"); console.log("8 remind without password →",noauth.s,"(expect 401)");
   // ---- reports: team PDF over a period (password), person PDF over a period; login carries the profile (one round-trip)

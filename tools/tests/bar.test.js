@@ -69,6 +69,27 @@ const dismiss = (p) => p.evaluate(() => { document.querySelectorAll(".overlay.sh
   r = await j("/api/bar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "seen" }) }); console.log("11 seen without token:", r.s); if (r.s !== 401) errors.push("seen without identity");
   r = await j("/api/bar", { method: "POST", headers: A, body: JSON.stringify({ action: "seen" }) }); const g = await j("/api/bar", { headers: A });
   console.log("12 Astrea marks seen:", r.s, "seenRev", r.j && r.j.seenRev, "| GET seenRev:", g.j && g.j.seenRev, "rev:", g.j && g.j.bar.rev); if (r.s !== 200 || !b2 || r.j.seenRev !== b2.rev || g.j.seenRev !== b2.rev) errors.push("seen not recorded");
+  // ---- 5b. in-process: the quiet-hours queue (lib/bar with a stubbed Redis and clock) — save at night → pending; a daytime save deletes it; flush sends once
+  {
+    process.env.AI_FAKE = "1"; delete process.env.ANTHROPIC_API_KEY;
+    const store = require("../../lib/store"), push = require("../../lib/push"), kv = new Map();
+    store.hasStorage = () => true;
+    store._redis = async (...a) => { const c = a[0]; if (c === "GET") return kv.has(a[1]) ? kv.get(a[1]) : null; if (c === "SET") { if (a.includes("NX") && kv.has(a[1])) return null; kv.set(a[1], String(a[2])); return "OK"; } if (c === "DEL") return kv.delete(a[1]) ? 1 : 0; if (c === "HSET") { kv.set(a[1] + "/" + a[2], String(a[3])); return 1; } if (c === "HGET") return kv.get(a[1] + "/" + a[2]) || null; throw new Error("stub: " + c); };
+    store.appendLog = async () => {};
+    const sentTo = []; push.broadcast = async (payload, names) => { sentTo.push({ body: payload.body, names }); return { sent: names.length }; }; let quiet = true; push.isQuietHours = () => quiet;
+    const bar = require("../../lib/bar"); const doc = { data: { staff: ["Astrea", "Joe"], weeks: {} } };
+    const q1 = await bar.save({ unavailable: ["Gin"], note: "", recipes: [] }, "manager", doc); const pend1 = kv.get("barlento:bar:pending");
+    const q2 = await bar.save({ unavailable: ["Gin", "Rum"], note: "", recipes: [] }, "manager", doc); const pend2 = JSON.parse(kv.get("barlento:bar:pending") || "null");
+    const f0 = await bar.flushPending(doc); quiet = false; const f1 = await bar.flushPending(doc); const f2 = await bar.flushPending(doc);
+    console.log("5b quiet-hours queue:", q1.body.queued, q1.body.pushed.length, "| pending replaced:", pend2 && pend2.body, "| flush in quiet:", f0.sent, "| flush after:", f1.sent, f1.body, "| second flush:", f2.sent, "| it:", q2.body.bar.it.unavailable.join(","));
+    if (!q1.body.queued || !pend1 || !pend2 || pend2.body !== "Not available: Gin, Rum" || f0.sent !== 0 || f1.body !== "Not available: Gin, Rum" || f2.sent !== 0) errors.push("quiet-hours queue wrong");
+    const d1 = await bar.save({ unavailable: ["Gin", "Rum"], note: "", recipes: [] }, "manager", doc); // daytime save, unchanged list → nothing, then a changed one deletes any pending
+    kv.set("barlento:bar:pending", JSON.stringify({ names: [], body: "stale", at: "x" })); const d2 = await bar.save({ unavailable: ["Rum"], note: "", recipes: [] }, "manager", doc);
+    console.log("5c daytime: unchanged →", d1.body.pushed.length, d1.body.queued, "| changed → pending deleted:", !kv.has("barlento:bar:pending"), "| translated:", d2.body.translated, "| it:", d2.body.bar.it.unavailable.join(","), "| stale rev →", (await bar.save({ unavailable: [], note: "", recipes: [] }, "manager", doc, 1)).status, "| seen 99 → min:", await bar.markSeen("Astrea", 99), "of", d2.body.bar.rev);
+    if (d1.body.pushed.length || kv.has("barlento:bar:pending") || d2.body.translated !== true || d2.body.bar.it.unavailable[0] !== "(it) Rum" || (await bar.markSeen("Astrea", 99)) !== d2.body.bar.rev) errors.push("daytime/stale/seen path wrong");
+  }
+  // ---- 5d. the assistant reads the same notes (AI_FAKE echoes the EN "not available" list and offers to open the Bar sheet)
+  { const ask = await j("/api/ask", { method: "POST", headers: A, body: JSON.stringify({ messages: [{ role: "user", content: "do we have beer?" }] }) }); const ans = ask.j && ask.j.answer || ""; console.log("5d assistant:", ask.s, ans.slice(0, 80), "| open:", ask.j && ask.j.open); if (ask.s !== 200 || !/bar: .*Birre/.test(ans) || (ask.j && ask.j.open) !== "bar") errors.push("assistant does not read the bar notes"); }
   // ---- 6. UI, the manager on a computer (password session): card → Open → Edit → Save → the sheet shows the new list
   const br = await chromium.launch();
   const m = await (await br.newContext({ viewport: { width: 1200, height: 900 } })).newPage(); m.on("pageerror", (e) => errors.push("mgr pageerror: " + e.message));

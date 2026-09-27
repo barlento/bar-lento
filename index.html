@@ -1202,6 +1202,7 @@
   #barAddRecipe{margin:2px 0 10px}
   .bar-hint{font-size:.78rem;color:var(--ink-muted);margin:0 0 4px;line-height:1.4}
   body.chef #barEdit,body.viewstaff #barEdit{display:none!important}
+  @media (max-width:640px){.field textarea,.field input,.field select{font-size:16px}} /* iOS: no zoom on focus (this block comes after the Refit sizes) */
 </style>
 </head>
 <body>
@@ -1506,7 +1507,7 @@
     </div>
     <div id="barForm" style="display:none">
       <div class="field"><label for="barEdUnav" data-t="barEdUnav">Not available — one per line</label><textarea id="barEdUnav" rows="4"></textarea></div>
-      <div class="field"><label for="barEdNote" data-t="barEdNote">Note</label><textarea id="barEdNote" rows="4"></textarea></div>
+      <div class="field"><label for="barEdNote" data-t="barEdNote">Note</label><textarea id="barEdNote" rows="4" maxlength="1500"></textarea></div>
       <div class="bar-lbl" data-t="barHow">How to make</div>
       <div id="barEdRecipes"></div>
       <button class="btn sm" id="barAddRecipe" type="button" data-t="barAdd">Add recipe</button>
@@ -1791,7 +1792,7 @@
       phDept:"Department", deptFloor:"Floor", deptKitchen:"Kitchen", deptChef:"Chef", deptManagement:"Management", deptOwner:"Owner", deptTest:"Test account", deptFromToast:"From Toast: {j}", deptSet:"{n} is now in {d}.", deptManualNote:"Chosen by hand: the Toast job no longer changes it.", rulesLink:"Print documents", stNotIn:"Hasn't signed in yet", stLine:"PIN ✓ · Rules {r} · Docs {k}/{n}", stLineNoDocs:"PIN ✓ · Rules {r}", phBirthday:"Birthday", phAccess:"Access", phDocs:"Documents", phWeek:"Shifts and hours", viewWeekBtn:"View week", removeName:"Remove {n}", noBirthday:"not set", devicesShort:"{k} device{p}", personLead:"Birthday, personal PIN and signed documents.", trainingRow:"Training {y}", copyNotSent:"copy not emailed yet", sendCopy:"Send signed copy by email", copySent:"Signed copy sent to {e}", mailFail:"Could not send the email ({r})", mailOff:"Email isn't configured yet on the server (Vercel settings).",
       pinSet:"PIN set", pinDevices:"{k} device{p}", pinNone:"No PIN yet", pinReset:"Reset PIN", pinResetSure:"Tap again to reset", pinResetDone:"PIN reset for {n} — they'll create a new one next time", pinResetFail:"Couldn't reset the PIN. Try again.", viewWeek:"View {n}'s week",
       toastPick:"— Toast employee —", toastLoading:"Loading Toast…", toastLinked:"{n} linked to Toast", toastUnlinked:"{n} unlinked from Toast", notified:"Team notified ({k} phone{p})", notifiedNone:"Changes noted — nobody has notifications turned on yet.", notifyFail:"Couldn't send the notification. It will go out automatically later.", markedClosed:"{h} ✓",
-      barTitle:"Bar", barLead:"What's not available and how to make things. Updated by the owner.", barUnav:"Not available now", barAllOk:"Everything available", barHow:"How to make", barHowLine:"How to make: {s}", barNote:"Note", barOpen:"Open", barNew:"NEW", barEdit:"Edit", barSave:"Save", barCancel:"Cancel", barAdd:"Add recipe", barRemove:"Remove", barSaved:"Bar notes saved", barNotified:"{n} people notified", barNotified1:"1 person notified", barQueued:"will be sent after 10 AM", barFail:"Could not save. Try again.", barUpdated:"Updated {d}", barHint:"Write in Italian or English: the app translates for the team.", barEdUnav:"Not available — one per line", barEdNote:"Note", barEdTitle:"Title", barEdText:"How to make it", todoBar:"Read the bar update", todoBarSub:"Bar notes updated", todoBarUnav:"Not available: {s}", barMore:"+{n} more"
+      barTitle:"Bar", barLead:"What's not available and how to make things. Updated by the owner.", barUnav:"Not available now", barAllOk:"Everything available", barHow:"How to make", barHowLine:"How to make: {s}", barNote:"Note", barOpen:"Open", barNew:"NEW", barEdit:"Edit", barSave:"Save", barCancel:"Cancel", barAdd:"Add recipe", barRemove:"Remove", barSaved:"Bar notes saved", barNotified:"{n} people notified", barNotified1:"1 person notified", barQueued:"will be sent after 10 AM", barFail:"Could not save. Try again.", barStale:"Someone else saved meanwhile. Your text is kept: tap Cancel to see theirs, or Save again.", barTooLong:"Too long: max 120 characters per line, 1500 for the note, 2500 per recipe.", barTooMany:"Too many saves today. Try again tomorrow.", barNoTranslate:"translation unavailable, saved as typed", barDiscard:"Tap × again to discard what you typed", barUpdated:"Updated {d}", barHint:"Write in Italian or English: the app translates for the team.", barEdUnav:"Not available — one per line", barEdNote:"Note", barEdTitle:"Title", barEdText:"How to make it", todoBar:"Read the bar update", todoBarSub:"Bar notes updated", todoBarUnav:"Not available: {s}", barMore:"+{n} more"
     },
     it:{
       myBday:"Il mio compleanno", myBdayNone:"Non ancora inserito. Aggiungilo e il team ti festeggia.", myBdayIs:"Il mio compleanno: {d}", bdaySavedMe:"Compleanno salvato. Ci vediamo il {d}.", save:"Salva",
@@ -1853,7 +1854,7 @@
       rulesOk:"Regolamento ✓ {d} · {e}", rulesNo:"Regolamento non ancora firmato", rulesLink:"Stampa documenti", stNotIn:"Non è ancora entrato/a", stLine:"PIN ✓ · Regolamento {r} · Documenti {k}/{n}", stLineNoDocs:"PIN ✓ · Regolamento {r}", phBirthday:"Compleanno", phAccess:"Accesso", phDocs:"Documenti", phWeek:"Turni e ore", viewWeekBtn:"Vedi settimana", removeName:"Rimuovi {n}", noBirthday:"non impostato", devicesShort:"{k} dispositiv{p}", personLead:"Compleanno, PIN personale e documenti firmati.", trainingRow:"Formazione {y}", copyNotSent:"copia non ancora inviata", sendCopy:"Invia copia firmata via email", copySent:"Copia firmata inviata a {e}", mailFail:"Invio email non riuscito ({r})", mailOff:"Email non ancora configurata sul server (impostazioni Vercel).",
       pinSet:"PIN creato", pinDevices:"{k} dispositiv{p}", pinNone:"Nessun PIN", pinReset:"Azzera PIN", pinResetSure:"Tocca di nuovo per azzerare", pinResetDone:"PIN azzerato per {n} — ne creerà uno nuovo al prossimo accesso", pinResetFail:"Impossibile azzerare il PIN. Riprova.", viewWeek:"Vedi la settimana di {n}",
       toastPick:"— dipendente Toast —", toastLoading:"Carico Toast…", toastLinked:"{n} collegato/a a Toast", toastUnlinked:"{n} scollegato/a da Toast", notified:"Team avvisato ({k} telefon{p})", notifiedNone:"Modifiche registrate — nessuno ha ancora attivato le notifiche.", notifyFail:"Invio non riuscito. Partirà automaticamente più tardi.", markedClosed:"{h} ✓",
-      barTitle:"Bar", barLead:"Cosa non c'è e come si preparano le cose. Aggiornato dal titolare.", barUnav:"Non disponibile ora", barAllOk:"Tutto disponibile", barHow:"Come si prepara", barHowLine:"Come si prepara: {s}", barNote:"Nota", barOpen:"Apri", barNew:"NUOVO", barEdit:"Modifica", barSave:"Salva", barCancel:"Annulla", barAdd:"Aggiungi ricetta", barRemove:"Rimuovi", barSaved:"Note del bar salvate", barNotified:"{n} persone avvisate", barNotified1:"1 persona avvisata", barQueued:"partirà dopo le 10", barFail:"Salvataggio non riuscito. Riprova.", barUpdated:"Aggiornato {d}", barHint:"Scrivi in italiano o in inglese: l'app traduce per il team.", barEdUnav:"Non disponibile — uno per riga", barEdNote:"Nota", barEdTitle:"Titolo", barEdText:"Come si prepara", todoBar:"Leggi l'aggiornamento del bar", todoBarSub:"Note del bar aggiornate", todoBarUnav:"Non disponibile: {s}", barMore:"+{n} altri"
+      barTitle:"Bar", barLead:"Cosa non c'è e come si preparano le cose. Aggiornato dal titolare.", barUnav:"Non disponibile ora", barAllOk:"Tutto disponibile", barHow:"Come si prepara", barHowLine:"Come si prepara: {s}", barNote:"Nota", barOpen:"Apri", barNew:"NUOVO", barEdit:"Modifica", barSave:"Salva", barCancel:"Annulla", barAdd:"Aggiungi ricetta", barRemove:"Rimuovi", barSaved:"Note del bar salvate", barNotified:"{n} persone avvisate", barNotified1:"1 persona avvisata", barQueued:"partirà dopo le 10", barFail:"Salvataggio non riuscito. Riprova.", barStale:"Qualcun altro ha salvato nel frattempo. Il tuo testo è ancora qui: tocca Annulla per vedere il suo, o salva di nuovo.", barTooLong:"Troppo lungo: max 120 caratteri per riga, 1500 per la nota, 2500 per ricetta.", barTooMany:"Troppi salvataggi oggi. Riprova domani.", barNoTranslate:"traduzione non disponibile, salvato come scritto", barDiscard:"Tocca di nuovo × per scartare quello che hai scritto", barUpdated:"Aggiornato {d}", barHint:"Scrivi in italiano o in inglese: l'app traduce per il team.", barEdUnav:"Non disponibile — uno per riga", barEdNote:"Nota", barEdTitle:"Titolo", barEdText:"Come si prepara", todoBar:"Leggi l'aggiornamento del bar", todoBarSub:"Note del bar aggiornate", todoBarUnav:"Non disponibile: {s}", barMore:"+{n} altri"
     }
   };
   var lang="en";
@@ -2608,7 +2609,7 @@
     $("loginGo").disabled=true; $("loginErr").textContent="";
     var r=await api("/api/login",{method:"POST",body:{password:pw}});
     $("loginGo").disabled=false;
-    if(r.ok){ state.password=pw; state.admin=true; state.role=r.json.role||"owner"; storageSet(PW_KEY,pw); setTimeout(loadRequests,0); $("loginOverlay").classList.remove("show"); $("whoOverlay").classList.remove("show"); ensureActiveWeek(); applyLang(); $("saveStatus").textContent=t("statusReady"); toast(t(isChef()?"welcomeChef":"welcome"));
+    if(r.ok){ state.password=pw; state.admin=true; state.role=r.json.role||"owner"; storageSet(PW_KEY,pw); setTimeout(loadRequests,0); setTimeout(loadBar,0); $("loginOverlay").classList.remove("show"); $("whoOverlay").classList.remove("show"); ensureActiveWeek(); applyLang(); $("saveStatus").textContent=t("statusReady"); toast(t(isChef()?"welcomeChef":"welcome"));
       if(!state.features.storage) toast(t("noDb"),5000); }
     else if(r.status===401){$("loginErr").textContent="Wrong password.";}
     else {$("loginErr").textContent="Couldn't verify the password. Please try again.";}
@@ -3036,7 +3037,7 @@
   state.bar=null; var BAR_LANG_KEY="bl_bar_lang"; var bar={editing:false};
   function barLang(){ var l=storageGet(BAR_LANG_KEY); return l==="it"||l==="en"?l:(effectiveLang()==="it"?"it":"en"); }
   function barContent(){ var b=state.bar&&state.bar.bar; if(!b) return null; var l=barLang(); return (b[l]&&typeof b[l]==="object"?b[l]:null)||b.en||b.src||null; }
-  function barUnread(){ var b=state.bar&&state.bar.bar; return !!(b&&b.rev>(state.bar.seenRev||0)); }
+  function barUnread(){ var b=state.bar&&state.bar.bar; return !!(b&&b.rev>(state.bar.seenRev||0)&&!(state.me.name&&docsExempt(state.me.name))); } // the owner dept is never "behind" on his own notes
   function barDate(iso,withTime){ var d=new Date(iso||""); if(isNaN(d)) return ""; return dateShort(d)+(withTime?", "+fmtClock(iso):""); }
   function brText(s){ return h(s).replace(/\r?\n/g,"<br>"); } // escape first, then line breaks
   function barLines(list){ return (list||[]).map(function(x){ return '<li>'+h(x)+'</li>'; }).join(""); }
@@ -3069,7 +3070,7 @@
   }
   async function barMarkSeen(){
     if(!barUnread()) return;
-    if(state.me.token){ var r=await api("/api/bar",{method:"POST",body:{action:"seen"}}); if(!r.ok||!state.bar) return; state.bar.seenRev=typeof r.json.seenRev==="number"?r.json.seenRev:state.bar.bar.rev; }
+    if(state.me.token){ var shown=state.bar.bar.rev; var r=await api("/api/bar",{method:"POST",body:{action:"seen",rev:shown}}); if(!r.ok||!state.bar) return; state.bar.seenRev=typeof r.json.seenRev==="number"?r.json.seenRev:shown; }
     else state.bar.seenRev=state.bar.bar.rev; // password session, no person: nothing to record on the server
     renderBar(); renderTodo();
   }
@@ -3078,9 +3079,11 @@
     barViewMode(); renderBarSheet(); $("barOverlay").classList.add("show");
     await loadBar(); renderBarSheet(); await barMarkSeen();
   }
-  function maybeBarPopup(){ if(mustIdentify()||!state.me.name||state.viewAs||anyModalOpen()||!barUnread()) return false; openBar(); return true; }
+  function maybeBarPopup(){ if(mustIdentify()||!state.me.name||state.viewAs||docsExempt(state.me.name)||anyModalOpen()||!barUnread()) return false; openBar(); return true; } // the owner writes it: never nagged
   $("barLang").addEventListener("click",function(ev){ var x=ev.target.closest("button[data-l]"); if(!x||!$("barLang").contains(x)) return; storageSet(BAR_LANG_KEY,x.getAttribute("data-l")); renderBarSheet(); renderBar(); });
-  $("barClose").addEventListener("click",function(){ $("barOverlay").classList.remove("show"); barViewMode(); });
+  $("barClose").addEventListener("click",function(){ // in edit mode with unsaved changes, the × asks for a second tap (nothing typed is lost by mistake)
+    if(bar.editing&&state.bar&&state.bar.bar&&JSON.stringify(barFormSrc())!==JSON.stringify(state.bar.bar.src||barFormSrc())){ if(!bar.armed){ bar.armed=true; toast(t("barDiscard"),3000); setTimeout(function(){ bar.armed=false; },3000); return; } }
+    bar.armed=false; $("barOverlay").classList.remove("show"); barViewMode(); });
   // edit mode (manager/owner): same sheet, plain fields, saved as typed; the server translates
   function barViewMode(){ bar.editing=false; $("barForm").style.display="none"; $("barView").style.display=""; $("barActions").style.display=""; $("barLang").style.display=""; }
   function barEditMode(){
@@ -3107,12 +3110,14 @@
   $("barAddRecipe").addEventListener("click",function(){ var d=barAddRecipeRow("",""); d.querySelector("input").focus(); });
   $("barSave").addEventListener("click",async function(){
     var b=$("barSave"); b.disabled=true;
-    var r=await api("/api/bar",{method:"POST",auth:true,body:{action:"save",src:barFormSrc()}}); b.disabled=false;
-    if(!r.ok){ toast(t("barFail"),3500); return; }
+    var r=await api("/api/bar",{method:"POST",auth:true,body:{action:"save",src:barFormSrc(),rev:state.bar&&state.bar.bar?state.bar.bar.rev:null}}); b.disabled=false;
+    if(r.status===409&&r.json&&r.json.bar){ var mine=barFormSrc(); state.bar={bar:r.json.bar,seenRev:(state.bar&&state.bar.seenRev)||0,canEdit:true}; renderBar(); barEditMode(); $("barEdUnav").value=mine.unavailable.join("\n"); $("barEdNote").value=mine.note; $("barEdRecipes").innerHTML=""; mine.recipes.forEach(function(x){ barAddRecipeRow(x.title,x.text); }); toast(t("barStale"),5000); return; } // someone else saved meanwhile: the draft stays, the next Save carries the fresh rev
+    if(!r.ok){ var e=r.json&&r.json.error; toast(e==="bad_content"?t("barTooLong"):e==="too_many"?t("barTooMany"):t("barFail"),4500); return; } // never a dead end: say what to fix
     var j=r.json||{}; if(j.bar) state.bar={bar:j.bar,seenRev:(state.bar&&state.bar.seenRev)||0,canEdit:true};
     barViewMode(); renderBarSheet(); renderBar(); renderTodo(); await barMarkSeen(); // the editor has obviously read it
-    var msg=t("barSaved"); if(j.queued) msg+=" · "+t("barQueued"); else if(j.pushed&&j.pushed.length) msg+=" · "+(j.pushed.length===1?t("barNotified1"):t("barNotified",{n:j.pushed.length}));
-    toast(msg,4000);
+    var msg=t("barSaved"); if(j.translated===false) msg+=" · "+t("barNoTranslate");
+    if(j.queued) msg+=" · "+t("barQueued"); else if(j.pushed&&j.pushed.length) msg+=" · "+(j.sent?t("notified",{k:j.sent,p:j.sent===1?"":"s"}):t("notifiedNone")); // real pushes, not names
+    toast(msg,5000);
   });
   // ---------- history + export (admin) ----------
   async function openHistory(){
@@ -3545,9 +3550,9 @@
   }
   async function loadRecap(week,key){
     var r=await api("/api/me?action=recap&week="+week);
-    if(!r.ok||!r.json||!r.json.cur){ if(r.status===401){ meSet(null,null); renderMe(); maybeWhoPopup(); } return; }
+    if(!r.ok||!r.json||!r.json.cur){ if(r.status===401){ meSet(null,null); renderMe(); maybeWhoPopup(); } else maybeBarPopup(); return; } // the recap took the slot but shows nothing: the bar may still need reading
     var d=r.json, c=d.cur, p=d.prev;
-    if(!c.scheduledShifts&&!c.clockedShifts){ storageSet(key,"1"); return; } // nothing to review
+    if(!c.scheduledShifts&&!c.clockedShifts){ storageSet(key,"1"); maybeBarPopup(); return; } // nothing to review
     if(anyModalOpen()) return;
     storageSet(key,"1");
     var l=weekLabel(week); $("recapRange").textContent=l.range;

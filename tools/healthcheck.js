@@ -57,6 +57,7 @@ async function checkSite() {
     const d = await (await get(SITE + "/api/data")).json();
     const f = d.features || {};
     ["storage", "admin", "push", "toast", "mail"].forEach((k) => { if (f[k]) ok(`feature on: ${k}`); else fail(`feature OFF on the live site: ${k} (check the Vercel environment variables)`); });
+    try { const rb = await get(SITE + "/api/bar"); const jb = await rb.json().catch(() => null); if (rb.status === 401 && jb && jb.error === "unauthorized") ok("bar notes API answers (401 without identity)"); else fail(`/api/bar → ${rb.status} (expected 401 unauthorized)`); } catch (e) { fail("/api/bar unreachable: " + e.message); }
     const staff = (d.data && d.data.staff) || [];
     if (staff.length) ok(`staff: ${staff.length} people`); else fail("staff list is empty");
     const weeks = Object.keys((d.data && d.data.weeks) || {}).sort();

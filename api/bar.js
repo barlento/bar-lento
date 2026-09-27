@@ -25,8 +25,8 @@ module.exports = async (req, res) => {
     }
     if (req.method !== "POST") return send(res, 405, { error: "method" });
     const b = req.body || {}; let r;
-    if (b.action === "save") r = canEdit ? await bar.save(b.src, name || "manager", doc) : { status: 403, body: { error: "manager_only" } };
-    else if (b.action === "seen") r = name ? { status: 200, body: { ok: true, seenRev: await bar.markSeen(name) } } : { status: 401, body: { error: "unauthorized" } };
+    if (b.action === "save") r = canEdit ? await bar.save(b.src, name || "manager", doc, b.rev) : { status: 403, body: { error: "manager_only" } };
+    else if (b.action === "seen") r = name ? { status: 200, body: { ok: true, seenRev: await bar.markSeen(name, b.rev) } } : { status: 401, body: { error: "unauthorized" } };
     else r = { status: 400, body: { error: "bad_action" } };
     return send(res, r.status, r.body);
   } catch (e) {
