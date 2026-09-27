@@ -28,6 +28,13 @@ module.exports = async (req, res) => {
       try { const r = await toast.restaurant(); const all = await toast.employees(true); const active = all.filter((e) => !e.archived); const jobs = await toast.jobs().catch((e) => ({ error: String(e && e.message || e).slice(0, 120) })); return send(res, 200, { ok: true, restaurant: r, employees: active.length, archived: all.length - active.length, names: active.map((e) => e.name), jobs: active.map((e) => ({ name: e.name, jobs: e.jobs || [], salaried: !!e.salaried })), jobTitles: jobs }); }
       catch (e) { return send(res, 200, { ok: false, error: String(e.message || e) }); }
     }
+    if (action === "stockcheck") { // owner 2026-09-27: can the app read what the POS marks as 86'd / counted? Aggregates only (no item names, no guids).
+      const [stock, menus] = await Promise.all([toast.probe("/stock/v1/inventory"), toast.probe("/menus/v2/metadata")]);
+      const arr = Array.isArray(stock.json) ? stock.json : (stock.json && Array.isArray(stock.json.results) ? stock.json.results : null);
+      const byStatus = {}; (arr || []).forEach((x) => { const k = String(x && x.status || "?"); byStatus[k] = (byStatus[k] || 0) + 1; });
+      const quantities = (arr || []).filter((x) => x && x.status === "QUANTITY").map((x) => Number(x.quantity)).filter((n) => !isNaN(n)).sort((a, b) => a - b);
+      return send(res, 200, { stock: { http: stock.status, scope: stock.status === 200, items: arr ? arr.length : null, byStatus, quantities: quantities.slice(0, 20), shape: arr && arr[0] ? Object.keys(arr[0]) : null, error: stock.error || (stock.status !== 200 && stock.json ? JSON.stringify(stock.json).slice(0, 200) : undefined) }, menus: { http: menus.status, scope: menus.status === 200, lastUpdated: menus.json && menus.json.lastUpdated || null } });
+    }
     if (action === "employees") {
       if (!auth.checkPassword(auth.passwordFrom(req))) return send(res, 401, { error: "unauthorized" });
       const emps = await toast.employees(true);
