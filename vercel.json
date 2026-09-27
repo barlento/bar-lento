@@ -94,6 +94,9 @@
     "api/weekly.js": {
       "includeFiles": "node_modules/pdfkit/js/**",
       "maxDuration": 60
+    },
+    "api/bar.js": {
+      "maxDuration": 30
     }
   },
   "crons": [

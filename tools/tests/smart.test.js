@@ -29,6 +29,7 @@ async function j(p,o){const r=await fetch(B+p,o);let x=null,txt="";try{txt=await
   const cm2=await j("/api/me",{method:"POST",headers:{"Content-Type":"application/json","x-staff-token":ta},body:JSON.stringify({action:"calendarMail"})}); console.log("4c second send within 10 min →",cm2.s,"(expect 429)");
   const bad=await j("/api/cal?t=0000000000000000000000000000000000000000"); console.log("5 unknown token →",bad.s,"(expect 404)");
   // ---- reminders (force = build now, whatever the hour)
+  { const tp=await tokOf("Pietro","3131"); if(tp) await j("/api/me",{method:"POST",headers:{"Content-Type":"application/json","x-staff-token":tp},body:JSON.stringify({action:"punch",on:false})}); } // the punch suite may leave Pietro clocked in → no late alert
   r=await j("/api/remind?force=1",{headers:M}); console.log("6 remind:",r.s,"| morning to:",(r.j.morning.messages||[]).map(m=>m.name+": "+m.body).join(" / "));
   console.log("7 late alerts:",JSON.stringify((r.j.late.alerts||[]).map(a=>({who:a.name,to:a.to,body:a.body}))));
   if(!(r.j.late.alerts||[]).some(a=>a.name==="Pietro")) errors.push("no late alert for Pietro");

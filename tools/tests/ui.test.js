@@ -103,6 +103,7 @@ const NAME = "Astrea"; // fresh name (no PIN yet on the fake server)
   await page.waitForFunction(() => document.getElementById("meBtn").classList.contains("on"), null, { timeout: 8000 });
   await page.waitForTimeout(600);
   console.log("who popup after reload:", await page.locator("#whoOverlay.show").count(), "(expect 0)");
+  await page.evaluate(() => { document.querySelectorAll(".overlay.show").forEach((o) => o.classList.remove("show")); }); // the Bar sheet may open by itself while unread (owner 2026-09-27)
   // switch person → existing PIN → login with wrong then right
   await page.click("#meBtn"); await page.waitForSelector("#meOverlay.show"); await page.click("#meSwitch");
   await page.waitForSelector("#whoOverlay.show");

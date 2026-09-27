@@ -682,7 +682,7 @@
     .sheet{padding:14px}
     .sheet h2{font-size:1.05rem}
     .pin-pad button{height:48px}
-    .field select,.field input,.addrow input,.roster .bday input{font-size:16px}
+    .field select,.field input,.field textarea,.addrow input,.roster .bday input{font-size:16px}
   }
 
   @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none !important;transition:none !important}}
@@ -1169,6 +1169,39 @@
   .badge.closed,.badge.holiday{animation:none}
   .overlay .sheet{animation:sheetup .26s cubic-bezier(.2,.8,.2,1)}
   .toast{font-size:.84rem;padding:10px 16px}
+  /* Bar (owner 2026-09-27): what is not available behind the bar right now + how to make things. Home card + sheet, Refit scale. */
+  .barcard{cursor:pointer}
+  .barcard .rh{align-items:flex-start}
+  .barcard .bar-ttl{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}
+  .barcard .bar-ttl b{font-size:1.05rem}
+  .barcard .bar-ttl .upd{font-size:.74rem;color:var(--ink-muted);font-weight:500}
+  .barcard .rh .btn{flex:none}
+  .barcard .bar-how{font-size:.82rem;color:var(--ink-muted);margin-top:8px;line-height:1.35;overflow-wrap:anywhere}
+  .bar-list{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:5px}
+  .bar-list li{display:flex;gap:8px;align-items:flex-start;font-size:.88rem;line-height:1.35;overflow-wrap:anywhere}
+  .bar-list li::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--danger);flex:none;margin-top:6px;opacity:.8}
+  .bar-list li.more{color:var(--ink-muted);font-size:.82rem}
+  .bar-list li.more::before{background:var(--ink-muted)}
+  .bar-ok,.bar-note{font-size:.88rem;line-height:1.45;overflow-wrap:anywhere}
+  .bar-ok{color:var(--ink-muted)}
+  .rpill.new{background:var(--danger-soft);color:var(--danger)}
+  .bar-lang{grid-template-columns:1fr 1fr;margin:0 0 14px}
+  .bar-lang button{min-height:30px}
+  .bar-sec{margin-bottom:14px}
+  .bar-lbl{font-size:.68rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-muted);margin:0 0 6px}
+  .bar-recipes{display:flex;flex-direction:column;gap:8px}
+  .bar-recipe{padding:10px 12px;border:1px solid var(--border);border-radius:var(--r-row);background:var(--surface)}
+  .bar-recipe b{display:block;font-weight:600;font-size:.92rem;letter-spacing:-.01em;margin-bottom:3px;overflow-wrap:anywhere}
+  .bar-recipe p{margin:0;font-size:.88rem;line-height:1.45;overflow-wrap:anywhere}
+  .bar-upd{font-size:.74rem;color:var(--ink-muted);margin:2px 0 4px}
+  .field textarea{width:100%;box-sizing:border-box;min-height:88px;resize:vertical;padding:8px 12px;border:1px solid var(--border);border-radius:var(--r-btn);background:var(--surface);color:var(--ink);font:inherit;font-size:.95rem;line-height:1.4}
+  .bar-ed-recipe{padding:10px 12px;border:1px solid var(--border);border-radius:var(--r-row);background:var(--surface);margin-bottom:8px}
+  .bar-ed-recipe .field{margin-bottom:8px}
+  .bar-ed-recipe textarea{min-height:72px}
+  .bar-ed-recipe .rm{display:flex;justify-content:flex-end}
+  #barAddRecipe{margin:2px 0 10px}
+  .bar-hint{font-size:.78rem;color:var(--ink-muted);margin:0 0 4px;line-height:1.4}
+  body.chef #barEdit,body.viewstaff #barEdit{display:none!important}
 </style>
 </head>
 <body>
@@ -1217,6 +1250,7 @@
   <div class="viewasbar" id="viewAsBar" style="display:none"><span id="viewAsTxt"></span><span class="spacer"></span><button class="btn" id="viewAsWeek" type="button" data-t="myWeek">My week</button><button class="btn" id="viewAsStats" type="button" data-t="myStats">My stats</button><button class="btn primary" id="viewAsExit" type="button" data-t="viewAsExit">Exit</button></div>
   <div class="hero" id="heroStatus" aria-live="polite"></div>
   <div class="reqcard" id="openShifts"></div>
+  <div class="reqcard barcard" id="barCard" role="region" aria-label="Bar"></div>
 
   <div class="deptrow" id="deptRow"><div class="deptseg" id="deptSeg" role="tablist" aria-label="Department"><button type="button" role="tab" data-v="floor"></button><button type="button" role="tab" data-v="kitchen"></button></div></div>
   <div class="weekrow">
@@ -1455,6 +1489,31 @@
     <p class="lead" data-t="todoLead">A few things only you can complete. Tap one and it takes you there.</p>
     <div class="todo-list" id="todoList"></div>
     <div class="actions"><button class="btn" id="todoClose" type="button" data-t="close">Close</button></div>
+  </div>
+</div>
+
+<!-- Bar (owner 2026-09-27): what is not available behind the bar right now and how to make things; written by the owner/manager, EN/IT for everyone -->
+<div class="overlay" id="barOverlay">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="barTitleH">
+    <h2 id="barTitleH" data-t="barTitle">Bar</h2>
+    <p class="lead" data-t="barLead">What's not available and how to make things. Updated by the owner.</p>
+    <div class="rep-seg bar-lang" id="barLang" role="tablist" aria-label="Language"><button type="button" data-l="en" class="on">EN</button><button type="button" data-l="it">IT</button></div>
+    <div id="barView">
+      <div class="bar-sec"><div class="bar-lbl" data-t="barUnav">Not available now</div><div id="barUnav"></div></div>
+      <div class="bar-sec" id="barNoteSec" style="display:none"><div class="bar-lbl" data-t="barNote">Note</div><div class="bar-note" id="barNote"></div></div>
+      <div class="bar-sec" id="barHowSec"><div class="bar-lbl" data-t="barHow">How to make</div><div class="bar-recipes" id="barRecipes"></div></div>
+      <div class="bar-upd" id="barUpdated"></div>
+    </div>
+    <div id="barForm" style="display:none">
+      <div class="field"><label for="barEdUnav" data-t="barEdUnav">Not available — one per line</label><textarea id="barEdUnav" rows="4"></textarea></div>
+      <div class="field"><label for="barEdNote" data-t="barEdNote">Note</label><textarea id="barEdNote" rows="4"></textarea></div>
+      <div class="bar-lbl" data-t="barHow">How to make</div>
+      <div id="barEdRecipes"></div>
+      <button class="btn sm" id="barAddRecipe" type="button" data-t="barAdd">Add recipe</button>
+      <p class="bar-hint" data-t="barHint">Write in Italian or English: the app translates for the team.</p>
+      <div class="me-actions"><button class="btn" id="barCancel" type="button" data-t="barCancel">Cancel</button><button class="btn primary" id="barSave" type="button" data-t="barSave">Save</button></div>
+    </div>
+    <div class="me-actions" id="barActions"><button class="btn" id="barEdit" type="button" data-t="barEdit" style="display:none">Edit</button><button class="btn primary" id="barClose" type="button" data-t="close">Close</button></div>
   </div>
 </div>
 
@@ -1731,7 +1790,8 @@
       onlineNow:"Online now", lastSeen:"Last seen {t}", neverOnline:"Not seen yet", onlineCount:"{k} of {n} online now", justNow:"just now", minAgo:"{m} min ago", hAgo:"{h} h ago", dAgo:"{d} d ago",
       phDept:"Department", deptFloor:"Floor", deptKitchen:"Kitchen", deptChef:"Chef", deptManagement:"Management", deptOwner:"Owner", deptTest:"Test account", deptFromToast:"From Toast: {j}", deptSet:"{n} is now in {d}.", deptManualNote:"Chosen by hand: the Toast job no longer changes it.", rulesLink:"Print documents", stNotIn:"Hasn't signed in yet", stLine:"PIN ✓ · Rules {r} · Docs {k}/{n}", stLineNoDocs:"PIN ✓ · Rules {r}", phBirthday:"Birthday", phAccess:"Access", phDocs:"Documents", phWeek:"Shifts and hours", viewWeekBtn:"View week", removeName:"Remove {n}", noBirthday:"not set", devicesShort:"{k} device{p}", personLead:"Birthday, personal PIN and signed documents.", trainingRow:"Training {y}", copyNotSent:"copy not emailed yet", sendCopy:"Send signed copy by email", copySent:"Signed copy sent to {e}", mailFail:"Could not send the email ({r})", mailOff:"Email isn't configured yet on the server (Vercel settings).",
       pinSet:"PIN set", pinDevices:"{k} device{p}", pinNone:"No PIN yet", pinReset:"Reset PIN", pinResetSure:"Tap again to reset", pinResetDone:"PIN reset for {n} — they'll create a new one next time", pinResetFail:"Couldn't reset the PIN. Try again.", viewWeek:"View {n}'s week",
-      toastPick:"— Toast employee —", toastLoading:"Loading Toast…", toastLinked:"{n} linked to Toast", toastUnlinked:"{n} unlinked from Toast", notified:"Team notified ({k} phone{p})", notifiedNone:"Changes noted — nobody has notifications turned on yet.", notifyFail:"Couldn't send the notification. It will go out automatically later.", markedClosed:"{h} ✓"
+      toastPick:"— Toast employee —", toastLoading:"Loading Toast…", toastLinked:"{n} linked to Toast", toastUnlinked:"{n} unlinked from Toast", notified:"Team notified ({k} phone{p})", notifiedNone:"Changes noted — nobody has notifications turned on yet.", notifyFail:"Couldn't send the notification. It will go out automatically later.", markedClosed:"{h} ✓",
+      barTitle:"Bar", barLead:"What's not available and how to make things. Updated by the owner.", barUnav:"Not available now", barAllOk:"Everything available", barHow:"How to make", barHowLine:"How to make: {s}", barNote:"Note", barOpen:"Open", barNew:"NEW", barEdit:"Edit", barSave:"Save", barCancel:"Cancel", barAdd:"Add recipe", barRemove:"Remove", barSaved:"Bar notes saved", barNotified:"{n} people notified", barNotified1:"1 person notified", barQueued:"will be sent after 10 AM", barFail:"Could not save. Try again.", barUpdated:"Updated {d}", barHint:"Write in Italian or English: the app translates for the team.", barEdUnav:"Not available — one per line", barEdNote:"Note", barEdTitle:"Title", barEdText:"How to make it", todoBar:"Read the bar update", todoBarSub:"Bar notes updated", todoBarUnav:"Not available: {s}", barMore:"+{n} more"
     },
     it:{
       myBday:"Il mio compleanno", myBdayNone:"Non ancora inserito. Aggiungilo e il team ti festeggia.", myBdayIs:"Il mio compleanno: {d}", bdaySavedMe:"Compleanno salvato. Ci vediamo il {d}.", save:"Salva",
@@ -1792,7 +1852,8 @@
       phDept:"Reparto", deptFloor:"Sala", deptKitchen:"Cucina", deptChef:"Chef", deptManagement:"Direzione", deptOwner:"Titolare", deptTest:"Account di prova", deptFromToast:"Da Toast: {j}", deptSet:"{n} ora è in {d}.", deptManualNote:"Scelto a mano: il ruolo su Toast non lo cambia più.",
       rulesOk:"Regolamento ✓ {d} · {e}", rulesNo:"Regolamento non ancora firmato", rulesLink:"Stampa documenti", stNotIn:"Non è ancora entrato/a", stLine:"PIN ✓ · Regolamento {r} · Documenti {k}/{n}", stLineNoDocs:"PIN ✓ · Regolamento {r}", phBirthday:"Compleanno", phAccess:"Accesso", phDocs:"Documenti", phWeek:"Turni e ore", viewWeekBtn:"Vedi settimana", removeName:"Rimuovi {n}", noBirthday:"non impostato", devicesShort:"{k} dispositiv{p}", personLead:"Compleanno, PIN personale e documenti firmati.", trainingRow:"Formazione {y}", copyNotSent:"copia non ancora inviata", sendCopy:"Invia copia firmata via email", copySent:"Copia firmata inviata a {e}", mailFail:"Invio email non riuscito ({r})", mailOff:"Email non ancora configurata sul server (impostazioni Vercel).",
       pinSet:"PIN creato", pinDevices:"{k} dispositiv{p}", pinNone:"Nessun PIN", pinReset:"Azzera PIN", pinResetSure:"Tocca di nuovo per azzerare", pinResetDone:"PIN azzerato per {n} — ne creerà uno nuovo al prossimo accesso", pinResetFail:"Impossibile azzerare il PIN. Riprova.", viewWeek:"Vedi la settimana di {n}",
-      toastPick:"— dipendente Toast —", toastLoading:"Carico Toast…", toastLinked:"{n} collegato/a a Toast", toastUnlinked:"{n} scollegato/a da Toast", notified:"Team avvisato ({k} telefon{p})", notifiedNone:"Modifiche registrate — nessuno ha ancora attivato le notifiche.", notifyFail:"Invio non riuscito. Partirà automaticamente più tardi.", markedClosed:"{h} ✓"
+      toastPick:"— dipendente Toast —", toastLoading:"Carico Toast…", toastLinked:"{n} collegato/a a Toast", toastUnlinked:"{n} scollegato/a da Toast", notified:"Team avvisato ({k} telefon{p})", notifiedNone:"Modifiche registrate — nessuno ha ancora attivato le notifiche.", notifyFail:"Invio non riuscito. Partirà automaticamente più tardi.", markedClosed:"{h} ✓",
+      barTitle:"Bar", barLead:"Cosa non c'è e come si preparano le cose. Aggiornato dal titolare.", barUnav:"Non disponibile ora", barAllOk:"Tutto disponibile", barHow:"Come si prepara", barHowLine:"Come si prepara: {s}", barNote:"Nota", barOpen:"Apri", barNew:"NUOVO", barEdit:"Modifica", barSave:"Salva", barCancel:"Annulla", barAdd:"Aggiungi ricetta", barRemove:"Rimuovi", barSaved:"Note del bar salvate", barNotified:"{n} persone avvisate", barNotified1:"1 persona avvisata", barQueued:"partirà dopo le 10", barFail:"Salvataggio non riuscito. Riprova.", barUpdated:"Aggiornato {d}", barHint:"Scrivi in italiano o in inglese: l'app traduce per il team.", barEdUnav:"Non disponibile — uno per riga", barEdNote:"Nota", barEdTitle:"Titolo", barEdText:"Come si prepara", todoBar:"Leggi l'aggiornamento del bar", todoBarSub:"Note del bar aggiornate", todoBarUnav:"Non disponibile: {s}", barMore:"+{n} altri"
     }
   };
   var lang="en";
@@ -1987,7 +2048,7 @@
     if(newStaff.length||goneStaff.length){ setTimeout(function(){ if(newStaff.length) toast(t("fromToast",{n:newStaff.join(", ")}),5000); if(goneStaff.length) toast(t("goneToast",{n:goneStaff.join(", ")}),5000); },800); if($("staffOverlay").classList.contains("show")) renderRoster(); if(person.name&&goneStaff.indexOf(person.name)!==-1){ $("personOverlay").classList.remove("show"); person.name=null; } }
     if(changedRemotely){ setTimeout(function(){ var u=$("updatedNote"); u.classList.remove("flashnew"); void u.offsetWidth; u.classList.add("flashnew"); toast(t("scheduleUpdated")); },50); }
     state.confirmations=j.confirmations||{}; state.features=j.features||state.features; state.announcement=j.announcement||null;
-    ensureActiveWeek(); renderAll(); loadRequests(); return true;
+    ensureActiveWeek(); renderAll(); loadRequests(); loadBar(); return true;
   }
   // ---------- Requests: time off + shift cover (owner 2026-09-21) ----------
   state.requests=null;
@@ -2105,7 +2166,7 @@
   }
 
   // ---------- rendering ----------
-  function renderAll(){renderUpdated();renderHero();renderTabs();renderDays();renderAdminUI();renderMe();renderAiFab();renderChecks();renderTodo();}
+  function renderAll(){renderUpdated();renderHero();renderTabs();renderDays();renderAdminUI();renderMe();renderAiFab();renderBar();renderChecks();renderTodo();}
 
   function renderUpdated(){
     var el=$("updatedNote");
@@ -2956,6 +3017,7 @@
     var docsN=docsPending().length+(rulesRequired()?1:0); if(docsN) out.push({id:"docs",title:docsN===1?t("todoDocs1"):t("todoDocs",{n:docsN}),sub:t("todoDocsSub"),go:function(){ if(!maybeReadingPopup()) openDocs(); }});
     var cur=currentMondayISO(); var wks=Object.keys(state.data.weeks||{}).filter(function(w){return w>=cur;}).sort(); var todo=myShiftsIn(wks).filter(function(m){return !state.confirmations[shiftKey(m.wk,m.d,m.s.id)];});
     if(todo.length) out.push({id:"confirm",title:todo.length===1?t("todoConfirm1"):t("todoConfirm",{n:todo.length}),sub:t("todoConfirmSub"),go:function(){ weekPop={wks:wks,mine:todo,key:null}; $("weekTitle").textContent=t("todoConfirmTitle"); $("weekNames").textContent=wks.filter(function(w){return todo.some(function(m){return m.wk===w;});}).map(function(w){return weekLabel(w).range;}).join(" & "); $("weekLead").textContent=t("weekPopLead",{n:todo.length}); $("weekMine").innerHTML=todo.map(function(m){ return '<div class="wk-row"><b>'+h(DAY_SHORT[m.d])+' '+h(dateShort(m.date))+'</b><span>'+range12(m.s.start,m.s.end)+(m.s.station?' · '+h(m.s.station):'')+'</span></div>'; }).join(""); $("weekClose").textContent=t("weekPopConfirm"); $("weekLater").style.display=""; $("weekOverlay").classList.add("show"); }});
+    if(barUnread()){ var bu=((state.bar.bar.en||{}).unavailable||[]); out.push({id:"bar",title:t("todoBar"),sub:bu.length?t("todoBarUnav",{s:bu.slice(0,3).join(", ")}):t("todoBarSub"),go:openBar}); }
     return out;
   }
   function renderTodo(){
@@ -2970,6 +3032,88 @@
   }
   $("todoBtn").addEventListener("click",function(){ renderTodoList(); $("todoOverlay").classList.add("show"); });
   $("todoClose").addEventListener("click",function(){ $("todoOverlay").classList.remove("show"); });
+  // ---------- Bar (owner 2026-09-27): what is not available behind the bar right now + how to make things. Written by the owner/manager in any language, translated EN/IT; everyone picks the language on their own phone ----------
+  state.bar=null; var BAR_LANG_KEY="bl_bar_lang"; var bar={editing:false};
+  function barLang(){ var l=storageGet(BAR_LANG_KEY); return l==="it"||l==="en"?l:(effectiveLang()==="it"?"it":"en"); }
+  function barContent(){ var b=state.bar&&state.bar.bar; if(!b) return null; var l=barLang(); return (b[l]&&typeof b[l]==="object"?b[l]:null)||b.en||b.src||null; }
+  function barUnread(){ var b=state.bar&&state.bar.bar; return !!(b&&b.rev>(state.bar.seenRev||0)); }
+  function barDate(iso,withTime){ var d=new Date(iso||""); if(isNaN(d)) return ""; return dateShort(d)+(withTime?", "+fmtClock(iso):""); }
+  function brText(s){ return h(s).replace(/\r?\n/g,"<br>"); } // escape first, then line breaks
+  function barLines(list){ return (list||[]).map(function(x){ return '<li>'+h(x)+'</li>'; }).join(""); }
+  async function loadBar(){
+    if(!state.features.storage||!(state.me.token||state.password)){ state.bar=null; renderBar(); renderTodo(); return; }
+    var r=await api("/api/bar",{auth:true});
+    if(!r.ok){ if(r.status===401||r.status===403){ state.bar=null; renderBar(); renderTodo(); } return; } // network hiccup: keep what we have
+    var j=r.json||{}; if(!j.bar) return; state.bar={bar:j.bar,seenRev:j.seenRev||0,canEdit:!!j.canEdit};
+    renderBar(); renderTodo(); if($("barOverlay").classList.contains("show")&&!bar.editing) renderBarSheet();
+  }
+  function renderBar(){
+    var card=$("barCard"); if(!card) return; var c=barContent();
+    if(!c||mustIdentify()||!(state.me.name||state.admin)){ card.classList.remove("show"); card.innerHTML=""; return; }
+    var b=state.bar.bar, un=c.unavailable||[], titles=(c.recipes||[]).map(function(r){return r.title;}).filter(Boolean);
+    var html='<div class="rh"><div class="bar-ttl"><b>'+h(t("barTitle"))+'</b><span class="upd">'+h(t("barUpdated",{d:barDate(b.updatedAt)}))+'</span>'+(barUnread()?'<span class="rpill new" id="barCardNew">'+h(t("barNew"))+'</span>':'')+'</div><button type="button" class="btn sm primary" id="barOpen">'+h(t("barOpen"))+'</button></div>';
+    html+=un.length?'<div class="bar-lbl">'+h(t("barUnav"))+'</div><ul class="bar-list">'+barLines(un.slice(0,4))+(un.length>4?'<li class="more">'+h(t("barMore",{n:un.length-4}))+'</li>':'')+'</ul>':'<div class="bar-ok">'+h(t("barAllOk"))+'</div>';
+    if(titles.length) html+='<div class="bar-how">'+h(t("barHowLine",{s:titles.join(" · ")}))+'</div>';
+    card.innerHTML=html; card.classList.add("show");
+  }
+  $("barCard").addEventListener("click",function(){ openBar(); }); // the whole card is tappable (the Open button bubbles here)
+  function renderBarSheet(){
+    var c=barContent(), b=state.bar&&state.bar.bar, l=barLang();
+    $("barLang").querySelectorAll("button").forEach(function(x){ x.classList.toggle("on",x.getAttribute("data-l")===l); });
+    var un=(c&&c.unavailable)||[], note=(c&&c.note)||"", rec=(c&&c.recipes)||[];
+    $("barUnav").innerHTML=un.length?'<ul class="bar-list">'+barLines(un)+'</ul>':'<div class="bar-ok">'+h(t("barAllOk"))+'</div>';
+    $("barNoteSec").style.display=note?"":"none"; $("barNote").innerHTML=brText(note);
+    $("barHowSec").style.display=rec.length?"":"none"; $("barRecipes").innerHTML=rec.map(function(r){ return '<div class="bar-recipe"><b>'+h(r.title)+'</b><p>'+brText(r.text)+'</p></div>'; }).join("");
+    $("barUpdated").textContent=b?t("barUpdated",{d:barDate(b.updatedAt,true)})+(b.updatedBy?" · "+b.updatedBy:""):"";
+    $("barEdit").style.display=(state.bar&&state.bar.canEdit&&!isChef())?"":"none"; // CSS also hides it under body.chef / body.viewstaff
+  }
+  async function barMarkSeen(){
+    if(!barUnread()) return;
+    if(state.me.token){ var r=await api("/api/bar",{method:"POST",body:{action:"seen"}}); if(!r.ok||!state.bar) return; state.bar.seenRev=typeof r.json.seenRev==="number"?r.json.seenRev:state.bar.bar.rev; }
+    else state.bar.seenRev=state.bar.bar.rev; // password session, no person: nothing to record on the server
+    renderBar(); renderTodo();
+  }
+  async function openBar(){
+    if(!(state.me.name||state.admin)) return;
+    barViewMode(); renderBarSheet(); $("barOverlay").classList.add("show");
+    await loadBar(); renderBarSheet(); await barMarkSeen();
+  }
+  function maybeBarPopup(){ if(mustIdentify()||!state.me.name||state.viewAs||anyModalOpen()||!barUnread()) return false; openBar(); return true; }
+  $("barLang").addEventListener("click",function(ev){ var x=ev.target.closest("button[data-l]"); if(!x||!$("barLang").contains(x)) return; storageSet(BAR_LANG_KEY,x.getAttribute("data-l")); renderBarSheet(); renderBar(); });
+  $("barClose").addEventListener("click",function(){ $("barOverlay").classList.remove("show"); barViewMode(); });
+  // edit mode (manager/owner): same sheet, plain fields, saved as typed; the server translates
+  function barViewMode(){ bar.editing=false; $("barForm").style.display="none"; $("barView").style.display=""; $("barActions").style.display=""; $("barLang").style.display=""; }
+  function barEditMode(){
+    var s=(state.bar&&state.bar.bar&&state.bar.bar.src)||barContent()||{};
+    bar.editing=true; $("barEdUnav").value=(s.unavailable||[]).join("\n"); $("barEdNote").value=s.note||"";
+    $("barEdRecipes").innerHTML=""; (s.recipes||[]).forEach(function(r){ barAddRecipeRow(r.title,r.text); });
+    $("barView").style.display="none"; $("barActions").style.display="none"; $("barLang").style.display="none"; $("barForm").style.display=""; // the form shows what was typed: no language to pick
+    var sh=$("barOverlay").querySelector(".sheet"); if(sh) sh.scrollTop=0;
+  }
+  function barAddRecipeRow(title,text){
+    var d=document.createElement("div"); d.className="bar-ed-recipe";
+    d.innerHTML='<div class="field"><label>'+h(t("barEdTitle"))+'</label><input type="text" maxlength="80"></div><div class="field"><label>'+h(t("barEdText"))+'</label><textarea rows="3" maxlength="2500"></textarea></div><div class="rm"><button type="button" class="linkbtn danger">'+h(t("barRemove"))+'</button></div>';
+    d.querySelector("input").value=title||""; d.querySelector("textarea").value=text||"";
+    d.querySelector(".rm button").addEventListener("click",function(){ d.remove(); });
+    $("barEdRecipes").appendChild(d); return d;
+  }
+  function barFormSrc(){
+    var un=$("barEdUnav").value.split(/\r?\n/).map(function(x){return x.trim();}).filter(Boolean), recipes=[];
+    $("barEdRecipes").querySelectorAll(".bar-ed-recipe").forEach(function(d){ var ti=d.querySelector("input").value.trim(), tx=d.querySelector("textarea").value.trim(); if(ti||tx) recipes.push({title:ti,text:tx}); });
+    return {unavailable:un,note:$("barEdNote").value.trim(),recipes:recipes};
+  }
+  $("barEdit").addEventListener("click",barEditMode);
+  $("barCancel").addEventListener("click",function(){ barViewMode(); renderBarSheet(); });
+  $("barAddRecipe").addEventListener("click",function(){ var d=barAddRecipeRow("",""); d.querySelector("input").focus(); });
+  $("barSave").addEventListener("click",async function(){
+    var b=$("barSave"); b.disabled=true;
+    var r=await api("/api/bar",{method:"POST",auth:true,body:{action:"save",src:barFormSrc()}}); b.disabled=false;
+    if(!r.ok){ toast(t("barFail"),3500); return; }
+    var j=r.json||{}; if(j.bar) state.bar={bar:j.bar,seenRev:(state.bar&&state.bar.seenRev)||0,canEdit:true};
+    barViewMode(); renderBarSheet(); renderBar(); renderTodo(); await barMarkSeen(); // the editor has obviously read it
+    var msg=t("barSaved"); if(j.queued) msg+=" · "+t("barQueued"); else if(j.pushed&&j.pushed.length) msg+=" · "+(j.pushed.length===1?t("barNotified1"):t("barNotified",{n:j.pushed.length}));
+    toast(msg,4000);
+  });
   // ---------- history + export (admin) ----------
   async function openHistory(){
     $("logList").innerHTML='<div class="empty-note">'+t("loading")+'</div>'; $("historyOverlay").classList.add("show");
@@ -3154,7 +3298,7 @@
   }
 
   // ---------- personal access: name + PIN, remembered on this device ----------
-  function meSet(name,token){ state.me.name=name||null; state.me.token=token||null; state.deptView=null; setTimeout(loadRequests,0); if(!name){ state.me.rulesAck=undefined; state.me.docAcks=undefined; state.me.since=null; } storageSet(ME_NAME_KEY,name||null); storageSet(ME_TOKEN_KEY,token||null); syncPushName(); }
+  function meSet(name,token){ state.me.name=name||null; state.me.token=token||null; state.deptView=null; setTimeout(loadRequests,0); setTimeout(loadBar,0); if(!name){ state.me.rulesAck=undefined; state.me.docAcks=undefined; state.me.since=null; } storageSet(ME_NAME_KEY,name||null); storageSet(ME_TOKEN_KEY,token||null); syncPushName(); }
   // Personal pushes go only to the phones signed in as that person: re-register this phone's subscription with the current token.
   async function syncPushName(){ try{ if(!("serviceWorker" in navigator)||!("PushManager" in window)) return; var reg=await navigator.serviceWorker.ready; var sub=await reg.pushManager.getSubscription(); if(sub) await api("/api/push",{method:"POST",body:{subscription:sub.toJSON()}}); }catch(e){} }
   // Chef / Management / Owner get their tools right after their own PIN (no second login). The password login stays the service door.
@@ -3388,7 +3532,7 @@
   function docsButtonLabel(){ var n=docsPending().length+(rulesRequired()?1:0); return t("docsBtn")+(n?' <span class="badge-n">'+n+'</span>':""); }
   // what a person sees right after signing in, in order: rules (once) → documents → birthday → new week → week in review → My week
   // After the PIN: only the popups that have a reason to show (documents to sign, birthday, new week, week in review). My week never opens by itself (owner 2026-09-21).
-  function afterLoginFlow(){ maybeReadingPopup()||maybeBirthdayPopup()||maybeWeekPopup()||maybeRecapPopup(); }
+  function afterLoginFlow(){ maybeReadingPopup()||maybeBirthdayPopup()||maybeWeekPopup()||maybeRecapPopup()||maybeBarPopup(); }
 
   // -- week in review (last completed week vs the one before) --
   function maybeRecapPopup(){
@@ -3502,6 +3646,7 @@
       $("pinOverlay").classList.remove("show"); $("whoOverlay").classList.remove("show"); renderMe(); renderDays();
       toast(created?"PIN saved. Welcome, "+j.name.split(/\s+/)[0]+".":"Welcome back, "+j.name.split(/\s+/)[0]+".");
       if(!(j.who&&j.who.name)){ state.me.rulesAck=undefined; await meWhoAmI(); }
+      await loadBar();
       afterLoginFlow();
     },180);
   }
@@ -3667,8 +3812,8 @@
     body.querySelectorAll(".open").forEach(function(b){ b.addEventListener("click",function(){ aiOpen(b.getAttribute("data-open")); }); });
     body.scrollTop=body.scrollHeight;
   }
-  function aiOpenLabel(k){ return k==="myweek"?t("myWeek"):k==="mystats"?t("myStats"):k==="docs"?t("aiDocs"):k==="clock"?t("aiTimeClock"):k==="staff"?t("aiStaff"):k==="ranking"?t("aiRanking"):k; }
-  function aiOpen(k){ closeAi(); var who=state.viewAs||state.me.name; if(k==="myweek") openMe(who); else if(k==="mystats"&&typeof openStats==="function") openStats(who); else if(k==="docs") openDocs(); else if(k==="clock") openClock(); else if(k==="staff") $("staffBtn").click(); else if(k==="ranking") openLb(); }
+  function aiOpenLabel(k){ return k==="myweek"?t("myWeek"):k==="mystats"?t("myStats"):k==="docs"?t("aiDocs"):k==="clock"?t("aiTimeClock"):k==="staff"?t("aiStaff"):k==="ranking"?t("aiRanking"):k==="bar"?t("barTitle"):k; }
+  function aiOpen(k){ closeAi(); var who=state.viewAs||state.me.name; if(k==="myweek") openMe(who); else if(k==="mystats"&&typeof openStats==="function") openStats(who); else if(k==="docs") openDocs(); else if(k==="clock") openClock(); else if(k==="staff") $("staffBtn").click(); else if(k==="ranking") openLb(); else if(k==="bar") openBar(); }
   function openAi(){ $("aiScreen").classList.add("show"); document.body.style.overflow="hidden"; renderAi(); if(!ai.msgs.length&&window.matchMedia("(min-width:700px)").matches) $("aiInput").focus(); }
   function closeAi(){ $("aiScreen").classList.remove("show"); document.body.style.overflow=""; if(ai.rec){ try{ai.rec.stop();}catch(e){} } }
   async function askAi(q){
@@ -3716,8 +3861,9 @@
       else storageSet(PW_KEY,null);
     }
     await meWhoAmI();
+    await loadBar();
     maybeWhoPopup();
-    if(!maybeReadingPopup()&&!maybeBirthdayPopup()&&!maybeWeekPopup()) maybeRecapPopup();
+    if(!maybeReadingPopup()&&!maybeBirthdayPopup()&&!maybeWeekPopup()&&!maybeRecapPopup()) maybeBarPopup();
     startPolling();
   })();
 })();
