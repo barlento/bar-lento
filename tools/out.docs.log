@@ -1,0 +1,45 @@
+1 rules title: House Rules | Later visible: false (expect false)
+2 doc popup: Your documents (4) | Later visible: false (expect false) | Close visible: false | pill: 4 documents · one signature
+  print link: /docs.html | docs in packet: 4 | sections: 42 | ack: I have received and read all 4 documents above.
+2b chained until: Sexual Harassment Prevention Training | Later on training: true | pill: Version 2026 · document 3 of 6
+3 after Later → open overlays: 
+4 docs button: Documents 1 | visible: true
+5 docs list: 6 rows
+    House Rules → ✓ Signed Sep 27, 2026
+    Sexual Harassment Prevention Policy → ✓ Signed Sep 27, 2026
+    Sexual Harassment Prevention Training → To complete this year · by Oct 27, 2026
+    Protected Time Off (Safe and Sick Leave) Policy → ✓ Signed Sep 27, 2026
+    Tips Policy → ✓ Signed Sep 27, 2026
+    Policy on the Rights of Employees to Express Breast Milk in the Workplace → ✓ Signed Sep 27, 2026
+9 training reader: Sexual Harassment Prevention Training | agree label: Done | lead: Watch the video (links at the end), then confirm with your email: your
+10 toast: Training recorded. A confirmation has been sent to mariia@example.com.
+11 statuses: ✓ Signed Sep 27, 2026 | ✓ Signed Sep 27, 2026 | ✓ Completed Sep 27, 2026 | ✓ Signed Sep 27, 2026 | ✓ Signed Sep 27, 2026 | ✓ Signed Sep 27, 2026
+11b mail-me button visible: true
+11c self-service copies: Your signed copies have been sent to mariia@example.com.
+12 duplicate keeps first: {"ok":true,"id":"harassment","ack":{"version":"2026-09-18","at":"2026-09-27T02:54:42.197Z","emailed":true,"email":"mariia@example.com"}} | bad version: {"error":"bad_version","current":"2026-09-19"} | unknown doc: 404
+13 mails: 8 (expect: rules 2 + packet 2 + training 2 + resend 2 = 8)
+   → mariia@example.com | Bar Lento — House Rules (version 2026-09-18) — your signed copy
+   → simoneviola@barlentony.com | Mariia Test6 acknowledged the House Rules (version 2026-09-18)
+   → mariia@example.com | Bar Lento — your signed documents (Harassment policy, Sick leave policy, Tips policy, Lactation policy)
+   → simoneviola@barlentony.com | Mariia Test6 acknowledged 4 documents (Harassment policy, Sick leave policy, Tips policy, Lactation policy)
+   → mariia@example.com | Bar Lento — Sexual Harassment Prevention Training (2026) — your training record
+   → simoneviola@barlentony.com | Mariia Test6 completed the Sexual Harassment Prevention Training (2026)
+   → mariia@example.com | Bar Lento — House Rules (version 2026-09-18) — your signed copy
+   → mariia@example.com | Bar Lento — your signed documents (Harassment policy, Annual training, Sick leave policy, Tips policy, Lactation policy)
+  training owner copy text head: Mariia Test6 completed the Sexual Harassment Prevention Training (2026) on September 26, 2026 at 10:54 PM (New York). Si
+  packet email to: [ 'mariia@example.com' ] | 4 docs inside: 4 | sig block: true | owner proof: true
+14 popups after reload: none
+15 all signed → no popup even with snooze cleared: ok
+16 roster row: MMariiaOnline now · PIN ✓ · Rules ✓ · Docs 5/5›
+   doc icons ok: 5 (expect 5) | person docs: Birthdaynot setToastMariia Test6mariia@example.comDepartmentFrom Toast: Executive ChefFloorKitchenChefManagementOwnerChef, Management and Owner get the manager tools after their own PIN: Chef for the kitchen only, Management for everything, Owner for everythin
+17 resend toast: Signed copies sent to mariia@example.com: House Rules, Harassment policy, Annual training, Sick leave policy, Tips policy, Lactation policy
+   mails after resend: 10 (expect 10)
+18 person IT: Birthdaynot setToastMariia Test6mariia@example.comDepartmentFrom Toast: Executive ChefFloorKitchenChefManagementOwnerChe
+19 docs.html:  Sexual Harassment Prevention Policy | h2: 20 | form: 1 | title: Bar Lento — Sexual Harassment Prevention Policy
+20 index links: 6 (expect 6)
+ERRORS: [
+  'console: Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID',
+  'console: Failed to load resource: the server responded with a status of 400 (Bad Request)',
+  'console: Failed to load resource: the server responded with a status of 404 (Not Found)',
+  'console: Failed to load resource: the server responded with a status of 503 ()'
+]

@@ -490,6 +490,7 @@ module.exports = async (req, res) => {
       const [r, who] = await Promise.all([accounts.createPin(name, body.pin, ua), whoPayload(docW, name).catch(() => null)]); // profile built in parallel with the hashing
       if (r.error === "bad_pin") return send(res, 400, { error: "bad_pin" });
       if (r.error === "pin_exists") return send(res, 409, { error: "pin_exists" });
+      presence.touch(name).catch(() => {}); // the client skips the second "who" call now: mark the device online right away
       return send(res, 200, { ok: true, name, token: r.token, who: who && Object.assign(who, { since: who.since || new Date().toISOString() }) });
     }
     if (action === "login") {
@@ -499,6 +500,7 @@ module.exports = async (req, res) => {
       if (r.error === "bad_pin") return send(res, 400, { error: "bad_pin" });
       if (r.error === "locked") return send(res, 423, { error: "locked", retryIn: r.retryIn });
       if (r.error === "wrong_pin") return send(res, 401, { error: "wrong_pin", attemptsLeft: r.attemptsLeft });
+      presence.touch(name).catch(() => {}); // online at once (the manager's Staff list), no need to wait for the next poll
       return send(res, 200, { ok: true, name, token: r.token, who }); // the profile travels with the token: no second call
     }
     return send(res, 400, { error: "bad_action" });

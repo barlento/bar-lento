@@ -74,6 +74,7 @@ async function j(p,o){const r=await fetch(B+p,o);let x=null,txt="";try{txt=await
   await p.fill("#meBdayInput","1995-06-14"); await p.click("#meBdaySave"); await p.waitForTimeout(900); } else { await p.click("#todoClose"); console.log("11d birthday already set on this server"); }
   const bell2=await p.evaluate(()=>({shown:document.getElementById("todoBtn").style.display!=="none", n:document.getElementById("todoCnt").textContent, rows:Array.from(document.querySelectorAll("#todoList .todo-row b")).map(b=>b.textContent)})); console.log("11e after saving the birthday:",JSON.stringify(bell2)); if(rows.some(r=>/birthday/i.test(r))&&Number(bell2.n)!==Number(bell.n)-1&&bell2.shown) errors.push("to-do count did not drop");
   await p.evaluate(()=>document.getElementById("meClose").click()); await p.waitForTimeout(200);
+  await p.evaluate(()=>document.getElementById("meOpenBtn").click()); await p.waitForSelector("#meOverlay.show"); await p.waitForTimeout(400);
   await p.click("#meCalBtn"); await p.waitForSelector("#calOverlay.show",{timeout:8000}); const href=await p.getAttribute("#calApple","href"), g=await p.getAttribute("#calGoogle","href"); console.log("12 sheet open, Apple webcal:",/^webcal:\/\/.+\/api\/cal\?t=[a-f0-9]{40}$/.test(href),"| Google:",/^https:\/\/calendar\.google\.com\/calendar\/r\?cid=webcal/.test(g));
   await p.screenshot({path:require("path").join(__dirname,"..","out","smart-cal.png")});
   await b.close();

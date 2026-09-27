@@ -1,0 +1,8 @@
+1 staff after first GET: Joe, Sierrah, Marta, Astrea, Pietro, Catherine, Mariia, Joe B.
+  Kayla (archived in Toast) removed: true | her past shifts kept: [ false ] | ignore has Kayla: false
+  log: ["Birthday: Astrea → 1995-06-14 (set by Astrea)","Week of 2026-09-21: created","Mon 9/21: added Astrea (S1) 12:00 PM–10:00 PM","Tue 9/22: added Astrea (S1) 12:00 PM–10:00 PM","Wed 9/23: added Astrea (S1) 12:00 PM–10:00 PM","Thu 9/24: added Astrea (S1) 12:00 PM–10:00 PM","Fri 9/25: added Astrea (S1) 
+  toastMap Luca: undefined | Joe B.: guid-joe-second-0002 | Old present: false
+  log: {"error":"unauthorized"}
+2 save: 200 | ignore: [ 'guid-luca-rossi-0001' ] | staff has Luca: false
+3 forced resync added: [] | Luca back: false
+4 list toast for Joe B.: {"fullName":"Joe Bianchi","email":"joe.b@example.com","jobs":["Owner"],"salaried":true}

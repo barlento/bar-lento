@@ -955,6 +955,220 @@
   @keyframes bdayflash{0%{box-shadow:0 0 0 0 rgba(0,113,227,.45)}100%{box-shadow:0 0 0 12px rgba(0,113,227,0)}}
   .btn.pulse{animation:btnpulse 1.8s ease-out infinite}
   @keyframes btnpulse{0%{box-shadow:0 0 0 0 rgba(0,113,227,.55)}70%{box-shadow:0 0 0 12px rgba(0,113,227,0)}100%{box-shadow:0 0 0 0 rgba(0,113,227,0)}}
+  /* ---- Refit (owner 2026-09-27: "grafica generale, grandezze consone, super minimal, fluida"): ONE scale for the whole app.
+     Type: 11 label · 12 meta · 13 secondary · 14 body · 15 row title · 17 card title · 20 sheet title · 22 page title.
+     Controls: 40 px buttons, 32 px small, 36 px nav, 32 px avatars. Radii: 16 cards · 12 rows · 10 buttons · 22 sheets. No tinted fills except status. ---- */
+  :root{--r-card:16px;--r-row:12px;--r-btn:10px;--r-sheet:22px;--pad-card:14px 16px;--mono:'IBM Plex Mono',ui-monospace,monospace}
+  body{background:var(--bg)}
+  .wrap{padding:14px 14px 72px}
+  @media (min-width:900px){.wrap{padding:22px 28px 80px}}
+  /* cards on the page: same shape, same padding */
+  header.top,.mestrip,.hero,.reqcard,.checks,.adminbar,.day-card,.viewasbar{border-radius:var(--r-card);box-shadow:var(--shadow);margin-bottom:12px}
+  header.top{padding:14px 16px}
+  .brand h1{font-size:1.35rem;letter-spacing:-.02em;line-height:1.15}
+  .brand .tag{font-size:.8rem;margin-top:1px}
+  .hero,.reqcard,.checks{padding:var(--pad-card)}
+  .mestrip{padding:12px 16px;border-left:1px solid var(--border)}
+  .mestrip .av{width:32px;height:32px;font-size:.78rem}
+  .mestrip .txt b{font-size:.95rem;letter-spacing:-.01em}
+  .mestrip .txt span{font-size:.8rem;color:var(--ink-muted)}
+  .mestrip .txt span.soon{color:var(--ink);font-weight:500}
+  .adminbar{padding:10px 14px}
+  .adminbar .who{font-size:.86rem}
+  .adminbar .status{font-size:.76rem}
+  .hero .text{font-size:1.05rem}
+  .hero .sub{font-size:.8rem}
+  .hero .whoworks{font-size:.82rem}
+  .hero .led{width:9px;height:9px}
+  /* buttons: one height, one radius, one weight */
+  .btn,.abtn,.loginbtn,.bellbtn,.clockbtn,.mebtn,.lbbtn,.pcard .pinbtn,.addshift,.daybtn,.dept-tiles button{border-radius:var(--r-btn);font-weight:600;font-size:.84rem;line-height:1.2;min-height:38px;padding:8px 14px;border-width:1px}
+  .btn.sm,.pcard .pinbtn,.me-bday .btn{min-height:32px;padding:5px 11px;font-size:.8rem}
+  .abtn{padding:8px 12px;font-size:.8rem;background:var(--surface);border-color:var(--border)}
+  .abtn:hover{background:var(--surface-2);border-color:var(--border)}
+  .addshift,.daybtn{min-height:36px;padding:7px 10px;font-size:.8rem}
+  .btn:hover{border-color:var(--border);background:var(--surface-2)}
+  .btn.primary:hover{background:var(--accent-ink);border-color:var(--accent-ink)}
+  /* header pills: white and neutral, the LED and the count carry the status */
+  .mebtn,.clockbtn,.bellbtn,.mebtn.on,.clockbtn.live{background:var(--surface);border-color:var(--border);color:var(--ink)}
+  .clockbtn.live .cled{background:var(--good)}
+  .clockbtn .cnt{background:var(--ink);font-size:.68rem;line-height:1.5;min-width:20px;padding:1px 6px}
+  .mebtn .mav{width:20px;height:20px;font-size:.62rem}
+  .loginbtn{background:var(--ink);border-color:var(--ink);color:#fff}
+  .updated{font-size:.72rem}
+  @media (max-width:640px){
+    header.top{padding:12px 14px;gap:10px}
+    .hdr-actions .bellbtn,.hdr-actions .loginbtn,.hdr-actions .clockbtn,.hdr-actions .mebtn,.hdr-actions .lbbtn{font-size:.82rem;padding:8px 8px;min-height:38px}
+    .hero{padding:12px 14px}
+    .hero .text{font-size:1rem}
+    .mestrip .btn{min-height:38px}
+  }
+  /* to-do bell: top-right on the phone header, in the button row on a computer (it used to overlap Time clock) */
+  .todobtn{top:10px;right:10px}
+  @media (min-width:641px){.todobtn{position:relative;top:auto;right:auto;width:38px;height:38px;border:1px solid var(--border);border-radius:var(--r-btn);padding:0;background:var(--surface)}.todobtn .cnt{top:-6px;right:-6px}}
+  /* week tabs and the department switch: same 36 px height */
+  .deptseg{border-radius:var(--r-btn);padding:3px;background:var(--surface-2)}
+  .deptseg button{padding:6px 16px;font-size:.82rem;border-radius:8px;min-height:30px}
+  .tab{padding:8px 14px;font-size:.8rem;min-height:36px;border-radius:999px}
+  .tab.active{box-shadow:none}
+  .tab:hover{transform:none}
+  .archiverow{margin-bottom:10px}
+  .weektools .btn{min-height:36px}
+  /* day cards: quieter inner rows, no jumps on hover, today = one blue border */
+  .days{gap:12px}
+  .day-card{padding:14px;gap:8px}
+  .day-card:hover{transform:none;box-shadow:var(--shadow)}
+  .day-card.today{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),var(--shadow)}
+  .day-card.today::before{display:none;animation:none}
+  .day-head .name{font-size:1rem}
+  .day-head .date{font-size:.74rem}
+  .day-hours{background:var(--surface-2);color:var(--ink-muted);font-family:var(--mono);font-weight:500;font-size:.7rem;padding:3px 9px}
+  .day-card.late .day-hours{background:var(--surface-2);color:var(--ink-muted)}
+  .confcount{font-size:.72rem}
+  .shifts{gap:6px}
+  .shift{border-radius:var(--r-row);padding:9px 11px;font-size:.88rem;gap:9px}
+  .shift:hover{transform:none;box-shadow:none;background:#ECECEF}
+  .shift .who{font-size:.9rem}
+  .shift .who .st{font-size:.76rem;font-weight:500}
+  .shift .when{font-family:var(--mono);font-weight:500;font-size:.78rem;opacity:1;color:var(--ink-muted)}
+  .shift.mine{box-shadow:none;border-color:var(--accent);background:var(--surface)}
+  .shift.mine .who::before{font-size:.56rem;border-radius:5px;padding:1px 5px;letter-spacing:.05em}
+  .shift .check{width:22px;height:22px}
+  .shift.confirmed .when::after{color:var(--good)}
+  .clock{font-size:.7rem;padding:2px 8px}
+  .empty-note{font-size:.76rem}
+  .daynote{font-size:.8rem;border-radius:10px}
+  .addrow2{gap:6px}
+  footer.note,.legal{font-size:.72rem}
+  /* sheets: 20 px title, 14 px lead, same padding everywhere, same round × */
+  .sheet{border-radius:var(--r-sheet);padding:20px 18px 18px;box-shadow:0 24px 60px -30px rgba(30,28,24,.35)}
+  @media (min-width:700px){.sheet{padding:22px 22px 20px}}
+  .sheet h2{font-size:1.25rem;margin:0 0 4px;line-height:1.2}
+  .sheet .lead{font-size:.86rem;line-height:1.45;margin:0 0 14px}
+  .sheet-x{width:30px;height:30px;font-size:1.05rem;box-shadow:none;margin:0}
+  .sheet.hasx>h2{padding-right:38px}
+  .sheet .actions{gap:8px;margin-top:10px}
+  .me-actions{gap:8px;margin-top:10px}
+  .me-actions .btn{padding-left:6px;padding-right:6px}
+  .field label,.pcard .ph,.rep-lbl,.roster-grp,details.former summary,.lb-head span{font-size:.68rem;letter-spacing:.06em}
+  .field select,.field input,.rep-sel,.addrow input,.roster-search input,.me-off .frm input,.me-bday input,.rep-custom input,.req-assign select{border-radius:var(--r-btn);font-size:.95rem;min-height:40px;padding:8px 12px;background:var(--surface)}
+  .field{margin-bottom:12px}
+  /* rows inside sheets: 12 px radius, 10×12 padding, 32 px avatars, no slide on hover */
+  .who-name,.preset,.doc-row,.me-row,.tc-row,.roster .person,.pcard,.todo-row,.wk-row,.lb-row,.me-off,.me-bday,.cal-app,.log details.entry{border-radius:var(--r-row)}
+  .me-row:hover,.tc-row:hover,.who-name:hover{transform:none;box-shadow:none;background:var(--surface-2)}
+  .me-row,.tc-row,.doc-row,.roster .person,.todo-row{padding:10px 12px;gap:10px}
+  .me-row.today{box-shadow:none;border-color:var(--accent)}
+  .me-row .dy{font-size:.9rem}
+  .me-row .dy small{font-size:.7rem}
+  .me-row .mid .tm{font-size:.84rem;font-weight:500}
+  .me-row .mid .tm .st{font-size:.76rem;font-weight:500}
+  .me-row .mid .sub{font-size:.74rem}
+  .me-row .ok{width:24px;height:24px}
+  .me-row .ok.todo{height:24px;font-size:.68rem}
+  .tc-row .av,.roster .person .av,.who-name .av,.lb-row .av{width:32px;height:32px;font-size:.76rem}
+  .tc-row .nm{font-size:.9rem}
+  .tc-row .nm small{font-size:.74rem}
+  .tc-row .tm .io{font-size:.82rem;font-weight:500}
+  .tc-row .tm .io .in,.tc-row .tm .io .out{color:var(--ink);font-weight:500}
+  .tc-row.on .tm .io .in:last-child{color:var(--good);font-weight:600}
+  .tc-row .tm .dur,.tc-row.on .tm .dur{background:none;padding:0;font-size:.74rem;color:var(--ink-muted);font-weight:500}
+  .tc-row.on .tm .dur{color:var(--good)}
+  .tc-row .tm .dur .brk{font-weight:500}
+  .tc-row.on{background:var(--surface);border-color:color-mix(in srgb,var(--good) 45%,var(--border))}
+  .tc-row.on.onbreak{background:var(--surface);border-color:var(--accent)}
+  .tc-live{font-size:.7rem;padding:2px 8px}
+  .tc-foot{font-size:.74rem}
+  .who-name{padding:8px 10px;font-size:.9rem}
+  .who-grid{gap:8px}
+  .doc-row .tt{font-size:.9rem}
+  .doc-row .st{font-size:.74rem;font-weight:500}
+  .doc-row.todo{border-color:var(--border);box-shadow:none}
+  .doc-row.todo .st{color:var(--accent-ink)}
+  .doc-row .st.late{color:var(--danger)}
+  .doc-row .st.ok{color:var(--good)}
+  .log details.entry{border-left:1px solid var(--border)}
+  .doc-row .go{font-size:1rem}
+  .roster .person{font-size:.88rem}
+  .roster .person .nm small{font-size:.72rem}
+  .roster-online{font-size:.76rem}
+  .roster-search input{padding-left:36px;background:var(--surface-2);border-color:transparent}
+  /* number tiles: black figures, white tiles; colour only where it is a status (difference ±, on the clock now) */
+  .tc-sum,.me-sum{gap:8px;margin-bottom:12px}
+  .tc-sum .tile,.me-sum .tile{border-radius:var(--r-row);padding:10px 6px;background:var(--surface)}
+  .tc-sum .tile b,.me-sum .tile b{font-size:1.1rem;font-weight:600;color:var(--ink);letter-spacing:-.01em}
+  .tc-sum .tile span,.me-sum .tile span{font-size:.62rem;letter-spacing:.05em;line-height:1.25;display:block;margin-top:2px}
+  .tc-sum .tile.on b,.me-sum .tile.good b{color:var(--ink)}
+  #tcSum .tile.on b{color:var(--good)}
+  .tc-sum .tile.diff.plus b{color:var(--good)} .tc-sum .tile.diff.minus b{color:var(--danger)}
+  .me-hero{padding:12px 14px;border-radius:var(--r-row);background:var(--surface);border:1px solid var(--border)}
+  .me-hero .av{width:44px;height:44px;font-size:1rem;border:0;box-shadow:none}
+  .me-hero .t b{font-size:1rem} .me-hero .t span{font-size:.78rem}
+  .me-msg{background:var(--surface-2);color:var(--ink);font-weight:500;font-size:.84rem;border-radius:var(--r-row)}
+  .me-badges span{font-size:.72rem;font-weight:500;padding:3px 9px}
+  .me-team{font-size:.8rem}
+  .lb-tabs,.rep-seg{border-radius:var(--r-btn);padding:3px;gap:3px}
+  .lb-tabs button,.rep-seg button{border-radius:8px;padding:7px 4px;font-size:.8rem;min-height:30px}
+  .tc-head,.me-tabs{margin:2px 0 12px}
+  .tc-head .navbtn,.me-tabs .navbtn{width:36px;height:36px;border-radius:var(--r-btn);background:var(--surface);font-size:1rem}
+  .tc-head .tc-date b,.me-tabs .lbl b{font-size:.95rem}
+  .tc-head .tc-date span,.me-tabs .lbl span{font-size:.72rem}
+  /* My week: the Time off / birthday / calendar cards never overflow the sheet */
+  .me-off,.me-bday{padding:12px;margin-top:10px}
+  .me-off .frm{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .me-off .frm input,.me-bday input{min-width:0;width:100%;max-width:100%;box-sizing:border-box}
+  .me-off .ttl{font-size:.9rem}
+  .me-off .lbl{font-size:.7rem}
+  .me-bday{font-size:.84rem}
+  .me-cal{margin-top:10px}
+  .me-cal .btn{min-height:40px}
+  .me-note{font-size:.74rem;margin-top:8px}
+  .me-cov{font-size:.78rem} .me-cov button{font-size:.78rem}
+  /* person sheet: compact tiles and cards */
+  .pcard{padding:10px 12px;margin-bottom:8px}
+  .pcard .pr{font-size:.88rem}
+  .dept-tiles{gap:6px;margin-top:8px}
+  .dept-tiles button{padding:8px 10px;font-size:.82rem;min-height:36px;gap:6px}
+  .dept-tiles .dept svg{width:15px;height:15px}
+  .pcard .hint,.hint{font-size:.78rem;line-height:1.4;border-radius:10px;padding:9px 11px}
+  .pcard input[type="date"]{min-height:32px;padding:4px 8px;font-size:.88rem;border-radius:8px}
+  /* day settings, shift editor, requests, to-do, reports: same rows */
+  .presets{gap:8px;margin:2px 0 12px}
+  .preset{padding:12px 12px;font-size:.88rem;border-width:1px}
+  .preset .sub{font-size:.74rem}
+  .req-row{font-size:.9rem;padding:10px 0}
+  .req-row .sub{font-size:.78rem}
+  .rpill{font-size:.68rem}
+  .todo-row{padding:10px 12px}
+  .todo-row b{font-size:.92rem} .todo-row small{font-size:.78rem}
+  .rep-sum{border-radius:var(--r-row);font-size:.9rem;padding:10px 12px}
+  .wk-row{font-size:.88rem;padding:9px 12px}
+  .checks .ch{font-size:.9rem}
+  .checks li,.checks .ok{font-size:.82rem}
+  /* ranking: plain rows */
+  .podium{margin-bottom:10px}
+  .pod{border-radius:var(--r-row);padding:10px 6px 8px}
+  .pod .pav{width:40px;height:40px;font-size:.95rem;border-width:2px}
+  .pod .pn{font-size:.86rem} .pod .pp{font-size:.95rem} .pod .pt{font-size:.68rem;font-weight:500}
+  .lb-row{padding:9px 10px}
+  .lb-row:hover{transform:none}
+  /* history */
+  .log details.entry summary{padding:9px 12px;font-size:.82rem}
+  .log details.entry ul{font-size:.82rem}
+  /* PIN pad */
+  .pin-pad{gap:8px;max-width:264px}
+  .pin-pad button{height:50px;font-size:1.3rem;border-radius:var(--r-row)}
+  .pin-dots span{width:14px;height:14px;border-width:1.5px}
+  .pin-who{margin-bottom:8px;font-size:.9rem}
+  .pin-hint{font-size:.74rem}
+  /* assistant */
+  .aifab{width:52px;height:52px;font-size:.9rem}
+  .aiscreen .aihead .ttl{font-size:1rem}
+  .aiscreen .msg{font-size:.94rem;border-radius:14px}
+  /* motion: fades only, no jumps, no glow loops */
+  .btn:active,.abtn:active,.loginbtn:active,.bellbtn:active,.preset:active,.addshift:active,.daybtn:active,.tab:active,.shift:active,.who-name:active{transform:scale(.98)}
+  .bellbtn:not(.on){animation:none}
+  .badge.closed,.badge.holiday{animation:none}
+  .overlay .sheet{animation:sheetup .26s cubic-bezier(.2,.8,.2,1)}
+  .toast{font-size:.84rem;padding:10px 16px}
 </style>
 </head>
 <body>
