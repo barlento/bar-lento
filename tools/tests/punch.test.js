@@ -42,6 +42,11 @@ async function signAll(p){ // rules + packet, stop at training
   console.log("6b break button:", await p.textContent("#meBreakBtn"), "| visible:", await p.evaluate(()=>document.getElementById("meBreakBtn").style.display!=="none"));
   await p.click("#meBreakBtn"); await p.waitForFunction(()=>document.getElementById("meBreakBtn").textContent==="Back to work",null,{timeout:8000});
   console.log("6c on break:", (await p.textContent("#meNextShift")).slice(0,60));
+  const M={"x-admin-password":"segreta"}; const brk=await (await fetch("http://127.0.0.1:4173/api/remind?at="+encodeURIComponent(new Date(Date.now()+31*60000).toISOString()),{headers:M})).json();
+  console.log("6c2 break reminder in 31 min (dry):",JSON.stringify((brk.breaks.reminded||[]).map(r=>r.name+" "+r.threshold+"′")),"| on break:",JSON.stringify((brk.breaks.onBreak||[]).map(o=>o.name)));
+  if(!(brk.breaks.reminded||[]).some(r=>r.name==="Pietro"&&r.threshold===30)) errors.push("no break reminder");
+  const brk4=await (await fetch("http://127.0.0.1:4173/api/remind?at="+encodeURIComponent(new Date(Date.now()+4*3600000+60000).toISOString()),{headers:M})).json();
+  console.log("6c3 after 4 h (dry): would close",JSON.stringify((brk4.breaks.closed||[]).map(c=>c.name))); if(!(brk4.breaks.closed||[]).some(c=>c.name==="Pietro")) errors.push("no safety close");
   const dblB=await p.evaluate(async()=>{const r=await fetch("/api/me",{method:"POST",headers:{"Content-Type":"application/json","x-staff-token":localStorage.getItem("bl_me_token")},body:JSON.stringify({action:"break",on:true})});return r.status;});
   console.log("6d second break start →", dblB, "(expect 409)");
   await p.waitForTimeout(1200);
