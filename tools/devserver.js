@@ -105,13 +105,14 @@ const toastServer = http.createServer((req, res) => {
   res.statusCode = 404; res.end("{}");
 });
 
-kvServer.listen(4174, () => {
-  toastServer.listen(4175, () => {
-    process.env.KV_REST_API_URL = "http://127.0.0.1:4174";
+const BASE_PORT = Number(process.env.PORT) || 4173; // the app; the fake Redis and Toast sit on the next two ports (a second devserver = PORT=4180 → 4181/4182)
+kvServer.listen(BASE_PORT + 1, () => {
+  toastServer.listen(BASE_PORT + 2, () => {
+    process.env.KV_REST_API_URL = "http://127.0.0.1:" + (BASE_PORT + 1);
     process.env.KV_REST_API_TOKEN = "x";
     process.env.ADMIN_PASSWORD = "segreta";
-    process.env.MAIL_WEBHOOK_URL = "http://127.0.0.1:4173/__mail";
-    process.env.TOAST_CLIENT_ID = "id"; process.env.TOAST_CLIENT_SECRET = "sec"; process.env.TOAST_API_HOST = "http://127.0.0.1:4175";
+    process.env.MAIL_WEBHOOK_URL = "http://127.0.0.1:" + BASE_PORT + "/__mail";
+    process.env.TOAST_CLIENT_ID = "id"; process.env.TOAST_CLIENT_SECRET = "sec"; process.env.TOAST_API_HOST = "http://127.0.0.1:" + (BASE_PORT + 2);
     startApp();
   });
 });
@@ -140,5 +141,5 @@ function startApp() {
     if (!fs.existsSync(f) || fs.statSync(f).isDirectory()) { res.statusCode = 404; return res.end("not found"); }
     res.setHeader("Content-Type", MIME[path.extname(f)] || "application/octet-stream"); res.end(fs.readFileSync(f));
   });
-  app.listen(4173, () => console.log("dev on http://127.0.0.1:4173"));
+  app.listen(BASE_PORT, () => console.log("dev on http://127.0.0.1:" + BASE_PORT));
 }

@@ -5,10 +5,10 @@ set -u
 cd "$(dirname "$0")"
 export NODE_PATH="${NODE_PATH:-/opt/node22/lib/node_modules}"
 (fuser -k 4173/tcp >/dev/null 2>&1 || true); sleep 1
-node devserver.js > out.devserver.log 2>&1 &
+WHATSNEW_OFF=1 node devserver.js > out.devserver.log 2>&1 &   # the shared server never announces (mail counts in docs/mail); the whatsnew suite spawns its own
 DEV=$!; sleep 2
 status=0
-for t in ui docs rules mail it punch sync backfill presence notify chef ai requests smart bar; do
+for t in ui docs rules mail it punch sync backfill presence notify chef ai requests smart bar whatsnew; do
   echo "=== $t"
   if ! timeout 300 node "tests/$t.test.js" 2>&1 | grep -v 'Failed to load resource\|fonts.googleapis' | tail -3; then status=1; fi
 done
