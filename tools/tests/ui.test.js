@@ -21,6 +21,14 @@ const NAME = "Astrea"; // fresh name (no PIN yet on the fake server)
 (async () => {
   const browser = await chromium.launch();
   const errors = [];
+  // The seed's weeks (Sep 7 and Sep 14, 2026) are static: copy them onto LAST week and THIS week (New York) when those are missing,
+  // so the suite keeps seeing Astrea's shifts and the week-in-review popup whatever the date is.
+  { const M = { "Content-Type": "application/json", "x-admin-password": "segreta" }; const r = await (await fetch(BASE + "/api/data")).json(); const d = JSON.parse(JSON.stringify(r.data));
+    const ny = new Date(new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" }).format(new Date()) + "T12:00:00Z"); const mon = new Date(ny); mon.setUTCDate(mon.getUTCDate() - ((mon.getUTCDay() + 6) % 7)); const cur = mon.toISOString().slice(0, 10); const prev = new Date(mon); prev.setUTCDate(prev.getUTCDate() - 7); const last = prev.toISOString().slice(0, 10);
+    let changed = false; const DK = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]; const todayI = (ny.getUTCDay() + 6) % 7; const planned = (w) => !!w && DK.some((k) => (w[k] || []).some((s) => !s.src));
+    [[cur, "2026-09-14", todayI], [last, "2026-09-07", 7]].forEach(([to, from, fromDay]) => { if (planned(d.weeks[to]) || !d.weeks[from]) return; // keep imported clock-in rows (src) in past days; copy the plan into the days that are still ahead (the whole week for last week)
+      const src = JSON.parse(JSON.stringify(d.weeks[from]).replace(/"id":"/g, '"id":"ui-' + to + "-")); const w = d.weeks[to] || { notes: {} }; DK.forEach((k, i) => { if (to === cur && i < fromDay) return; w[k] = (w[k] || []).filter((s) => s.src).concat((src[k] || []).filter((s) => s.name === "Astrea" || s.name === "Joe")); }); d.weeks[to] = w; changed = true; }); // Astrea (this suite) + Joe ("other's shift"); the requests suite needs Pietro/Sierrah/Catherine free
+    if (changed) { const p = await fetch(BASE + "/api/data", { method: "POST", headers: M, body: JSON.stringify({ version: r.version, data: d }) }); console.log("weeks seeded for", last, "and", cur, "→", p.status); } }
   // ---- iPhone: first visit → who → create PIN → my week ----
   const ctx = await browser.newContext({ ...devices["iPhone 13"] });
   const page = await ctx.newPage();
@@ -53,11 +61,16 @@ const NAME = "Astrea"; // fresh name (no PIN yet on the fake server)
   const bad = await page.evaluate(async () => (await fetch("/api/me", { method: "POST", headers: { "Content-Type": "application/json", "x-staff-token": localStorage.getItem("bl_me_token") }, body: JSON.stringify({ action: "ackRules", email: "x@y.com", version: "2031-01-01" }) })).json());
   const dup = await page.evaluate(async () => (await fetch("/api/me", { method: "POST", headers: { "Content-Type": "application/json", "x-staff-token": localStorage.getItem("bl_me_token") }, body: JSON.stringify({ action: "ackRules", email: "other@y.com", version: "2026-09-18" }) })).json());
   console.log("bad version →", JSON.stringify(bad), "| duplicate ack keeps first:", JSON.stringify(dup));
-  await page.waitForSelector("#recapOverlay.show", { timeout: 10000 });
-  await page.waitForTimeout(500);
-  await page.screenshot({ path: OUT + "/3b-recap.png" });
-  console.log("recap:", (await page.textContent("#recapSum")).replace(/\s+/g, " "), "|", (await page.textContent("#recapMsgs")).replace(/\s+/g, " "));
-  await page.click("#recapClose");
+  // the week-in-review popup needs LAST week on the schedule (the static seed has weeks up to Sep 14): when it is not due, the Bar sheet opens instead
+  const lastWk = await page.evaluate(() => { const d = new Date(new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" }).format(new Date()) + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7) - 7); return d.toISOString().slice(0, 10); });
+  const hasLast = await page.evaluate(async (w) => !!(await (await fetch("/api/data")).json()).data.weeks[w], lastWk);
+  if (hasLast) {
+    await page.waitForSelector("#recapOverlay.show", { timeout: 10000 });
+    await page.waitForTimeout(500);
+    await page.screenshot({ path: OUT + "/3b-recap.png" });
+    console.log("recap:", (await page.textContent("#recapSum")).replace(/\s+/g, " "), "|", (await page.textContent("#recapMsgs")).replace(/\s+/g, " "));
+    await page.click("#recapClose");
+  } else { console.log("recap not due (no week", lastWk, "on the seed); the popup chain falls through"); await page.waitForTimeout(1200); await page.evaluate(() => { document.querySelectorAll(".overlay.show").forEach((o) => o.classList.remove("show")); }); }
   console.log("locked after login:", await page.evaluate(() => document.body.classList.contains("locked")));
   await page.click("#meOpenBtn");
   await page.waitForSelector("#meOverlay.show", { timeout: 8000 });

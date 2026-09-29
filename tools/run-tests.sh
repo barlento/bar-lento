@@ -8,7 +8,7 @@ export NODE_PATH="${NODE_PATH:-/opt/node22/lib/node_modules}"
 WHATSNEW_OFF=1 node devserver.js > out.devserver.log 2>&1 &   # the shared server never announces (mail counts in docs/mail); the whatsnew suite spawns its own
 DEV=$!; sleep 2
 status=0
-for t in ui docs rules mail it punch sync backfill presence notify chef ai requests smart bar whatsnew; do
+for t in ui docs rules mail it punch autoout sync backfill presence notify chef ai requests smart bar whatsnew; do   # autoout before sync (sync removes Luca, the auto-closed entry is his)
   echo "=== $t"
   if ! timeout 300 node "tests/$t.test.js" 2>&1 | grep -v 'Failed to load resource\|fonts.googleapis' | tail -3; then status=1; fi
 done

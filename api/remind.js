@@ -17,6 +17,7 @@ module.exports = async (req, res) => {
     const late = await remind.late(doc, force);
     const at = Date.parse(url.searchParams.get("at") || ""); // manager diagnostic: what WOULD happen at that instant (dry run)
     const breaks = at ? await remind.breaks(doc, { force: true, dry: true, now: at }) : await remind.breaks(doc, { force });
-    return send(200, { ok: true, morning, late, breaks });
+    const autoOut = await remind.autoOut(doc, force);
+    return send(200, { ok: true, morning, late, breaks, autoOut });
   } catch (e) { return send(500, { error: String(e.message || e) }); }
 };

@@ -129,6 +129,7 @@ async function weekSummary(data, name, guid, weekISO) {
   const entries = await toast.weekEntriesFor(guid, weekISO);
   const firstInByDay = {};
   entries.forEach((e) => {
+    if (e.auto) { out.autoOut = (out.autoOut || 0) + 1; const m0 = nyMinutes(e.in); if (firstInByDay[e.day] == null || m0 < firstInByDay[e.day]) firstInByDay[e.day] = m0; return; } // clock-out missing (Toast closed it at 4 AM): the clock-in counts, the hours do not
     out.workedMin += Math.max(0, (Date.parse(e.out || new Date().toISOString()) - Date.parse(e.in)) / 60000 - (e.breakMin || 0) - (!e.out && e.breakStart ? Math.max(0, (Date.now() - Date.parse(e.breakStart)) / 60000) : 0));
     const m = nyMinutes(e.in); if (firstInByDay[e.day] == null || m < firstInByDay[e.day]) firstInByDay[e.day] = m;
   });
@@ -154,7 +155,7 @@ const openView = (e) => { const v = punch.view(e); return { in: v.in, breakStart
 // minutes worked = in → out (or now) minus unpaid breaks (Toast terminal breaks and app breaks alike)
 function sumMinutes(list) {
   const now = Date.now(); const brk = (s) => (s.breakMin || 0) + (!s.out && s.breakStart ? Math.max(0, (now - Date.parse(s.breakStart)) / 60000) : 0);
-  return list.reduce((a, s) => a + Math.max(0, (Date.parse(s.out || new Date(now).toISOString()) - Date.parse(s.in)) / 60000 - brk(s)), 0);
+  return list.reduce((a, s) => a + (s.auto ? 0 : Math.max(0, (Date.parse(s.out || new Date(now).toISOString()) - Date.parse(s.in)) / 60000 - brk(s))), 0); // an auto-closed entry (Toast, 4 AM) counts no hours
 }
 
 // Personal access (name + 4-digit PIN, remembered per device).

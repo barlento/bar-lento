@@ -171,14 +171,14 @@ async function collectPerson(name, doc, confirmations, fromISO, toISO) {
     });
   });
   // Toast clock-ins, month by month
-  const clock = [], notes = [];
+  const clock = [], notes = []; let autoOut = 0;
   if (guid && toast.enabled()) {
     try {
       (await toast.timeEntriesSpan(fromISO, toISO, 300)).filter((t) => t.employeeGuid === guid && t.in).forEach((t) => {
         const date = toast.shiftDate(t.in); if (date < fromISO || date > toISO) return;
         const brk = t.out ? (t.breakMin || 0) : 0; // unpaid breaks taken on the terminal, subtracted from the hours
-        const ms = t.out ? Math.max(0, Date.parse(t.out) - Date.parse(t.in) - brk * 60000) : 0; const mm = M(date); mm.worked += ms / 3600000; mm.clockins++;
-        clock.push({ date, weekday: weekdayOf(date), source: "Toast POS", in: nyParts(t.in).time, out: t.out ? nyParts(t.out).time : "", hours: t.out ? round2(ms / 3600000) : null, note: [t.out ? "" : "no clock-out recorded", brk ? `break ${Math.round(brk)} min (unpaid, not counted)` : ""].filter(Boolean).join(" · "), recorded: nyParts(t.in).stamp, ref: `Toast time entry ${t.guid}` });
+        const ms = t.out && !t.auto ? Math.max(0, Date.parse(t.out) - Date.parse(t.in) - brk * 60000) : 0; const mm = M(date); mm.worked += ms / 3600000; mm.clockins++; if (t.auto) autoOut++;
+        clock.push({ date, weekday: weekdayOf(date), source: "Toast POS", in: nyParts(t.in).time, out: t.out ? nyParts(t.out).time : "", hours: t.out && !t.auto ? round2(ms / 3600000) : null, note: [t.auto ? "clock-out missing: closed by Toast at 4:00 AM, hours not counted until corrected in Toast" : t.out ? "" : "no clock-out recorded", brk && !t.auto ? `break ${Math.round(brk)} min (unpaid, not counted)` : ""].filter(Boolean).join(" · "), recorded: nyParts(t.in).stamp, ref: `Toast time entry ${t.guid}` });
       });
     } catch (e) { notes.push(`Toast clock-ins could not be read completely (${String(e.message || e).slice(0, 80)}) — export again later.`); }
   } else if (!guid) notes.push("Not linked to a Toast employee: clock-ins come from the app only.");
@@ -192,6 +192,7 @@ async function collectPerson(name, doc, confirmations, fromISO, toISO) {
     clock.push({ date, weekday: weekdayOf(date), source: e.manual ? "Entered by the owner" : "Bar Lento app (phone)", in: nyParts(e.in).time, out: e.out ? nyParts(e.out).time : "", hours: e.out ? round2(ms / 3600000) : null, note: noteParts.join(" · "), recorded: nyParts(e.in).stamp, ref: `app entry ${e.id}` });
   });
   clock.sort((a, b) => (a.date + a.recorded).localeCompare(b.date + b.recorded));
+  if (autoOut) notes.push(`${autoOut} clock-out${autoOut === 1 ? " is" : "s are"} missing (the employee did not clock out and Toast closed the entry automatically at 4:00 AM): those hours are not counted here until the clock-out is corrected in Toast.`);
   // signed documents: current + archive, every version incl. history
   const docRows = [];
   const addAck = (title, a) => { if (!a || !a.at) return; docRows.push({ title, a }); (a.history || []).forEach((h) => docRows.push({ title, a: h })); };

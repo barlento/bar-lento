@@ -67,6 +67,10 @@ function fakeEntries() {
     const inISO = nyInstant(date, ih, im); let outISO = nyInstant(date, oh, om); if (Date.parse(outISO) < Date.parse(inISO)) outISO = new Date(Date.parse(outISO) + 86400000).toISOString();
     if (Date.parse(inISO) < Date.now()) out.push({ guid: "te-past-" + k, employeeReference: { guid: "guid-" + who }, inDate: inISO, outDate: outISO, deleted: false });
   });
+  { // yesterday Luca forgot to clock out: Toast closed the entry by itself at 4:00 AM (autoClockedOut) — the app must not count those hours
+    const y = new Date(today + "T12:00:00Z"); y.setUTCDate(y.getUTCDate() - 1); const yd = y.toISOString().slice(0, 10); const nx = new Date(y); nx.setUTCDate(nx.getUTCDate() + 1); const nd = nx.toISOString().slice(0, 10);
+    out.push({ guid: "te-auto-" + yd, employeeReference: { guid: "guid-luca-rossi-0001" }, inDate: nyInstant(yd, 16, 2), outDate: nyInstant(nd, 4, 0), autoClockedOut: true, deleted: false });
+  }
   const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
   // the LIVE schedule (what the tests and the screenshot scripts post), not the static seed, so shifts added for today get clock-ins too
   let weeks = seed.weeks; try { weeks = JSON.parse(kv.get("barlento:schedule")).data.weeks || seed.weeks; } catch (e) {}

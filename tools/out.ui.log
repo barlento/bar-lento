@@ -1,18 +1,19 @@
+weeks seeded for 2026-09-21 and 2026-09-28 → 200
 locked at start: true | Not now present: 0
-bad version → {"error":"bad_version","current":"2026-09-18"} | duplicate ack keeps first: {"ok":true,"rulesAck":{"version":"2026-09-18","at":"2026-09-27T02:54:11.450Z"}}
-recap: 29h 10mhours worked100%on time3 min lateclock-in | You worked 29h 10m — more than the week before (17h 42m).On time for every shift last week.
+bad version → {"error":"bad_version","current":"2026-09-18"} | duplicate ack keeps first: {"ok":true,"rulesAck":{"version":"2026-09-18","at":"2026-09-29T23:17:16.575Z"}}
+recap: 17h 42mhours worked100%on time3 min lateclock-in | On time for every shift last week.
 locked after login: false
-my week tiles: 28h 35mscheduled29h 10mworked+35 mindifference
-rows: 5
-stats hero: AAstreaNo clocked shifts yet | tiles: 0h 00mhours—on time0in a row
+my week tiles: 22h 28mscheduled15 minworked so far−4h 52mdifference so far
+rows: 4
+stats hero: AAstreaOn the clock now · since 8:06 PM | tiles: 0h 15mhours—on time1in a row
 stats month ok
 stats→week ok
 anonymous mystats by name → 401 (expect 401)
-strip:  AHi AstreaNo upcoming shifts on the schedule. My weekMy statsBreakClock in 
-mine shifts highlighted: 5
+strip:  AHi AstreaNext shift: Tomorrow · 5:03–10:10 PM My weekMy statsBreakClock in 
+mine shifts highlighted: 4
 confirm popup: Tap Confirm shift to let the manager know you have seen the  | input present: 0
 own shift confirmed ✓
-other's shift → This is Joe's shift — only Joe can confirm it. | popup: 0
+other's shift → This is Luca's shift — only Luca can confirm it. | popup: 0
 forged confirm of other's shift → 403 (expect 403)
 who popup after reload: 0 (expect 0)
 re-login ok (My week does not open by itself)
@@ -23,8 +24,8 @@ person sheet: Birthdaynot setToastAstrea Test4astrea@example.comDepartmentFrom T
 reset enabled for Astrea : true
 after reset: Birthdaynot setToastAstrea Test4astrea@example.comDepartmentFrom Toast: ServerFloorKitchenChefManagementOwnerChef, Manag
 manager ranking button visible: true
-manager view title: Joe's week | 31h 35mscheduled30h 30mworked−1h 05mdifference
-prev week: Sep 7–13 ’26 
+manager view title: Joe's week | 25h 28mscheduled0 minworked so far+0 mindifference so far
+prev week: Sep 21–27 ’26 
 ERRORS: [
   'console: Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID',
   'console: Failed to load resource: the server responded with a status of 400 (Bad Request)',

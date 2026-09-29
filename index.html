@@ -891,6 +891,7 @@
   details.former summary .chev{transition:transform .2s} details.former[open] summary .chev{transform:rotate(90deg)}
   .mestrip #meNextShift.onbreak{color:var(--accent-ink)}
   .tc-row .dur .brk{color:var(--ink-muted);font-weight:500;font-size:.72rem;display:block;text-align:right}
+  .tc-row .miss,.tc-row .nm small.miss{color:var(--danger);font-weight:500} .tc-row .nm small.miss{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.25} .tc-row.autoout{border-color:color-mix(in srgb,var(--danger) 45%,var(--border))}
   /* Emergency access: the shared manager password is the service door, not the everyday entrance (owner 2026-09-21) */
   .who-logins{display:block;margin:12px 0 0;text-align:center}
   .who-logins .linkbtn.emerg{border:0;background:none;color:var(--ink-muted);font:inherit;font-size:.78rem;text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:6px 8px}
@@ -1772,7 +1773,7 @@
       myWeek:"My week", myStats:"My stats", weekOfName:"{n} week", myWeekTitle:"My week", weekLeadMine:"Your shifts and your hours from the Toast time clock.", weekLeadOf:"{n} shifts, and hours from the Toast time clock.",
       scheduled:"scheduled", worked:"worked", soFar:" so far", difference:"difference", noShiftsMine:"No shifts for you this week.", noShiftsPerson:"No shifts this week.", noWeeksYet:"No weeks yet", nothingPublished:"Nothing published yet.",
       hoursFromToast:"Hours from Toast · updated {t}", notLinked:"Toast does not recognize this name yet. Link it in Staff.", loadingHours:"Loading hours from Toast…", hoursNeedToast:"Worked hours appear when the Toast time clock is connected.", toastDownShort:"Toast is not responding; scheduled shifts are still shown.",
-      noClockIn:"No clock-in recorded", notClockedYet:"Not clocked in yet", notOnSchedule:"not on the schedule", dayMarked:"Day marked {s}", confirmChip:"confirm",
+      noClockIn:"No clock-in recorded", notClockedYet:"Not clocked in yet", autoOutMe:"clock-out missing: tell the manager your real time, it gets fixed in Toast", autoOutTc:"Clock-out missing · closed by Toast at 4:00 AM · fix it in Toast", notCounted:"not counted", notOnSchedule:"not on the schedule", dayMarked:"Day marked {s}", confirmChip:"confirm",
       statsTitle:"My stats", statsOf:"{n} stats", statsLeadMine:"Your hours and punctuality, from Toast. Only you see this.", statsLeadOf:"{n} hours and punctuality, from Toast.",
       hoursTile:"hours", onTimeTile:"on time", streakTile:"in a row", onClockSince:"On the clock now · since {t}", shiftsClocked:"{n} clocked", noClockedShifts:"No clocked shifts yet", loadingWord:"Loading…",
       teamHours:"Team hours {p}", teamOnTime:"Team on time", teamShifts:"Shifts worked by the team", teamOnNow:"On the clock now", pThisWeek:"this week", pThisMonth:"this month", p180:"(180 days)",
@@ -1834,7 +1835,7 @@
       myWeek:"La mia settimana", myStats:"Le mie statistiche", weekOfName:"Settimana di {n}", myWeekTitle:"La mia settimana", weekLeadMine:"I tuoi turni e le ore dalle timbrature Toast.", weekLeadOf:"Turni di {n} e ore dalle timbrature Toast.",
       scheduled:"previste", worked:"lavorate", soFar:" finora", difference:"differenza", noShiftsMine:"Nessun turno per te questa settimana.", noShiftsPerson:"Nessun turno questa settimana.", noWeeksYet:"Nessuna settimana", nothingPublished:"Niente di pubblicato.",
       hoursFromToast:"Ore da Toast · aggiornato {t}", notLinked:"Toast non riconosce ancora questo nome. Collegalo in Staff.", loadingHours:"Carico le ore da Toast…", hoursNeedToast:"Le ore lavorate compaiono quando le timbrature Toast sono collegate.", toastDownShort:"Toast non risponde; i turni previsti restano visibili.",
-      noClockIn:"Nessuna timbratura", notClockedYet:"Non ha ancora timbrato", notOnSchedule:"fuori turno", dayMarked:"Giorno segnato {s}", confirmChip:"conferma",
+      noClockIn:"Nessuna timbratura", notClockedYet:"Non ha ancora timbrato", autoOutMe:"uscita non timbrata: di' alla manager l'orario vero, si corregge su Toast", autoOutTc:"Uscita non timbrata · chiusa da Toast alle 4:00 · da correggere su Toast", notCounted:"non contate", notOnSchedule:"fuori turno", dayMarked:"Giorno segnato {s}", confirmChip:"conferma",
       statsTitle:"Le mie statistiche", statsOf:"Statistiche di {n}", statsLeadMine:"Le tue ore e la tua puntualità, da Toast. Le vedi solo tu.", statsLeadOf:"Ore e puntualità di {n}, da Toast.",
       hoursTile:"ore", onTimeTile:"puntuale", streakTile:"di fila", onClockSince:"Al lavoro adesso · da {t}", shiftsClocked:"{n} timbrati", noClockedShifts:"Nessun turno timbrato", loadingWord:"Caricamento…",
       teamHours:"Ore del team {p}", teamOnTime:"Puntualità del team", teamShifts:"Turni lavorati dal team", teamOnNow:"Al lavoro adesso", pThisWeek:"questa settimana", pThisMonth:"questo mese", p180:"(180 giorni)",
@@ -2434,10 +2435,10 @@
       list.innerHTML=entries.map(function(e,i){
         var on=!e.out; var ms=entryMs(e,now);
         var showFull=e.full&&e.full!==e.name;
-        return '<div class="tc-row'+(on?" on":"")+(on&&e.breakStart?" onbreak":"")+'" style="animation-delay:'+Math.min(i*45,400)+'ms">'
+        return '<div class="tc-row'+(on?" on":"")+(on&&e.breakStart?" onbreak":"")+(e.auto?" autoout":"")+'" style="animation-delay:'+Math.min(i*45,400)+'ms">'
           +'<div class="av" style="background:'+avColor(e.full||e.name)+'">'+h(initials(e.name))+'</div>'
-          +'<div class="nm">'+h(e.name)+(showFull?'<small>'+h(e.full)+'</small>':(on&&e.breakStart?'<small class="brk">'+t("onBreakSince",{t:durText(now-Date.parse(e.breakStart))})+'</small>':on?'<small>'+t("onClockNow")+'</small>':'<small>'+t("shiftDone")+'</small>'))+'</div>'
-          +'<div class="tm"><span class="io"><span class="in">'+fmtClock(e.in)+'</span> → '+(on?'<span class="in">'+t("nowWord")+'</span>':'<span class="out">'+fmtClock(e.out)+'</span>')+'</span><span class="dur">'+(on&&e.breakStart?'<span class="brk">on break</span> ':"")+durText(ms)+(e.breakMin||e.breakStart?'<small class="brk">'+h(breakTag(e).replace(/^ · /,""))+'</small>':"")+'</span></div>'
+          +'<div class="nm">'+h(e.name)+(e.auto?'<small class="miss">'+h(t("autoOutTc"))+'</small>':showFull?'<small>'+h(e.full)+'</small>':(on&&e.breakStart?'<small class="brk">'+t("onBreakSince",{t:durText(now-Date.parse(e.breakStart))})+'</small>':on?'<small>'+t("onClockNow")+'</small>':'<small>'+t("shiftDone")+'</small>'))+'</div>'
+          +'<div class="tm"><span class="io"><span class="in">'+fmtClock(e.in)+'</span> → '+(on?'<span class="in">'+t("nowWord")+'</span>':e.auto?'<span class="out miss">?</span>':'<span class="out">'+fmtClock(e.out)+'</span>')+'</span><span class="dur">'+(e.auto?'<span class="miss">'+h(t("notCounted"))+'</span>':(on&&e.breakStart?'<span class="brk">on break</span> ':"")+durText(ms)+(e.breakMin||e.breakStart?'<small class="brk">'+h(breakTag(e).replace(/^ · /,""))+'</small>':""))+'</span></div>'
           +'</div>';
       }).join("");
     }
@@ -2552,7 +2553,7 @@
   // (Manager login) session on a shared device, never while the owner is viewing as someone else.
   function canPunch(){ return !!(state.me.name&&state.me.appClock&&!state.password&&!state.viewAs); }
   // worked time of one clock entry = in → out (or now) minus the breaks (breakMin from the server, plus the break still running)
-  function entryMs(e,now){ var t=now||Date.now(); var end=e.out?Date.parse(e.out):t; var brk=(e.breakMin||0)*60000; if(!e.out&&e.breakStart) brk+=Math.max(0,t-Date.parse(e.breakStart)); return Math.max(0,end-Date.parse(e.in)-brk); }
+  function entryMs(e,now){ if(e.auto) return 0; var t=now||Date.now(); var end=e.out?Date.parse(e.out):t; var brk=(e.breakMin||0)*60000; if(!e.out&&e.breakStart) brk+=Math.max(0,t-Date.parse(e.breakStart)); return Math.max(0,end-Date.parse(e.in)-brk); }
   function breakTag(e){ var m=e.breakMin||0; if(!e.out&&e.breakStart) m+=Math.max(0,Math.round((Date.now()-Date.parse(e.breakStart))/60000)); return m?' · break '+durText(m*60000):''; }
   async function doBreak(){
     if(!canPunch()||!state.me.open) return; var on=!state.me.open.breakStart; var bb=$("meBreakBtn"); bb.disabled=true;
@@ -3723,7 +3724,7 @@
         mine.forEach(function(s){
           var ok=!!state.confirmations[shiftKey(wk,d,s.id)];
           var clockTxt="";
-          if(punches.length){ var f=punches[0], la=punches[punches.length-1]; var ms=punches.reduce(function(a,e){return a+entryMs(e,nowMs);},0); clockTxt=''+fmtClock(f.in)+' → '+(la.out?fmtClock(la.out):t("nowWord"))+' · '+durText(ms)+(la.out?'':t("soFar"))+punches.map(breakTag).join(""); }
+          if(punches.length){ var f=punches[0], la=punches[punches.length-1]; var ms=punches.reduce(function(a,e){return a+entryMs(e,nowMs);},0); var au=punches.some(function(e){return e.auto;}); clockTxt=au?fmtClock(f.in)+' → ? · '+t("autoOutMe"):''+fmtClock(f.in)+' → '+(la.out?fmtClock(la.out):t("nowWord"))+' · '+durText(ms)+(la.out?'':t("soFar"))+punches.map(breakTag).join(""); }
           else if(isPast&&hrs&&hrs.linked) clockTxt=t("noClockIn");
           else if(isToday&&hrs&&hrs.linked) clockTxt=t("notClockedYet");
           var dn=dayNote(wk,d); var closed=dn&&isClosedStatus(dn.status);
