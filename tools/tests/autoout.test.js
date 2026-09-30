@@ -32,5 +32,24 @@ async function j(p, o) { const r = await fetch(B + p, o); let x = null; try { x 
   const ui = await p.evaluate(() => { const row = [...document.querySelectorAll(".tc-row")].find((x) => /Luca/.test(x.textContent)); return { row: row && row.className, txt: row && row.textContent.replace(/\s+/g, " ").slice(0, 160), total: document.querySelector("#tcSum .tile:last-child b") && document.querySelector("#tcSum .tile:last-child b").textContent }; });
   console.log("6 UI:", JSON.stringify(ui)); if (!ui.row || !/autoout/.test(ui.row) || !/Clock-out missing/.test(ui.txt || "") || !/not counted/.test(ui.txt || "")) errors.push("time clock row not flagged");
   await p.screenshot({ path: path.join(OUT, "autoout-timeclock.png") }); await b.close();
+  // 7. still clocked in after closing (in-process, stubs): 10:35 PM on a 10 PM day → one alert to every manager/owner, once; 10:10 PM → nothing
+  {
+    const store = require("../../lib/store"), push = require("../../lib/push"), toastL = require("../../lib/toast"), punchL = require("../../lib/punch"), mail = require("../../lib/mail"), wa = require("../../lib/whatsapp");
+    const kv = new Map(); store.hasStorage = () => true; store.appendLog = async (e) => { kv.set("log", (kv.get("log") || []).concat(e.changes)); };
+    store._redis = async (...a) => { const c = a[0]; if (c === "GET") return kv.has(a[1]) ? kv.get(a[1]) : null; if (c === "SET") { if (a.includes("NX") && kv.has(a[1])) return null; kv.set(a[1], String(a[2])); return "OK"; } if (c === "DEL") return kv.delete(a[1]) ? 1 : 0; throw new Error("stub: " + c); };
+    const pushes = []; push.broadcast = async (payload, names) => { pushes.push({ body: payload.body, names }); return { sent: names.length }; };
+    const mails = []; mail.enabled = () => true; mail.send = async (m) => { mails.push(m); }; const was = []; wa.send = async (t) => { was.push(t); return { sent: 0, skipped: "not configured" }; };
+    toastL.enabled = () => true; toastL.employees = async () => []; toastL.autoMap = () => ({}); toastL.dayStatus = async (date) => ({ byName: { Joe: [{ in: date + "T20:00:00.000Z", out: null }], Sierrah: [{ in: date + "T20:00:00.000Z", out: date + "T23:30:00.000Z" }] } });
+    punchL.appClockNames = async () => new Set(["Pietro"]); punchL.openEntry = async (n) => (n === "Pietro" ? { in: "2026-09-29T20:05:00.000Z" } : null);
+    const wn = require("../../lib/whatsnew"); wn.recipients = async () => [{ name: "Marta", email: "marta@example.com" }, { name: "Joe B.", email: "joe.b@example.com" }];
+    const remind = require("../../lib/remind"); const doc = { data: { staff: ["Joe", "Sierrah", "Pietro", "Marta", "Joe B."], dept: { Marta: "management", "Joe B.": "owner" }, weeks: {} } };
+    const wed = "2026-09-30"; // a Wednesday: closing 10 PM New York = 02:00Z next day
+    const early = await remind.overrun(doc, { force: true, now: "2026-10-01T02:10:00.000Z" }); const late = await remind.overrun(doc, { force: true, now: "2026-10-01T02:40:00.000Z" }); const again = await remind.overrun(doc, { force: true, now: "2026-10-01T03:00:00.000Z" });
+    console.log("7 overrun 10:10 PM:", early.skipped, "| 10:40 PM:", JSON.stringify(late.alerts.map((a) => [a.name, a.src, a.minutesPast, a.to])), "| pushes:", pushes.length, "| mails:", mails.length, mails[0] && mails[0].to, "| whatsapp calls:", was.length, "| again:", again.alerts.length, "pushes still", pushes.length);
+    if (early.skipped !== "not yet" || late.date !== wed || late.alerts.length !== 2 || !late.alerts.some((a) => a.name === "Joe" && a.src === "Toast" && a.minutesPast === 40) || !late.alerts.some((a) => a.name === "Pietro" && a.src === "app")) errors.push("overrun detection wrong");
+    if (pushes.length !== 2 || !pushes.every((x) => x.names.includes("Marta") && x.names.includes("Joe B.")) || mails.length !== 2 || !mails[0].to.includes("marta@example.com") || !mails[0].to.includes("simoneviola@barlentony.com") || was.length !== 2) errors.push("overrun delivery wrong");
+    if (again.alerts.length !== 2 || pushes.length !== 2) errors.push("overrun alerted twice");
+    if (!(kv.get("log") || []).some((l) => /Still clocked in after closing: Joe/.test(l))) errors.push("overrun history line missing");
+  }
   console.log("ERRORS:", errors.length ? JSON.stringify(errors) : "none"); process.exit(errors.length ? 1 : 0);
 })().catch((e) => { console.error(e); process.exit(1); });

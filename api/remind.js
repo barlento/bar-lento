@@ -18,6 +18,7 @@ module.exports = async (req, res) => {
     const at = Date.parse(url.searchParams.get("at") || ""); // manager diagnostic: what WOULD happen at that instant (dry run)
     const breaks = at ? await remind.breaks(doc, { force: true, dry: true, now: at }) : await remind.breaks(doc, { force });
     const autoOut = await remind.autoOut(doc, force);
-    return send(200, { ok: true, morning, late, breaks, autoOut });
+    const overrun = at ? await remind.overrun(doc, { force: true, dry: true, now: new Date(at).toISOString() }) : await remind.overrun(doc, { force });
+    return send(200, { ok: true, morning, late, breaks, autoOut, overrun });
   } catch (e) { return send(500, { error: String(e.message || e) }); }
 };
