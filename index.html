@@ -1204,6 +1204,7 @@
   .bar-hint{font-size:.78rem;color:var(--ink-muted);margin:0 0 4px;line-height:1.4}
   body.chef #barEdit,body.viewstaff #barEdit{display:none!important}
   @media (max-width:640px){.field textarea,.field input,.field select{font-size:16px}} /* iOS: no zoom on focus (this block comes after the Refit sizes) */
+  .tc-row.ghost{opacity:.6} .tc-row.ghost .nm small.ghost{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.25;color:var(--ink-muted)} /* a tap by mistake at the terminal: shown, never counted */
 </style>
 </head>
 <body>
@@ -1773,7 +1774,7 @@
       myWeek:"My week", myStats:"My stats", weekOfName:"{n} week", myWeekTitle:"My week", weekLeadMine:"Your shifts and your hours from the Toast time clock.", weekLeadOf:"{n} shifts, and hours from the Toast time clock.",
       scheduled:"scheduled", worked:"worked", soFar:" so far", difference:"difference", noShiftsMine:"No shifts for you this week.", noShiftsPerson:"No shifts this week.", noWeeksYet:"No weeks yet", nothingPublished:"Nothing published yet.",
       hoursFromToast:"Hours from Toast · updated {t}", notLinked:"Toast does not recognize this name yet. Link it in Staff.", loadingHours:"Loading hours from Toast…", hoursNeedToast:"Worked hours appear when the Toast time clock is connected.", toastDownShort:"Toast is not responding; scheduled shifts are still shown.",
-      noClockIn:"No clock-in recorded", notClockedYet:"Not clocked in yet", autoOutMe:"clock-out missing: tell the manager your real time, it gets fixed in Toast", autoOutTc:"Clock-out missing · closed by Toast at 4:00 AM · fix it in Toast", notCounted:"not counted", notOnSchedule:"not on the schedule", dayMarked:"Day marked {s}", confirmChip:"confirm",
+      noClockIn:"No clock-in recorded", notClockedYet:"Not clocked in yet", autoOutMe:"clock-out missing: tell the manager your real time, it gets fixed in Toast", autoOutTc:"Clock-out missing · closed by Toast at 4:00 AM · fix it in Toast", notCounted:"not counted", ghostTc:"In and out within seconds · a tap by mistake, not a shift", nyTime:"New York time", notOnSchedule:"not on the schedule", dayMarked:"Day marked {s}", confirmChip:"confirm",
       statsTitle:"My stats", statsOf:"{n} stats", statsLeadMine:"Your hours and punctuality, from Toast. Only you see this.", statsLeadOf:"{n} hours and punctuality, from Toast.",
       hoursTile:"hours", onTimeTile:"on time", streakTile:"in a row", onClockSince:"On the clock now · since {t}", shiftsClocked:"{n} clocked", noClockedShifts:"No clocked shifts yet", loadingWord:"Loading…",
       teamHours:"Team hours {p}", teamOnTime:"Team on time", teamShifts:"Shifts worked by the team", teamOnNow:"On the clock now", pThisWeek:"this week", pThisMonth:"this month", p180:"(180 days)",
@@ -1835,7 +1836,7 @@
       myWeek:"La mia settimana", myStats:"Le mie statistiche", weekOfName:"Settimana di {n}", myWeekTitle:"La mia settimana", weekLeadMine:"I tuoi turni e le ore dalle timbrature Toast.", weekLeadOf:"Turni di {n} e ore dalle timbrature Toast.",
       scheduled:"previste", worked:"lavorate", soFar:" finora", difference:"differenza", noShiftsMine:"Nessun turno per te questa settimana.", noShiftsPerson:"Nessun turno questa settimana.", noWeeksYet:"Nessuna settimana", nothingPublished:"Niente di pubblicato.",
       hoursFromToast:"Ore da Toast · aggiornato {t}", notLinked:"Toast non riconosce ancora questo nome. Collegalo in Staff.", loadingHours:"Carico le ore da Toast…", hoursNeedToast:"Le ore lavorate compaiono quando le timbrature Toast sono collegate.", toastDownShort:"Toast non risponde; i turni previsti restano visibili.",
-      noClockIn:"Nessuna timbratura", notClockedYet:"Non ha ancora timbrato", autoOutMe:"uscita non timbrata: di' alla manager l'orario vero, si corregge su Toast", autoOutTc:"Uscita non timbrata · chiusa da Toast alle 4:00 · da correggere su Toast", notCounted:"non contate", notOnSchedule:"fuori turno", dayMarked:"Giorno segnato {s}", confirmChip:"conferma",
+      noClockIn:"Nessuna timbratura", notClockedYet:"Non ha ancora timbrato", autoOutMe:"uscita non timbrata: di' alla manager l'orario vero, si corregge su Toast", autoOutTc:"Uscita non timbrata · chiusa da Toast alle 4:00 · da correggere su Toast", notCounted:"non contate", ghostTc:"Dentro e fuori in pochi secondi · un tocco per sbaglio, non è un turno", nyTime:"ora di New York", notOnSchedule:"fuori turno", dayMarked:"Giorno segnato {s}", confirmChip:"conferma",
       statsTitle:"Le mie statistiche", statsOf:"Statistiche di {n}", statsLeadMine:"Le tue ore e la tua puntualità, da Toast. Le vedi solo tu.", statsLeadOf:"Ore e puntualità di {n}, da Toast.",
       hoursTile:"ore", onTimeTile:"puntuale", streakTile:"di fila", onClockSince:"Al lavoro adesso · da {t}", shiftsClocked:"{n} timbrati", noClockedShifts:"Nessun turno timbrato", loadingWord:"Caricamento…",
       teamHours:"Ore del team {p}", teamOnTime:"Puntualità del team", teamShifts:"Turni lavorati dal team", teamOnNow:"Al lavoro adesso", pThisWeek:"questa settimana", pThisMonth:"questo mese", p180:"(180 giorni)",
@@ -1892,6 +1893,14 @@
   function pad(n){return n<10?"0"+n:""+n;}
   function toISO(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
   function fromISO(s){var p=s.split("-").map(Number);return new Date(p[0],p[1]-1,p[2]);}
+  // The bar's clock is New York's, whatever time zone the phone is on (owner 2026-10-03: seen from Italy, Joe's 5:57 PM → 11:15 PM read 11:57 PM → 5:15 AM).
+  // Every time shown, every "today" and every "now" below goes through these helpers, never through getHours()/getDate() of the device.
+  var NY_TZ="America/New_York";
+  function nyParts(x){ var d=x instanceof Date?x:new Date(x==null?Date.now():x); try{ var p=new Intl.DateTimeFormat("en-CA",{timeZone:NY_TZ,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}).formatToParts(d), g=function(t){ for(var i=0;i<p.length;i++) if(p[i].type===t) return p[i].value; return ""; }, hh=Number(g("hour"))%24, mm=Number(g("minute")); return {iso:g("year")+"-"+g("month")+"-"+g("day"),hh:hh,mm:mm,min:hh*60+mm}; }catch(e){ return {iso:toISO(d),hh:d.getHours(),mm:d.getMinutes(),min:d.getHours()*60+d.getMinutes()}; } }
+  function nyNow(){ return nyParts(new Date()); }
+  function nyDate(iso){ return fromISO(nyParts(iso).iso); } // the New York calendar day of an instant, as a local Date (for dateShort / DAY_SHORT)
+  function nyMin(iso){ return nyParts(iso).min; }
+  function phoneElsewhere(){ var d=new Date(); return ((nyNow().min-(d.getHours()*60+d.getMinutes()))%1440+1440)%1440!==0; } // the phone is on another time zone: say so next to the times
   function mondayOf(d){var day=d.getDay();var diff=(day===0)?-6:1-day;var m=new Date(d);m.setDate(d.getDate()+diff);m.setHours(0,0,0,0);return m;}
   function addDays(d,n){var r=new Date(d);r.setDate(d.getDate()+n);return r;}
   function isSameDay(a,b){return toISO(a)===toISO(b);}
@@ -1901,7 +1910,7 @@
   function emptyWeek(){var w={notes:{}};DAY_KEYS.forEach(function(k){w[k]=[];});return w;}
   function sortShifts(list){return list.slice().sort(function(a,b){return mins(a.start)-mins(b.start)||a.name.localeCompare(b.name);});}
   function weekKeys(){return Object.keys(state.data.weeks).sort();}
-  function currentMondayISO(){return toISO(mondayOf(new Date()));}
+  function currentMondayISO(){return toISO(mondayOf(fromISO(nyTodayISO())));}
   function shiftKey(wk,day,id){return wk+":"+day+":"+id;}
   function storageGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
   function storageSet(k,v){try{if(v==null)localStorage.removeItem(k);else localStorage.setItem(k,v);}catch(e){}}
@@ -1948,7 +1957,7 @@
 
   // Shifts of a person from today onward (past ones are never touched — archive).
   function upcomingShiftsOf(name){
-    var out=[]; var todayISO=toISO(new Date());
+    var out=[]; var todayISO=nyTodayISO();
     Object.keys(state.data.weeks).forEach(function(wk){
       DAY_KEYS.forEach(function(d,i){
         var dateISO=toISO(addDays(fromISO(wk),i)); if(dateISO<todayISO) return;
@@ -1999,7 +2008,7 @@
   }
   function maybeBirthdayPopup(){
     if(mustIdentify()) return false;
-    var today=new Date(), names=birthdaysOn(today); if(!names.length) return false;
+    var today=fromISO(nyTodayISO()), names=birthdaysOn(today); if(!names.length) return false;
     var key="bl_bday_"+toISO(today); if(storageGet(key)) return false;
     $("bdayNames").textContent=names.join(lang==="it"?" e ":" and ");
     $("bdayOverlay").classList.add("show"); confetti(6000); storageSet(key,"1"); return true;
@@ -2083,15 +2092,15 @@
   function coverStateFor(wk,d,id){ var q=state.requests; if(!q||!q.mine) return null; return q.mine.filter(function(r){return r.type==="cover"&&r.week===wk&&r.day===d&&r.shiftId===id&&(r.status==="pending"||r.status==="approved");}).sort(function(a,b){return b.createdAt.localeCompare(a.createdAt);})[0]||null; }
   function coverLine(wk,d,s,date){
     if(me.name!==state.me.name||state.viewAs) return "";
-    var q=state.requests; var minH=(q&&q.coverMinHours)||24; var start=new Date(date.getFullYear(),date.getMonth(),date.getDate(),mins(s.start)/60|0,mins(s.start)%60);
+    var q=state.requests; var minH=(q&&q.coverMinHours)||24; var ny=nyNow(), untilMin=Math.round((Date.parse(toISO(date)+"T12:00:00Z")-Date.parse(ny.iso+"T12:00:00Z"))/60000)+mins(s.start)-ny.min; // minutes until the shift starts, New York time
     var st=coverStateFor(wk,d,s.id);
     if(st&&st.status==="pending") return '<div class="me-cov"><span>'+h(t("reqCoverWait"))+'</span><button type="button" data-cancel="'+h(st.id)+'">'+h(t("reqCancel"))+'</button></div>';
-    if(start.getTime()-Date.now()<minH*3600000) return start.getTime()>Date.now()?'<div class="me-cov late"><span>'+h(t("reqTooLate",{h:minH}))+'</span></div>':"";
+    if(untilMin<minH*60) return untilMin>0?'<div class="me-cov late"><span>'+h(t("reqTooLate",{h:minH}))+'</span></div>':"";
     return '<div class="me-cov"><button type="button" data-cover="'+h(wk)+'|'+h(d)+'|'+h(s.id)+'" data-when="'+h(dateShort(date)+", "+range12(s.start,s.end))+'">'+h(t("reqCantMake"))+'</button></div>';
   }
   function renderMeRequests(){
     var box=$("meReq"); if(!box) return; if(me.name!==state.me.name||state.viewAs||!state.features.storage){ box.innerHTML=""; return; }
-    var q=state.requests||{mine:[]}; var today=toISO(new Date());
+    var q=state.requests||{mine:[]}; var today=nyTodayISO();
     var mine=(q.mine||[]).slice().sort(function(a,b){return b.createdAt.localeCompare(a.createdAt);}).slice(0,8);
     box.innerHTML='<div class="me-off"><div class="ttl">'+h(t("reqTimeOff"))+'</div><div class="frm"><div><div class="lbl">'+h(t("reqFrom"))+'</div><input type="date" id="offFrom" required placeholder="'+h(t("reqPick"))+'" min="'+today+'"></div><div><div class="lbl">'+h(t("reqTo"))+'</div><input type="date" id="offTo" required placeholder="'+h(t("reqPick"))+'" min="'+today+'"></div><input class="wide" type="text" id="offNote" maxlength="140" placeholder="'+h(t("reqNoteHint"))+'"><button type="button" class="btn primary" id="offSend">'+h(t("reqSend"))+'</button></div>'
       +(mine.length?'<div class="ttl" style="margin-top:12px">'+h(t("reqMine"))+'</div><div class="me-reqs">'+mine.map(function(r){ return '<div class="req-row"><div><span class="who">'+h(t(r.type==="cover"?"reqCoverOf":"reqOffOf",{d:reqWhen(r)}))+'</span>'+(r.type==="cover"&&r.taker?'<span class="sub">'+h(t("reqCoveredBy",{n:r.taker}))+'</span>':r.note?'<span class="sub">'+h(r.note)+'</span>':r.reply?'<span class="sub">'+h(r.reply)+'</span>':'')+'</div><div class="act">'+reqStatus(r)+(r.status==="pending"?'<button type="button" class="btn sm" data-cancel="'+h(r.id)+'">'+h(t("reqCancel"))+'</button>':'')+'</div></div>'; }).join("")+'</div>':'')+'</div>';
@@ -2173,15 +2182,15 @@
   function renderUpdated(){
     var el=$("updatedNote");
     if(!state.updatedAt){el.textContent="";return;}
-    var d=new Date(state.updatedAt);
-    el.innerHTML=t("updatedAt",{d:dateShort(d)+", "+fmt12(pad(d.getHours())+":"+pad(d.getMinutes()))})+(state.features.storage?"":"<br><span style='opacity:.7'>"+t("previewMode")+"</span>");
+    var d=nyDate(state.updatedAt);
+    el.innerHTML=t("updatedAt",{d:dateShort(d)+", "+fmtClock(state.updatedAt)})+(state.features.storage?"":"<br><span style='opacity:.7'>"+t("previewMode")+"</span>");
   }
 
   function renderHero(){
-    var now=new Date(), todayKey=DAY_KEY_BY_JSDAY[now.getDay()];
+    var ny=nyNow(), now=fromISO(ny.iso), todayKey=DAY_KEY_BY_JSDAY[now.getDay()];
     var wk=currentMondayISO(); var note=dayNote(wk,todayKey); var hours=hoursFor(wk,todayKey);
     var closedToday=note&&isClosedStatus(note.status);
-    var m=now.getHours()*60+now.getMinutes();
+    var m=ny.min;
     var isOpen=!closedToday&&m>=mins(hours.open)&&m<mins(hours.close);
     var list=(state.data.weeks[wk]&&state.data.weeks[wk][todayKey])||[];
     var names=sortShifts(list).map(function(s){return h(s.name)+(s.station?" <span style='opacity:.7'>("+h(s.station)+")</span>":"");});
@@ -2211,17 +2220,18 @@
   }
 
   // ---------- Toast clock badges ----------
-  function fmtClock(iso){ var d=new Date(iso); return fmt12(pad(d.getHours())+":"+pad(d.getMinutes())); }
+  function fmtClock(iso){ var p=nyParts(iso); return fmt12(pad(p.hh)+":"+pad(p.mm)); }
+  function isGhost(e){ return !!(e&&(e.ghost||(e.out&&!e.auto&&Date.parse(e.out)-Date.parse(e.in)<2*60000))); } // in and out within seconds: a tap by mistake at the terminal, never a shift
   function clockBadge(wk,day,s,isToday,isPast){
     if(!state.features.toast||!state.toastToday||state.toastToday.date!==toISO(addDays(fromISO(wk),DAY_KEYS.indexOf(day)))) return "";
-    var list=state.toastToday.byName[s.name]||[];
+    var list=(state.toastToday.byName[s.name]||[]).filter(function(e){return !isGhost(e);});
     if(!list.length){
       // scheduled start passed by 20+ min and nothing punched → no-show hint (today only)
-      if(isToday){ var now=new Date(); var m=now.getHours()*60+now.getMinutes(); if(m>mins(s.start)+20 && m<mins(s.end)) return '<span class="clock noshow">'+t("notClockedIn")+'</span>'; }
+      if(isToday){ var m=nyNow().min; if(m>mins(s.start)+20 && m<mins(s.end)) return '<span class="clock noshow">'+t("notClockedIn")+'</span>'; }
       return "";
     }
     var first=list[0], last=list[list.length-1];
-    var inD=new Date(first.in); var inMin=inD.getHours()*60+inD.getMinutes(); var lateBy=inMin-mins(s.start);
+    var inMin=nyMin(first.in), lateBy=inMin-mins(s.start);
     var lateTxt=lateBy>10?t("lateBy",{t:(lateBy>=60?durText(lateBy*60000):lateBy+' min')}):'';
     if(!last.out&&last.breakStart) return '<span class="clock in brk">'+t("onBreakBadge",{t:fmtClock(last.breakStart)})+'</span>';
     if(!last.out) return '<span class="clock in'+(lateBy>10?' late':'')+'">'+t("clockedIn",{t:fmtClock(first.in)})+lateTxt+'</span>';
@@ -2391,7 +2401,7 @@
   function tcDateLabel(iso){
     var today=nyTodayISO(), d=fromISO(iso);
     var name=iso===today?t("today"):iso===toISO(addDays(fromISO(today),-1))?t("yesterday"):DAY_NAMES[DAY_KEY_BY_JSDAY[d.getDay()]];
-    return {main:name, sub:DAY_SHORT[DAY_KEY_BY_JSDAY[d.getDay()]]+", "+dateShort(d)};
+    return {main:name, sub:DAY_SHORT[DAY_KEY_BY_JSDAY[d.getDay()]]+", "+dateShort(d)+(phoneElsewhere()?" · "+t("nyTime"):"")};
   }
   function renderClockBtn(){
     var b=$("clockBtn"); if(!state.features.toast){ b.style.display="none"; return; }
@@ -2422,7 +2432,7 @@
     var now=Date.now(); var entries=data.entries.slice(); // the Time clock shows EVERYONE, floor and kitchen: who is on shift and when they clocked (owner's rule 2026-09-20)
     var onNow=entries.filter(function(e){return !e.out;}).length;
     var totalMs=entries.reduce(function(a,e){ return a+entryMs(e,now); },0);
-    var people=Object.keys(entries.reduce(function(m,e){m[e.name]=1;return m;},{})).length;
+    var people=Object.keys(entries.reduce(function(m,e){if(!isGhost(e)) m[e.name]=1;return m;},{})).length;
     sum.innerHTML='<div class="tile'+(onNow?" on":"")+'"><b>'+onNow+'</b><span>'+t("onTheClock")+'</span></div>'
       +'<div class="tile"><b>'+people+'</b><span>'+(people===1?t("person"):t("people"))+'</span></div>'
       +'<div class="tile"><b>'+(totalMs?durText(totalMs):"0 min")+'</b><span>'+t("totalHours")+'</span></div>';
@@ -2433,11 +2443,11 @@
       // people still on the clock first, then by clock-in time
       entries.sort(function(a,b){ if(!a.out!==!b.out) return a.out?1:-1; return String(a.in).localeCompare(String(b.in)); });
       list.innerHTML=entries.map(function(e,i){
-        var on=!e.out; var ms=entryMs(e,now);
+        var on=!e.out; var ms=entryMs(e,now), ghost=isGhost(e);
         var showFull=e.full&&e.full!==e.name;
-        return '<div class="tc-row'+(on?" on":"")+(on&&e.breakStart?" onbreak":"")+(e.auto?" autoout":"")+'" style="animation-delay:'+Math.min(i*45,400)+'ms">'
+        return '<div class="tc-row'+(on?" on":"")+(on&&e.breakStart?" onbreak":"")+(e.auto?" autoout":"")+(ghost?" ghost":"")+'" style="animation-delay:'+Math.min(i*45,400)+'ms">'
           +'<div class="av" style="background:'+avColor(e.full||e.name)+'">'+h(initials(e.name))+'</div>'
-          +'<div class="nm">'+h(e.name)+(e.auto?'<small class="miss">'+h(t("autoOutTc"))+'</small>':showFull?'<small>'+h(e.full)+'</small>':(on&&e.breakStart?'<small class="brk">'+t("onBreakSince",{t:durText(now-Date.parse(e.breakStart))})+'</small>':on?'<small>'+t("onClockNow")+'</small>':'<small>'+t("shiftDone")+'</small>'))+'</div>'
+          +'<div class="nm">'+h(e.name)+(e.auto?'<small class="miss">'+h(t("autoOutTc"))+'</small>':ghost?'<small class="ghost">'+h(t("ghostTc"))+'</small>':showFull?'<small>'+h(e.full)+'</small>':(on&&e.breakStart?'<small class="brk">'+t("onBreakSince",{t:durText(now-Date.parse(e.breakStart))})+'</small>':on?'<small>'+t("onClockNow")+'</small>':'<small>'+t("shiftDone")+'</small>'))+'</div>'
           +'<div class="tm"><span class="io"><span class="in">'+fmtClock(e.in)+'</span> → '+(on?'<span class="in">'+t("nowWord")+'</span>':e.auto?'<span class="out miss">?</span>':'<span class="out">'+fmtClock(e.out)+'</span>')+'</span><span class="dur">'+(e.auto?'<span class="miss">'+h(t("notCounted"))+'</span>':(on&&e.breakStart?'<span class="brk">on break</span> ':"")+durText(ms)+(e.breakMin||e.breakStart?'<small class="brk">'+h(breakTag(e).replace(/^ · /,""))+'</small>':""))+'</span></div>'
           +'</div>';
       }).join("");
@@ -2454,7 +2464,7 @@
   function renderDays(){ setTimeout(renderChecks,0);
     var grid=$("daysGrid"); var wk=state.activeWeek;
     if(!wk){grid.innerHTML="";return;}
-    var start=fromISO(wk), today=new Date(), week=state.data.weeks[wk]||emptyWeek();
+    var start=fromISO(wk), today=fromISO(nyTodayISO()), week=state.data.weeks[wk]||emptyWeek();
     grid.innerHTML=DAY_KEYS.map(function(key,i){
       var date=addDays(start,i), isLate=(key==="fri"||key==="sat"), isToday=isSameDay(date,today);
       var isPast=date<today&&!isToday;
@@ -2569,7 +2579,7 @@
     var on=!state.me.open, now=new Date();
     $("punchTitle").textContent=on?"Clock in now?":"Clock out now?";
     $("punchName").textContent=state.me.fullName||state.me.name;
-    $("punchWhen").textContent=fmtClock(now.toISOString())+" · "+dateLabel(now);
+    $("punchWhen").textContent=fmtClock(now.toISOString())+" · "+dateLabel(nyDate(now.toISOString()));
     $("punchLead").textContent=on?"Your clock-in is recorded with the exact time and shows in your week and in the time clock.":"You have worked "+durText(entryMs(state.me.open))+" today"+(state.me.open.breakStart?". Your break ends now too.":(state.me.open.breakMin?" (break of "+durText(state.me.open.breakMin*60000)+" not counted).":"."));
     $("punchErr").textContent=""; var g=$("punchGo"); g.textContent=on?"Clock in":"Clock out"; g.className="btn "+(on?"good":"danger"); g.disabled=false;
     $("punchOverlay").classList.add("show");
@@ -3039,7 +3049,7 @@
   function barLang(){ var l=storageGet(BAR_LANG_KEY); return l==="it"||l==="en"?l:(effectiveLang()==="it"?"it":"en"); }
   function barContent(){ var b=state.bar&&state.bar.bar; if(!b) return null; var l=barLang(); return (b[l]&&typeof b[l]==="object"?b[l]:null)||b.en||b.src||null; }
   function barUnread(){ var b=state.bar&&state.bar.bar; return !!(b&&b.rev>(state.bar.seenRev||0)&&!(state.me.name&&docsExempt(state.me.name))); } // the owner dept is never "behind" on his own notes
-  function barDate(iso,withTime){ var d=new Date(iso||""); if(isNaN(d)) return ""; return dateShort(d)+(withTime?", "+fmtClock(iso):""); }
+  function barDate(iso,withTime){ if(isNaN(new Date(iso||""))) return ""; var d=nyDate(iso); return dateShort(d)+(withTime?", "+fmtClock(iso):""); }
   function brText(s){ return h(s).replace(/\r?\n/g,"<br>"); } // escape first, then line breaks
   function barLines(list){ return (list||[]).map(function(x){ return '<li>'+h(x)+'</li>'; }).join(""); }
   async function loadBar(){
@@ -3127,7 +3137,7 @@
     if(!r.ok){$("logList").innerHTML='<div class="empty-note">'+t("historyFail")+'</div>';return;}
     var entries=r.json.entries||[];
     if(!entries.length){$("logList").innerHTML='<div class="empty-note">'+(r.json.storage?t("noChanges"):t("historyNeedsDb"))+'</div>';return;}
-    var PAGE=25; function row(e,open){ var d=new Date(e.at), ch=e.changes||[]; return '<details class="entry"'+(open?' open':'')+'><summary><span class="chev">›</span><span class="when">'+dateShort(d)+', '+d.getFullYear()+' · '+fmt12(pad(d.getHours())+":"+pad(d.getMinutes()))+(e.version?' · v'+e.version:'')+'</span><span class="n">'+h(ch.length===1?t("oneChange"):t("nChanges",{n:ch.length}))+'</span></summary><ul>'+ch.map(function(c){return '<li>'+h(c)+'</li>';}).join("")+'</ul></details>'; }
+    var PAGE=25; function row(e,open){ var d=nyDate(e.at), ch=e.changes||[]; return '<details class="entry"'+(open?' open':'')+'><summary><span class="chev">›</span><span class="when">'+dateShort(d)+', '+d.getFullYear()+' · '+fmtClock(e.at)+(e.version?' · v'+e.version:'')+'</span><span class="n">'+h(ch.length===1?t("oneChange"):t("nChanges",{n:ch.length}))+'</span></summary><ul>'+ch.map(function(c){return '<li>'+h(c)+'</li>';}).join("")+'</ul></details>'; }
     var shown=Math.min(PAGE,entries.length), box=$("logList");
     function paint(){ box.innerHTML=entries.slice(0,shown).map(function(e,i){return row(e,i===0);}).join("")+(shown<entries.length?'<div class="me-actions more"><button class="btn" type="button" id="logMore">'+h(t("showMore",{n:Math.min(PAGE,entries.length-shown)}))+'</button></div>':''); var m=$("logMore"); if(m) m.addEventListener("click",function(){ shown=Math.min(entries.length,shown+PAGE); paint(); }); }
     paint();
@@ -3339,7 +3349,7 @@
   }
   // next shift of a person: today's shift if it hasn't ended, otherwise the first upcoming one
   function nextShiftOf(name){
-    var now=new Date(), todayISO=toISO(now), m=now.getHours()*60+now.getMinutes(); var best=null;
+    var ny=nyNow(), todayISO=ny.iso, m=ny.min; var best=null;
     Object.keys(state.data.weeks).sort().forEach(function(wk){
       DAY_KEYS.forEach(function(d,i){
         var date=addDays(fromISO(wk),i), iso=toISO(date); if(iso<todayISO) return;
@@ -3371,7 +3381,7 @@
     if(canPunch()&&op){ var brkMs=(op.breakMin||0)*60000+(onBrk?Date.now()-Date.parse(op.breakStart):0); var worked=durText(Math.max(0,Date.now()-Date.parse(op.in)-brkMs)); el.textContent=onBrk?"On break since "+fmtClock(op.breakStart)+" · "+durText(Date.now()-Date.parse(op.breakStart))+" · worked "+worked:"Clocked in since "+fmtClock(op.in)+" · "+worked+(brkMs?" · break "+durText(brkMs):""); if(onBrk) el.className="onbreak"; }
     else if(!nx){ el.textContent=t("noUpcoming"); }
     else {
-      var now=new Date(), todayISO=toISO(now), m=now.getHours()*60+now.getMinutes(), tomorrowISO=toISO(addDays(now,1));
+      var ny=nyNow(), now=fromISO(ny.iso), todayISO=ny.iso, m=ny.min, tomorrowISO=toISO(addDays(now,1));
       var on=nx.iso===todayISO&&m>=mins(nx.s.start);
       var when=nx.iso===todayISO?t("today"):nx.iso===tomorrowISO?t("tomorrow"):dateLabel(nx.date);
       el.textContent=(on?t("onShiftNow"):t("nextShift",{w:when}))+range12(nx.s.start,nx.s.end)+(nx.s.station?" · "+nx.s.station:"");
@@ -3387,7 +3397,7 @@
   function rulesActive(){ return !!(RULES&&RULES.version&&/^\d{4}-\d{2}-\d{2}$/.test(RULES.version)); }
   function docsExempt(n){ return deptOf(n||state.me.name)==="owner"; } // the owner signs nothing: the documents are his, given to the staff
   function rulesRequired(){ return rulesActive()&&!!state.me.name&&!docsExempt()&&state.me.rulesAck!==undefined&&(!state.me.rulesAck||state.me.rulesAck.version!==RULES.version); }
-  function ackDate(iso){ var d=new Date(iso||""); if(isNaN(d)) return "—"; try{ return d.toLocaleDateString(lang==="it"?"it-IT":"en-US",{year:"numeric",month:"short",day:"numeric"}); }catch(e){ return dateShort(d)+", "+d.getFullYear(); } }
+  function ackDate(iso){ var d=new Date(iso||""); if(isNaN(d)) return "—"; try{ return d.toLocaleDateString(lang==="it"?"it-IT":"en-US",{timeZone:NY_TZ,year:"numeric",month:"short",day:"numeric"}); }catch(e){ return dateShort(d)+", "+d.getFullYear(); } }
   function rulesDoc(){ return Object.assign({id:"rules",icon:"",short:"House Rules",printUrl:"/rules.html"},RULES); }
   // Status of one document for the signed-in person: {ack, ok, due, late}. Deadline = deadlineDays after the later of
   // "this version was published" and "this person created their PIN" (training: trainingDays, once per calendar year).
@@ -3710,13 +3720,13 @@
     $("mePrev").disabled=!wk||keys.indexOf(wk)<=0; $("meNext").disabled=!wk||keys.indexOf(wk)>=keys.length-1;
     if(!wk){ lbl.textContent=t("noWeeksYet"); sub.textContent=""; list.innerHTML='<div class="me-empty"><span class="big"></span>'+t("nothingPublished")+'</div>'; sum.innerHTML=""; note.textContent=""; return; }
     var l=weekLabel(wk); lbl.textContent=l.short; sub.textContent="";
-    var start=fromISO(wk), today=new Date(), todayISO=toISO(today), week=state.data.weeks[wk]||emptyWeek();
+    var start=fromISO(wk), today=fromISO(nyTodayISO()), todayISO=toISO(today), week=state.data.weeks[wk]||emptyWeek();
     var hk=me.name+"|"+wk, hrs=me.hours[hk]&&me.hours[hk].data; var byDay={}; if(hrs&&hrs.entries) hrs.entries.forEach(function(e){ (byDay[e.day]=byDay[e.day]||[]).push(e); });
-    var rows=[], schedMin=0, schedSoFarMin=0, workedMs=0, nowMs=Date.now(), nowMin=today.getHours()*60+today.getMinutes();
+    var rows=[], schedMin=0, schedSoFarMin=0, workedMs=0, nowMs=Date.now(), nowMin=nyNow().min;
     DAY_KEYS.forEach(function(d,i){
       var date=addDays(start,i), iso=toISO(date); var isToday=iso===todayISO, isPast=iso<todayISO;
       var mine=sortShifts((week[d]||[]).filter(function(s){return s.name===me.name;}));
-      var punches=byDay[d]||[];
+      var punches=(byDay[d]||[]).filter(function(e){return !isGhost(e);}); // a tap by mistake at the terminal is not a clock-in
       mine.forEach(function(s){ var len=mins(s.end)-mins(s.start); schedMin+=len; if(isPast) schedSoFarMin+=len; else if(isToday&&nowMin>mins(s.start)) schedSoFarMin+=Math.min(len,nowMin-mins(s.start)); });
       punches.forEach(function(e){ workedMs+=entryMs(e,nowMs); });
       if(!mine.length&&!punches.length) return;
@@ -3757,6 +3767,7 @@
     else if(hrs.appClock) note.textContent=t("hoursFromApp",{t:fmtClock(hrs.fetchedAt)});
     else if(!hrs.linked) note.textContent=t("notLinked");
     else note.textContent=t("hoursFromToast",{t:fmtClock(hrs.fetchedAt)});
+    if(phoneElsewhere()&&note.textContent) note.textContent+=" · "+t("nyTime");
   }
   async function loadAccounts(){
     if(!state.admin) return;

@@ -70,6 +70,8 @@ function fakeEntries() {
   { // yesterday Luca forgot to clock out: Toast closed the entry by itself at 4:00 AM (autoClockedOut) — the app must not count those hours
     const y = new Date(today + "T12:00:00Z"); y.setUTCDate(y.getUTCDate() - 1); const yd = y.toISOString().slice(0, 10); const nx = new Date(y); nx.setUTCDate(nx.getUTCDate() + 1); const nd = nx.toISOString().slice(0, 10);
     out.push({ guid: "te-auto-" + yd, employeeReference: { guid: "guid-luca-rossi-0001" }, inDate: nyInstant(yd, 16, 2), outDate: nyInstant(nd, 4, 0), autoClockedOut: true, deleted: false });
+    // yesterday Joe tapped the terminal by mistake right after clocking out: in and out 1.6 s apart (a "ghost" entry, never a shift)
+    out.push({ guid: "te-ghost-" + yd, employeeReference: { guid: "guid-joe" }, inDate: nyInstant(yd, 21, 40), outDate: new Date(Date.parse(nyInstant(yd, 21, 40)) + 1600).toISOString(), deleted: false });
   }
   const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
   // the LIVE schedule (what the tests and the screenshot scripts post), not the static seed, so shifts added for today get clock-ins too
