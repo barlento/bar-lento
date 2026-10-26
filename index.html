@@ -2832,13 +2832,11 @@
     { var d=deptOf(n); var jobs=acc.toast&&acc.toast.jobs&&acc.toast.jobs.length?t("deptFromToast",{j:acc.toast.jobs.join(", ")}):"";
       html+='<div class="pcard"><div class="ph">'+h(t("phDept"))+'</div>'+(jobs?'<div class="pr"><span class="dim" style="font-size:.78rem">'+h(jobs)+'</span></div>':'')+(isChef()?'<div class="pr"><span class="dept">'+DEPT_SVG[d]+'</span><span>'+h(t(DEPT_LABEL[d]))+'</span></div>':'<div class="dept-tiles">'+["floor","kitchen","chef","management","owner"].map(function(k){ return '<button type="button" class="dept-pick'+(d===k?" sel":"")+'" data-d="'+k+'"><span class="dept">'+DEPT_SVG[k]+'</span>'+h(t(DEPT_LABEL[k]))+'</button>'; }).join("")+'</div>'+((state.data.deptManual||[]).indexOf(n)!==-1?'<div class="hint" style="margin-top:6px">'+h(t("deptManualNote"))+'</div>':'')+'<div class="hint" style="margin-top:6px">'+h(t("deptRoleHint"))+'</div>')+'</div>'; }
     html+='<div class="pcard"><div class="ph">'+h(t("phAccess"))+'</div><div class="pr"><span class="'+(acc.pin?"ok":"dim")+'">'+h(accTxt)+'</span><button type="button" class="pinbtn reset"'+(acc.pin||acc.devices?"":" disabled")+'>'+h(t("pinReset"))+'</button></div></div>';
-    var explicit=(state.data.appClock||[]).indexOf(n)!==-1; var salaried=!!(acc.toast&&acc.toast.salaried); var ac=!acc.toast||explicit||salaried; // not in Toast or salaried in Toast → app clock automatically; hourly Toast people → only if the manager chose it
+    var ac=!acc.toast; // owner 2026-10-26: whoever is in Toast clocks on Toast; the app clock is only for people who do not exist in Toast (no switch, no salaried rule)
     {
       html+='<div class="pcard"><div class="ph">'+h(t("phClock"))+'</div>';
       if(!acc.toast) html+='<div class="pr"><span class="ok">'+h(t("appClockRow"))+'</span></div>';
-      else if(salaried) html+='<div class="pr"><span class="ok">'+h(t("appClockSalary"))+'</span></div>';
-      else if(!isChef()) html+='<div class="pr"><span class="'+(explicit?"ok":"dim")+'">'+h(explicit?t("appClockSalaried"):t("toastClockRow"))+'</span><button type="button" class="pinbtn appclock">'+h(explicit?t("appClockOff"):t("appClockOn"))+'</button></div>';
-      else html+='<div class="pr"><span class="'+(explicit?"ok":"dim")+'">'+h(explicit?t("appClockSalaried"):t("toastClockRow"))+'</span></div>';
+      else html+='<div class="pr"><span class="dim">'+h(t("toastClockRow"))+'</span></div>';
       if(ac) html+='<div class="me-tabs" style="margin-top:8px"><button class="navbtn pm-prev" type="button" aria-label="Previous month">‹</button><div class="lbl"><b class="pm-lbl"></b><span class="pm-sub"></span></div><button class="navbtn pm-next" type="button" aria-label="Next month">›</button></div><div id="personPunches"><div class="hint">'+h(t("loadingWord"))+'</div></div>';
       html+='</div>';
     }
@@ -2867,11 +2865,6 @@
       body.querySelector(".pm-next").addEventListener("click",function(){ person.month=shiftMonth(person.month,1); renderPersonPunches(n); });
     }
     body.querySelectorAll(".pinbtn.record").forEach(function(b){b.addEventListener("click",function(){ downloadRecord(n,b); });});
-    body.querySelectorAll(".pinbtn.appclock").forEach(function(b){b.addEventListener("click",function(){
-      state.data.appClock=state.data.appClock||[]; var i=state.data.appClock.indexOf(n);
-      if(i===-1) state.data.appClock.push(n); else state.data.appClock.splice(i,1);
-      scheduleSave(); renderPerson(); toast(i===-1?t("appClockSet",{n:n}):t("appClockUnset",{n:n}),4000);
-    });});
     body.querySelectorAll(".dept-pick").forEach(function(b){b.addEventListener("click",function(){
       var d=b.getAttribute("data-d"); if(deptOf(n)===d) return;
       if(!isOwner()&&(d==="management"||d==="owner"||deptOf(n)==="management"||deptOf(n)==="owner")){ toast(t("ownerOnly"),4000); return; }

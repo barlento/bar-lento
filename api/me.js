@@ -228,17 +228,15 @@ module.exports = async (req, res) => {
         if (!name) return send(res, 401, { error: "unauthorized" });
         const week = String(url.searchParams.get("week") || "");
         if (!/^\d{4}-\d{2}-\d{2}$/.test(week)) return send(res, 400, { error: "bad_week" });
-        if (await punch.isAppClock(doc.data, name)) {
-          const entries = await punch.weekEntries(name, week);
-          return send(res, 200, { name, week, toast: false, appClock: true, linked: true, entries, workedMinutes: Math.round(punch.minutes(entries)), fetchedAt: new Date().toISOString() });
-        }
-        if (!toast.enabled()) return send(res, 200, { name, week, toast: false, linked: false, entries: [] });
-        const emps = await toast.employees(true);
-        const map = toast.autoMap(doc.data.staff, doc.data.toastMap, emps);
-        const guid = map[name];
-        if (!guid) return send(res, 200, { name, week, toast: true, linked: false, entries: [] });
-        const entries = await toast.weekEntriesFor(guid, week);
-        return send(res, 200, { name, week, toast: true, linked: true, entries, workedMinutes: Math.round(sumMinutes(entries)), ghosts: entries.filter((e) => e.ghost).length || undefined, fetchedAt: new Date().toISOString() }); // ghost = in and out within seconds, a tap by mistake: listed, never counted
+        // Every real clock-in of the week: Toast entries when the person is linked, app entries always (Pietro clocks in from the app;
+        // Marta, Giordano and Luis did until 2026-10-26 and that history stays). Owner 2026-10-26: whoever is in Toast clocks on Toast.
+        const isApp = await punch.isAppClock(doc.data, name);
+        const appEntries = (await punch.weekEntries(name, week).catch(() => [])).map((e) => Object.assign({ app: true }, e));
+        let guid = null, toastEntries = [];
+        if (toast.enabled()) { const emps = await toast.employees(true); const map = toast.autoMap(doc.data.staff, doc.data.toastMap, emps); guid = map[name] || null; if (guid) toastEntries = await toast.weekEntriesFor(guid, week); }
+        if (!guid && !isApp && !appEntries.length) return send(res, 200, { name, week, toast: toast.enabled(), linked: false, entries: [] });
+        const entries = toastEntries.concat(appEntries).sort((a, b) => String(a.in).localeCompare(String(b.in)));
+        return send(res, 200, { name, week, toast: !!guid, appClock: isApp, linked: true, entries, workedMinutes: Math.round(sumMinutes(toastEntries) + punch.minutes(appEntries)), ghosts: toastEntries.filter((e) => e.ghost).length || undefined, fetchedAt: new Date().toISOString() }); // ghost = in and out within seconds, a tap by mistake: listed, never counted
       }
       // App time clock record for one month: the person's own, or any person for the manager.
       if (action === "punches") {
