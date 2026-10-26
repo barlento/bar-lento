@@ -1724,12 +1724,13 @@
   var L_EN={days:{mon:"Monday",tue:"Tuesday",wed:"Wednesday",thu:"Thursday",fri:"Friday",sat:"Saturday",sun:"Sunday"},short:{mon:"Mon",tue:"Tue",wed:"Wed",thu:"Thu",fri:"Fri",sat:"Sat",sun:"Sun"},months:["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]};
   var L_IT={days:{mon:"Lunedì",tue:"Martedì",wed:"Mercoledì",thu:"Giovedì",fri:"Venerdì",sat:"Sabato",sun:"Domenica"},short:{mon:"Lun",tue:"Mar",wed:"Mer",thu:"Gio",fri:"Ven",sat:"Sab",sun:"Dom"},months:["gen","feb","mar","apr","mag","giu","lug","ago","set","ott","nov","dic"]};
   var DAY_NAMES=L_EN.days, DAY_SHORT=L_EN.short;
-  var OPENING={mon:{open:"16:00",close:"22:00"},tue:{open:"16:00",close:"22:00"},wed:{open:"16:00",close:"22:00"},thu:{open:"16:00",close:"22:00"},fri:{open:"16:00",close:"23:00"},sat:{open:"16:00",close:"23:00"},sun:{open:"16:00",close:"22:00"}};
+  // The venue's hours (owner 2026-10-26): Monday closed, Tue–Thu 12 PM–10 PM, Fri–Sat 12 PM–11 PM, Sun 11 AM–6 PM (the kitchen closes one hour earlier). Same table as lib/hours.js.
+  var OPENING={mon:null,tue:{open:"12:00",close:"22:00"},wed:{open:"12:00",close:"22:00"},thu:{open:"12:00",close:"22:00"},fri:{open:"12:00",close:"23:00"},sat:{open:"12:00",close:"23:00"},sun:{open:"11:00",close:"18:00"}};
   var MONTHS=L_EN.months;
   var DAY_KEY_BY_JSDAY=["sun","mon","tue","wed","thu","fri","sat"];
   var STATUS_LABEL={closed:"Closed",holiday:"Holiday · closed",half:"Half day",event:"Private event"};
   function statusLabel(st){ return t({closed:"stClosedLbl",holiday:"stHolidayLbl",half:"stHalfLbl",event:"stEventLbl"}[st]||"stClosedLbl"); }
-  function hoursFor(wk,day){ var n=dayNote(wk,day); if(n&&n.status==="half"&&n.open&&n.close) return {open:n.open,close:n.close}; return OPENING[day]; }
+  function hoursFor(wk,day){ var n=dayNote(wk,day); if(n&&(n.status==="half"||n.status==="event")&&n.open&&n.close) return {open:n.open,close:n.close}; var b=OPENING[day]; if(b) return b; return {open:"",close:"",closed:!(n&&n.status==="event")}; } // closed:true = a day the bar is closed by default (Monday) unless Day settings open it
   var PW_KEY="bl_admin_pw", ARCHIVE_KEY="bl_show_archive", LANG_KEY="bl_lang", ME_TOKEN_KEY="bl_me_token", ME_NAME_KEY="bl_me_name";
 
   // ---------- manager-mode language (staff always see English) ----------
@@ -1918,7 +1919,7 @@
   function isClosedStatus(st){return st==="closed"||st==="holiday";}
 
   function fmt12(t){ if(!t)return""; if(t==="00:00")return "12:00 AM"; var p=t.split(":").map(Number); var ap=p[0]>=12?"PM":"AM"; var hh=p[0]%12||12; return hh+":"+pad(p[1])+" "+ap; }
-  function range12(a,b){ var A=fmt12(a),B=fmt12(b); var apA=A.slice(-2),apB=B.slice(-2); if(apA===apB) return A.slice(0,-3)+"–"+B; return A+"–"+B; }
+  function range12(a,b){ if(!a||!b) return ""; var A=fmt12(a),B=fmt12(b); var apA=A.slice(-2),apB=B.slice(-2); if(apA===apB) return A.slice(0,-3)+"–"+B; return A+"–"+B; }
   function dateLabel(d){return DAY_SHORT[DAY_KEY_BY_JSDAY[d.getDay()]]+" "+dateShort(d);}
   function dateShort(d,L){ L=L||(lang==="it"?L_IT:L_EN); return lang==="it"&&L===L_IT ? d.getDate()+" "+L.months[d.getMonth()] : L.months[d.getMonth()]+" "+d.getDate(); }
 
@@ -2189,9 +2190,9 @@
   function renderHero(){
     var ny=nyNow(), now=fromISO(ny.iso), todayKey=DAY_KEY_BY_JSDAY[now.getDay()];
     var wk=currentMondayISO(); var note=dayNote(wk,todayKey); var hours=hoursFor(wk,todayKey);
-    var closedToday=note&&isClosedStatus(note.status);
+    var closedToday=(note&&isClosedStatus(note.status))||!!hours.closed;
     var m=ny.min;
-    var isOpen=!closedToday&&m>=mins(hours.open)&&m<mins(hours.close);
+    var isOpen=!closedToday&&!!hours.open&&m>=mins(hours.open)&&m<mins(hours.close);
     var list=(state.data.weeks[wk]&&state.data.weeks[wk][todayKey])||[];
     var names=sortShifts(list).map(function(s){return h(s.name)+(s.station?" <span style='opacity:.7'>("+h(s.station)+")</span>":"");});
     var el=$("heroStatus"); el.className="hero"+(isOpen?" open":"")+(closedToday?" closedday":"");
@@ -2468,8 +2469,7 @@
     grid.innerHTML=DAY_KEYS.map(function(key,i){
       var date=addDays(start,i), isLate=(key==="fri"||key==="sat"), isToday=isSameDay(date,today);
       var isPast=date<today&&!isToday;
-      var note=(week.notes&&week.notes[key])||null; var closed=note&&isClosedStatus(note.status);
-      var hours=(note&&note.status==="half"&&note.open&&note.close)?{open:note.open,close:note.close}:OPENING[key];
+      var note=(week.notes&&week.notes[key])||null; var hours=hoursFor(wk,key); var closed=(note&&isClosedStatus(note.status))||!!hours.closed;
       var shifts=sortShifts((week[key]||[]).filter(function(s){return canSee(s.name);}));
       var confirmed=shifts.filter(function(s){return !!state.confirmations[shiftKey(wk,key,s.id)];}).length;
       var rows=shifts.length?shifts.map(function(s){
@@ -2480,7 +2480,7 @@
           +'<span class="main"><span class="who">'+h(s.name)+(s.station?'<span class="st">'+h(s.station)+'</span>':(s.src==="toast"?'<span class="st">Toast</span>':s.src==="app"?'<span class="st">App</span>':""))+'</span><span class="when mono">'+range12(s.start,s.end)+'</span>'+clockBadge(wk,key,s,isToday,isPast)+'</span>'
           +'<span class="edit" aria-hidden="true"></span></button>';
       }).join(""):'<div class="empty-note">'+(closed?t("noShiftsClosed"):t("noShiftsAssigned"))+'</div>';
-      var badge=note&&note.status?'<span class="badge '+note.status+'">'+statusLabel(note.status)+'</span>':"";
+      var badge=note&&note.status?'<span class="badge '+note.status+'">'+statusLabel(note.status)+'</span>':hours.closed?'<span class="badge closed">'+statusLabel("closed")+'</span>':"";
       var noteHtml=note&&note.text?'<div class="daynote">'+h(note.text)+'</div>':"";
       var hol=holidayOn(date), bdays=birthdaysOn(date);
       var chips=offChips(toISO(date))+(hol?'<span class="holichip">'+h(hol.name)+'</span>':"")+bdays.map(function(n){return '<span class="bdaychip">'+t("bdayChip",{n:lang==="it"?h(n):h(possessive(n))})+'</span>';}).join("");
@@ -2648,7 +2648,7 @@
     state.editing={week:wk,day:day,id:rec?rec.id:null};
     var date=addDays(fromISO(wk),DAY_KEYS.indexOf(day));
     $("shiftTitle").textContent=rec?t("editShift"):t("newShift");
-    $("shiftLead").textContent=DAY_NAMES[day]+", "+dateShort(date)+" · "+t("openHours")+" "+range12(hoursFor(wk,day).open,hoursFor(wk,day).close);
+    var dh0=hoursFor(wk,day); $("shiftLead").textContent=DAY_NAMES[day]+", "+dateShort(date)+" · "+(dh0.closed?statusLabel("closed"):t("openHours")+" "+range12(dh0.open,dh0.close));
     var names=deptView()==="kitchen"?kitchenNames():floorNames(); if(rec&&rec.name&&names.indexOf(rec.name)===-1) names.unshift(rec.name);
     var sel=$("nameSel");
     sel.innerHTML=names.map(function(n){return '<option value="'+h(n)+'">'+h(n)+'</option>';}).join("")+(isChef()?"":'<option value="__other">'+t("otherName")+'</option>');
@@ -2657,8 +2657,8 @@
     $("stationInput").value=rec?rec.station||"":"";
     $("stationList").innerHTML=stationsInUse().map(function(s){return '<option value="'+h(s)+'">';}).join("");
     var dh=hoursFor(wk,day);
-    timeOptions($("startSel"),rec?rec.start:dh.open);
-    timeOptions($("endSel"),rec?rec.end:dh.close);
+    timeOptions($("startSel"),rec?rec.start:(dh.open||"12:00"));
+    timeOptions($("endSel"),rec?rec.end:(dh.close||"22:00"));
     $("shiftDelete").style.display=rec?"":"none"; $("shiftDelete").textContent=t("delete"); $("shiftDelete").dataset.arm="";
     $("shiftErr").textContent="";
     $("shiftOverlay").classList.add("show");
@@ -2697,8 +2697,8 @@
   function openDayEditor(wk,day){
     state.dayEditing={week:wk,day:day};
     var date=addDays(fromISO(wk),DAY_KEYS.indexOf(day)); var note=dayNote(wk,day)||{status:"",text:""};
-    var hol=holidayOn(date), base=OPENING[day];
-    $("dayLead").textContent=DAY_NAMES[day]+", "+dateShort(date)+" · "+t("usually")+" "+range12(base.open,base.close);
+    var hol=holidayOn(date), base=OPENING[day]||{open:"12:00",close:"22:00",closed:true};
+    $("dayLead").textContent=DAY_NAMES[day]+", "+dateShort(date)+" · "+(base.closed?statusLabel("closed"):t("usually")+" "+range12(base.open,base.close));
     $("dayStatus").value=note.status||""; $("dayNote").value=note.text||""; $("dayErr").textContent="";
     timeOptions($("halfOpen"),note.open||base.open); timeOptions($("halfClose"),note.close||"19:00"); syncHalfHours();
     var hb=$("dayHoliday");
@@ -2959,7 +2959,7 @@
       var shifts=(week[d]||[]).filter(function(x){return x&&x.name&&!x.src&&canSee(x.name);});
       var lbl=DAY_SHORT[d]+" "+dateShort(date);
       if(closed&&shifts.length) out.push({lvl:"warn",txt:shifts.length===1?t("chkClosed1",{d:lbl}):t("chkClosed",{d:lbl,k:shifts.length})});
-      if(!closed&&!shifts.length&&iso>=todayISO) out.push({lvl:"info",txt:t("chkEmpty",{d:lbl})});
+      if(!closed&&!hoursFor(wk,d).closed&&!shifts.length&&iso>=todayISO) out.push({lvl:"info",txt:t("chkEmpty",{d:lbl})});
       shifts.forEach(function(x,k){
         var len=mins(x.end)-mins(x.start); if(len<=0) len+=1440;
         perName[x.name]=(perName[x.name]||0)+len; (daysOf[x.name]=daysOf[x.name]||{})[d]=1;
@@ -3186,7 +3186,7 @@
       var date=addDays(start,i), hours=hoursFor(wk,key), note=dayNote(wk,key);
       var head=L_EN.days[key]+" "+L_EN.months[date.getMonth()]+" "+date.getDate();
       if(note&&isClosedStatus(note.status)) head+=" — "+STATUS_LABEL[note.status].toUpperCase();
-      else head+=" ("+range12(hours.open,hours.close)+")"+(note&&note.status==="event"?" — PRIVATE EVENT":"")+(note&&note.status==="half"?" — HALF DAY":"");
+      else head+=(hours.closed?" — CLOSED":" ("+range12(hours.open,hours.close)+")")+(note&&note.status==="event"?" — PRIVATE EVENT":"")+(note&&note.status==="half"?" — HALF DAY":"");
       lines.push(head); if(note&&note.text) lines.push("  Note: "+note.text);
       var shifts=sortShifts(((state.data.weeks[wk]||{})[key]||[]).filter(function(s){return canSee(s.name);}));
       if(shifts.length) shifts.forEach(function(s){lines.push("  • "+s.name+(s.station?" ("+s.station+")":"")+" "+range12(s.start,s.end));});

@@ -9,6 +9,7 @@ const auth = require("../lib/auth");
 const { fmt12 } = require("../lib/diff");
 const accounts = require("../lib/accounts");
 const punch = require("../lib/punch");
+const hours = require("../lib/hours");
 const former = require("../lib/former");
 const toast = require("../lib/toast");
 const DOCS = require("../documents.js");
@@ -146,7 +147,7 @@ async function archivePdfFile() {
 
 // ---------- 2. one person's record ----------
 async function collectPerson(name, doc, confirmations, fromISO, toISO) {
-  const onStaff = doc.data.staff.includes(name);
+  const onStaff = doc.data.staff.includes(name); const dept = (doc.data.dept || {})[name] || "floor"; // kitchen people: the kitchen closes one hour earlier
   const formerRecs = await former.forName(name).catch(() => []);
   let guid = (doc.data.toastMap || {})[name] || null, fullName = null, email = null, emps = [];
   if (toast.enabled()) { try { emps = await toast.employees(true); if (!guid && onStaff) guid = toast.autoMap(doc.data.staff, doc.data.toastMap, emps)[name] || null; } catch (e) {} }
@@ -184,10 +185,11 @@ async function collectPerson(name, doc, confirmations, fromISO, toISO) {
         const date = toast.shiftDate(t.in); if (date < fromISO || date > toISO) return;
         const brk = t.out ? (t.breakMin || 0) : 0; // unpaid breaks taken on the terminal, subtracted from the hours
         const ms = t.out && !t.auto ? Math.max(0, Date.parse(t.out) - Date.parse(t.in) - brk * 60000) : 0; const mm = M(date); mm.worked += ms / 3600000; if (!t.ghost) mm.clockins++; if (t.auto) autoOut++;
-        const bad = t.auto ? "Probable wrong clock-out: forgot to clock out, Toast closed it at 4:00 AM · hours not counted · fix it in Toast"
+        let bad = t.auto ? "Probable wrong clock-out: forgot to clock out, Toast closed it at 4:00 AM · hours not counted · fix it in Toast"
           : t.ghost ? `Probable wrong clock-in: in and out within ${Math.max(1, Math.round((Date.parse(t.out) - Date.parse(t.in)) / 1000))} s, a tap by mistake · not a shift`
           : !t.out ? (date < today ? "Probable wrong clock-out: no clock-out recorded" : "still clocked in")
           : ms > LONG_H * 3600000 ? `Probable wrong clock-in/out: ${hoursTxt(ms)} h in one entry · check it in Toast` : "";
+        if (!bad) { const pl = hours.check(doc.data, date, t.in, t.out, dept); if (pl) bad = `Probable wrong clock-${pl.kind}: ${pl.text} · check it in Toast`; } // outside the opening hours (with tolerance)
         const isWrong = /^Probable wrong/.test(bad); if (isWrong) wrong++;
         clock.push({ date, weekday: weekdayOf(date), source: "Toast POS", in: nyParts(t.in).time, out: t.out ? nyParts(t.out).time : "", hours: t.out && !t.auto ? round2(ms / 3600000) : null, note: [bad, brk && !t.auto ? `break ${Math.round(brk)} min (unpaid, not counted)` : ""].filter(Boolean).join(" · "), wrong: isWrong, ghost: !!t.ghost, recorded: nyParts(t.in).stamp, ref: `Toast time entry ${t.guid}` });
       });
@@ -200,16 +202,17 @@ async function collectPerson(name, doc, confirmations, fromISO, toISO) {
     const brk = e.out ? punch.breakMinutes(e) : 0; // unpaid breaks taken from the app, subtracted from the hours
     const ghost = !!(e.out && !e.auto && !e.manual && Date.parse(e.out) - Date.parse(e.in) < toast.GHOST_MS); // tapped Clock in and Clock out by mistake
     const ms = e.out && !e.auto ? Math.max(0, Date.parse(e.out) - Date.parse(e.in) - brk * 60000) : 0; const mm = M(date); mm.worked += ms / 3600000; if (!ghost) mm.clockins++; if (e.auto) autoOut++; // an app clock-out the app closed itself (20 h) counts no hours, like Toast's 4:00 AM
-    const bad = e.manual ? "" : e.auto ? "Probable wrong clock-out: forgot to clock out, the app closed it after 20 h · hours not counted · tell the manager the real time"
+    let bad = e.manual ? "" : e.auto ? "Probable wrong clock-out: forgot to clock out, the app closed it after 20 h · hours not counted · tell the manager the real time"
       : ghost ? `Probable wrong clock-in: in and out within ${Math.max(1, Math.round((Date.parse(e.out) - Date.parse(e.in)) / 1000))} s, a tap by mistake · not a shift`
       : !e.out ? (date < today ? "Probable wrong clock-out: no clock-out recorded" : "still clocked in")
       : ms > LONG_H * 3600000 ? `Probable wrong clock-in/out: ${hoursTxt(ms)} h in one entry · check it with the manager` : "";
+    if (!bad && !e.manual) { const pl = hours.check(doc.data, date, e.in, e.out, dept); if (pl) bad = `Probable wrong clock-${pl.kind}: ${pl.text} · check it with the manager`; }
     const isWrong = /^Probable wrong/.test(bad); if (isWrong) wrong++;
     const noteParts = [e.manual ? (e.note || "entered by the owner") : bad, brk && !e.auto ? `break ${Math.round(brk)} min (unpaid, not counted)` : ""].filter(Boolean);
     clock.push({ date, weekday: weekdayOf(date), source: e.manual ? "Entered by the owner" : "Bar Lento app (phone)", in: nyParts(e.in).time, out: e.out ? nyParts(e.out).time : "", hours: e.out && !e.auto ? round2(ms / 3600000) : null, note: noteParts.join(" · "), wrong: isWrong, ghost, recorded: nyParts(e.in).stamp, ref: `app entry ${e.id}` });
   });
   clock.sort((a, b) => (a.date + a.recorded).localeCompare(b.date + b.recorded));
-  if (wrong) notes.push(`${wrong} clock-in${wrong === 1 ? " is" : "s are"} marked in red as a probable wrong clock-in/out (a forgotten clock-out closed automatically, a tap by mistake, or an unusually long entry): check ${wrong === 1 ? "it" : "them"} with the manager. The hours of an entry closed automatically are not counted until the real time is corrected${isApp || !guid ? "." : " in Toast."}`);
+  if (wrong) notes.push(`${wrong} clock-in${wrong === 1 ? " is" : "s are"} marked in red as a probable wrong clock-in/out (a forgotten clock-out closed automatically, a tap by mistake, an unusually long entry, or a time far outside the opening hours): check ${wrong === 1 ? "it" : "them"} with the manager. The hours of an entry closed automatically are not counted until the real time is corrected${isApp || !guid ? "." : " in Toast."}`);
   // signed documents: current + archive, every version incl. history
   const docRows = [];
   const addAck = (title, a) => { if (!a || !a.at) return; docRows.push({ title, a }); (a.history || []).forEach((h) => docRows.push({ title, a: h })); };

@@ -81,9 +81,10 @@ function fakeEntries() {
       const [y, m, dd] = wk.split("-").map(Number); const date = new Date(Date.UTC(y, m - 1, dd + i)).toISOString().slice(0, 10);
       if (date > today) return;
       (weeks[wk][d] || []).forEach((s) => {
+        if (s.src) return; // a clock-in row written by the backfill (src toast/app) is already a time entry, never a plan to fake punches for
         const [sh, sm] = s.start.split(":").map(Number); const [eh, em] = s.end.split(":").map(Number);
         const inISO = nyInstant(date, sh, sm + 3);
-        let outISO = nyInstant(date, eh, em + 10);
+        let outISO = nyInstant(date, eh, em + 10); if (Date.parse(outISO) < Date.parse(inISO)) outISO = new Date(Date.parse(outISO) + 86400000).toISOString(); // a shift ending after midnight
         if (Date.parse(outISO) > Date.now()) outISO = null;
         if (Date.parse(inISO) > Date.now()) return;
         const te = { guid: "te-" + s.id, employeeReference: { guid: "guid-" + s.name.toLowerCase() }, inDate: inISO, outDate: outISO, deleted: false };
