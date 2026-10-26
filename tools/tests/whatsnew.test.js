@@ -1,6 +1,6 @@
 // What's new → the team (owner 2026-09-27): one push, one email per person at the registered email, a summary to the owner,
 // one history line, never twice. In-process with stubs (deterministic, any hour), then the real devserver path when the clock allows.
-process.env.AI_FAKE = "1";
+process.env.AI_FAKE = "1"; process.env.WHATSNEW_MAX_AGE_DAYS = "100000"; // the suite must work whatever the date of the newest entry
 const fs = require("fs"), path = require("path");
 const B = "http://127.0.0.1:4173"; const errors = []; const OUT = path.join(__dirname, "..", "out"); fs.mkdirSync(OUT, { recursive: true });
 async function j(p, o) { const r = await fetch(B + p, o); let x = null; try { x = await r.json(); } catch (e) {} return { s: r.status, j: x }; }
@@ -38,7 +38,7 @@ async function j(p, o) { const r = await fetch(B + p, o); let x = null; try { x 
   // ---- 6. the real wiring (GET /api/data → remind.tick → flush → mail captured at /__mail) on a devserver of its own, quiet hours off
   {
     const { spawn } = require("child_process"); const B2 = "http://127.0.0.1:4180";
-    const child = spawn(process.execPath, [path.join(__dirname, "..", "devserver.js")], { env: Object.assign({}, process.env, { PORT: "4180", QUIET_HOURS_OFF: "1", WHATSNEW_OFF: "" }), stdio: "ignore" });
+    const child = spawn(process.execPath, [path.join(__dirname, "..", "devserver.js")], { env: Object.assign({}, process.env, { PORT: "4180", QUIET_HOURS_OFF: "1", WHATSNEW_OFF: "", WHATSNEW_MAX_AGE_DAYS: "100000" }), stdio: "ignore" });
     try {
       let up = false; for (let i = 0; i < 40 && !up; i++) { await new Promise((r) => setTimeout(r, 250)); up = await fetch(B2 + "/api/data").then((r) => r.ok).catch(() => false); }
       if (!up) throw new Error("second devserver did not start");
