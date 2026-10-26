@@ -148,6 +148,9 @@ async function archivePdfFile() {
 // ---------- 2. one person's record ----------
 async function collectPerson(name, doc, confirmations, fromISO, toISO) {
   const onStaff = doc.data.staff.includes(name); const dept = (doc.data.dept || {})[name] || "floor"; // kitchen people: the kitchen closes one hour earlier
+  const extraOn = (doc.data.extraHours || []).includes(name); let extraMin = 0; // owner 2026-10-26 (Luis): hours outside the standard day are extra, in red
+  const extraOf = (inISO, outISO) => { if (!extraOn) return null; const ex = hours.extraMinutes(doc.data, toast.shiftDate(inISO), inISO, outISO, dept); if (!ex || ex.total <= 0) return null; extraMin += ex.total; return ex; };
+  const extraNote = (ex) => (ex ? `Extra: ${hours.hTxt(ex.total)} outside ${ex.window === "closed" ? "the opening hours (closed day)" : ex.window}` : "");
   const formerRecs = await former.forName(name).catch(() => []);
   let guid = (doc.data.toastMap || {})[name] || null, fullName = null, email = null, emps = [];
   if (toast.enabled()) { try { emps = await toast.employees(true); if (!guid && onStaff) guid = toast.autoMap(doc.data.staff, doc.data.toastMap, emps)[name] || null; } catch (e) {} }
@@ -191,7 +194,8 @@ async function collectPerson(name, doc, confirmations, fromISO, toISO) {
           : ms > LONG_H * 3600000 ? `Probable wrong clock-in/out: ${hoursTxt(ms)} h in one entry · check it in Toast` : "";
         if (!bad) { const pl = hours.check(doc.data, date, t.in, t.out, dept); if (pl) bad = `Probable wrong clock-${pl.kind}: ${pl.text} · check it in Toast`; } // outside the opening hours (with tolerance)
         const isWrong = /^Probable wrong/.test(bad); if (isWrong) wrong++;
-        clock.push({ date, weekday: weekdayOf(date), source: "Toast POS", in: nyParts(t.in).time, out: t.out ? nyParts(t.out).time : "", hours: t.out && !t.auto ? round2(ms / 3600000) : null, note: [bad, brk && !t.auto ? `break ${Math.round(brk)} min (unpaid, not counted)` : ""].filter(Boolean).join(" · "), wrong: isWrong, ghost: !!t.ghost, recorded: nyParts(t.in).stamp, ref: `Toast time entry ${t.guid}` });
+        const ex = t.out && !t.auto && !t.ghost ? extraOf(t.in, t.out) : null;
+        clock.push({ date, weekday: weekdayOf(date), source: "Toast POS", in: nyParts(t.in).time, out: t.out ? nyParts(t.out).time : "", hours: t.out && !t.auto ? round2(ms / 3600000) : null, note: [bad, extraNote(ex), brk && !t.auto ? `break ${Math.round(brk)} min (unpaid, not counted)` : ""].filter(Boolean).join(" · "), wrong: isWrong, extra: ex ? round2(ex.total / 60) : null, ghost: !!t.ghost, recorded: nyParts(t.in).stamp, ref: `Toast time entry ${t.guid}` });
       });
     } catch (e) { notes.push(`Toast clock-ins could not be read completely (${String(e.message || e).slice(0, 80)}) — export again later.`); }
   } else if (!guid) notes.push("Not linked to a Toast employee: clock-ins come from the app only.");
@@ -208,8 +212,9 @@ async function collectPerson(name, doc, confirmations, fromISO, toISO) {
       : ms > LONG_H * 3600000 ? `Probable wrong clock-in/out: ${hoursTxt(ms)} h in one entry · check it with the manager` : "";
     if (!bad && !e.manual) { const pl = hours.check(doc.data, date, e.in, e.out, dept); if (pl) bad = `Probable wrong clock-${pl.kind}: ${pl.text} · check it with the manager`; }
     const isWrong = /^Probable wrong/.test(bad); if (isWrong) wrong++;
-    const noteParts = [e.manual ? (e.note || "entered by the owner") : bad, brk && !e.auto ? `break ${Math.round(brk)} min (unpaid, not counted)` : ""].filter(Boolean);
-    clock.push({ date, weekday: weekdayOf(date), source: e.manual ? "Entered by the owner" : "Bar Lento app (phone)", in: nyParts(e.in).time, out: e.out ? nyParts(e.out).time : "", hours: e.out && !e.auto ? round2(ms / 3600000) : null, note: noteParts.join(" · "), wrong: isWrong, ghost, recorded: nyParts(e.in).stamp, ref: `app entry ${e.id}` });
+    const ex = e.out && !e.auto && !ghost && !e.manual ? extraOf(e.in, e.out) : null;
+    const noteParts = [e.manual ? (e.note || "entered by the owner") : bad, extraNote(ex), brk && !e.auto ? `break ${Math.round(brk)} min (unpaid, not counted)` : ""].filter(Boolean);
+    clock.push({ date, weekday: weekdayOf(date), source: e.manual ? "Entered by the owner" : "Bar Lento app (phone)", in: nyParts(e.in).time, out: e.out ? nyParts(e.out).time : "", hours: e.out && !e.auto ? round2(ms / 3600000) : null, note: noteParts.join(" · "), wrong: isWrong, extra: ex ? round2(ex.total / 60) : null, ghost, recorded: nyParts(e.in).stamp, ref: `app entry ${e.id}` });
   });
   clock.sort((a, b) => (a.date + a.recorded).localeCompare(b.date + b.recorded));
   if (wrong) notes.push(`${wrong} clock-in${wrong === 1 ? " is" : "s are"} marked in red as a probable wrong clock-in/out (a forgotten clock-out closed automatically, a tap by mistake, an unusually long entry, or a time far outside the opening hours): check ${wrong === 1 ? "it" : "them"} with the manager. The hours of an entry closed automatically are not counted until the real time is corrected${isApp || !guid ? "." : " in Toast."}`);
@@ -237,7 +242,7 @@ async function collectPerson(name, doc, confirmations, fromISO, toISO) {
   } catch (e) {}
   events.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
   const months = Object.keys(monthly).sort().map((k) => Object.assign({}, monthly[k], { scheduled: round2(monthly[k].scheduled), worked: round2(monthly[k].worked) }));
-  return { name, fullName, email, guid, status, onStaff, fromISO, toISO, shifts, clock, documents, events, months, notes, wrong };
+  return { name, fullName, email, guid, status, onStaff, fromISO, toISO, shifts, clock, documents, events, months, notes, wrong, extraOn, extraHours: extraOn ? round2(extraMin / 60) : null };
 }
 
 async function personWorkbook(name, fromISO, toISO) {
@@ -278,7 +283,7 @@ async function employeeReport(name, fromISO, toISO, periodLabel) {
   const r = await collectPerson(name, doc, confirmations, fromISO, toISO);
   const out = await pdf.personRecordPdf(r, nyParts(new Date().toISOString()).stamp, { employee: true, periodLabel });
   const totals = r.months.reduce((a, m) => ({ worked: a.worked + m.worked, scheduled: a.scheduled + m.scheduled, clockins: a.clockins + m.clockins, shifts: a.shifts + m.shifts }), { worked: 0, scheduled: 0, clockins: 0, shifts: 0 });
-  totals.wrong = r.wrong || 0;
+  totals.wrong = r.wrong || 0; totals.extra = r.extraOn ? r.extraHours : null;
   return { buf: out.buf, filename: `bar-lento-my-report-${fromISO}-to-${toISO}.pdf`, totals, email: r.email, fullName: r.fullName, guid: r.guid };
 }
 async function personPdfFile(name, fromISO, toISO) {
@@ -299,7 +304,7 @@ async function teamPdfFile(fromISO, toISO, periodLabel) {
     const days = {}; let breakMin = 0;
     r.clock.forEach((c) => { const d = (days[c.date] = days[c.date] || { date: c.date, weekday: c.weekday, n: 0, hours: 0, wrong: 0 }); if (!c.ghost) d.n++; d.hours += c.hours || 0; if (c.wrong) { d.wrong++; d.note = "probable wrong clock-in/out"; d.__danger = true; } const m = /break (\d+) min/.exec(c.note || ""); if (m) breakMin += Number(m[1]); });
     const dept = (doc.data.dept || {})[name] || "floor";
-    people.push({ name, fullName: r.fullName, dept: { floor: "Floor", kitchen: "Kitchen", chef: "Kitchen", management: "Management", owner: "Owner" }[dept] || "Floor", worked: round2(totals.worked), scheduled: round2(totals.scheduled), clockins: totals.clockins, days: Object.keys(days).length, breakMin, wrong: r.wrong || 0, dayRows: Object.keys(days).sort().map((k) => days[k]) });
+    people.push({ name, fullName: r.fullName, dept: { floor: "Floor", kitchen: "Kitchen", chef: "Kitchen", management: "Management", owner: "Owner" }[dept] || "Floor", worked: round2(totals.worked), scheduled: round2(totals.scheduled), clockins: totals.clockins, days: Object.keys(days).length, breakMin, wrong: r.wrong || 0, extra: r.extraOn ? r.extraHours : null, dayRows: Object.keys(days).sort().map((k) => days[k]) });
   }
   const out = await pdf.teamPdf({ fromISO, toISO, periodLabel, people }, nyParts(new Date().toISOString()).stamp);
   return { buf: out.buf, filename: `bar-lento-team-hours-${fromISO}-to-${toISO}.pdf` };

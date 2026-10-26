@@ -68,5 +68,18 @@ async function j(p, o) { const r = await fetch(B + p, o); let x = null; try { x 
     if (again.alerts.length !== 2 || mgrPushes.length !== 2) errors.push("overrun alerted twice");
     if (!(kv.get("log") || []).some((l) => /Still clocked in after closing: Joe/.test(l))) errors.push("overrun history line missing");
   }
+  // 8. extra hours (owner 2026-10-26, Luis): minutes outside the standard day, kitchen one hour earlier; the PDF says it in red, with the Toast note
+  {
+    const H = require("../../lib/hours"); const pdfL = require("../../lib/pdf");
+    const ex = H.extraMinutes({ weeks: {} }, "2026-10-20", "2026-10-20T15:00:00Z", "2026-10-21T02:30:00Z", "kitchen"); // Tue 11:00 AM → 10:30 PM NY, kitchen 12 PM–9 PM
+    const none = H.extraMinutes({ weeks: {} }, "2026-10-20", "2026-10-20T16:00:00Z", "2026-10-21T01:00:00Z", "kitchen"); // 12:00 → 9:00 PM: nothing
+    console.log("8 extra Tue 11:00→10:30 PM kitchen:", JSON.stringify(ex), "| inside the day:", JSON.stringify(none));
+    if (!ex || ex.before !== 60 || ex.after !== 90 || ex.total !== 150 || !none || none.total !== 0) errors.push("extra minutes wrong");
+    const r = { name: "Luis", fullName: "Luis S.", email: "", guid: "g", status: "On staff", onStaff: true, fromISO: "2026-10-19", toISO: "2026-10-25", shifts: [], documents: [], events: [], notes: [], wrong: 0, extraOn: true, extraHours: 2.5, months: [{ month: "2026-10", scheduled: 0, worked: 9, shifts: 0, clockins: 1 }], clock: [{ date: "2026-10-20", weekday: "Tuesday", source: "Toast POS", in: "11:00 AM", out: "10:30 PM", hours: 11.5, note: "Extra: 2 h 30 min outside 12 PM–9 PM", extra: 2.5, recorded: "x", ref: "Toast time entry 1" }] };
+    const out = await pdfL.personRecordPdf(r, "2026-10-26 09:00", { employee: true, periodLabel: "Week of 2026-10-19 to 2026-10-25" }); const txt = pdfText(out.buf, path.join(OUT, "autoout-extra.pdf"));
+    console.log("8b Luis's PDF: extra line:", W("Extra hours: 2.50 h").test(txt), "| Toast note:", W("Toast is the official record").test(txt), "| row note:", /outside 12 PM/.test(txt));
+    if (!W("Extra hours: 2.50 h").test(txt) || !W("Toast is the official record").test(txt) || !/outside 12 PM/.test(txt)) errors.push("extra hours / toast note missing in the pdf");
+    if (!W("Toast is the official record").test(lucaTxt) || !W("Toast is the official record").test(teamTxt)) errors.push("toast note missing in the server pdfs");
+  }
   console.log("ERRORS:", errors.length ? JSON.stringify(errors) : "none"); process.exit(errors.length ? 1 : 0);
 })().catch((e) => { console.error(e); process.exit(1); });

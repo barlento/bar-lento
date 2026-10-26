@@ -84,6 +84,20 @@ async function migrationTestFloor(doc) {
 
 // Owner 2026-09-21: Giordano (Executive Chef) and Luis (Sous Chef) are salaried and clock in from the phone like Marta.
 // Toast already marks them salaried (automatic app clock); the explicit list makes the button survive a Toast outage.
+// Owner 2026-10-26: Luis is salaried for 40 h a week and his extra hours (outside the standard opening hours) are paid by the hour,
+// so the reports count them in red for him. One-time: puts him in data.extraHours (the person sheet can add or remove anyone).
+async function migrationExtraLuis(doc) {
+  if (!store.hasStorage()) return doc;
+  const FLAG = "barlento:migr:2026-10-26-extra-luis";
+  if (await store._redis("GET", FLAG).catch(() => null)) return doc;
+  await store._redis("SET", FLAG, new Date().toISOString()).catch(() => {});
+  const list = Array.isArray(doc.data.extraHours) ? doc.data.extraHours.slice() : [];
+  if (!(doc.data.staff || []).includes("Luis") || list.includes("Luis")) return doc;
+  const next = { version: (doc.version || 0) + 1, data: store.normalizeData(Object.assign({}, doc.data, { extraHours: list.concat(["Luis"]) })), updatedAt: doc.updatedAt };
+  await store.saveSchedule(next);
+  await store.appendLog({ at: new Date().toISOString(), version: next.version, changes: ["Luis: extra hours outside the opening hours are counted in the reports (owner's decision)"] }).catch(() => {});
+  return next;
+}
 async function migrationSalariedAppClock(doc) {
   if (!store.hasStorage()) return doc;
   const FLAG = "barlento:migr:2026-09-21-salaried-app";
@@ -110,7 +124,8 @@ module.exports = async (req, res) => {
       await migrationMartaDays(docM).catch(() => {});
       const docE = await migrationEmptyWeeks(docM).catch(() => docM);
       const docT = await migrationTestFloor(docE).catch(() => docE);
-      const doc = await migrationSalariedAppClock(docT).catch(() => docT);
+      const docL = await migrationSalariedAppClock(docT).catch(() => docT);
+      const doc = await migrationExtraLuis(docL).catch(() => docL);
       // Past weeks follow Toast by themselves (real clock-ins replace the plan; last 8 weeks, every 6 h).
       const doc1 = await backfill.auto(doc, doc0.updatedAt).catch(() => doc);
       // A signed-in device polling = that person has the app open: note it for the manager's live Staff list.
@@ -173,6 +188,7 @@ module.exports = async (req, res) => {
       gone.forEach((n) => { const g = (current.data.toastMap || {})[n]; if (g) ignore.add(g); delete data.toastMap[n]; });
       data.toastIgnore = Array.from(ignore);
       data.appClock = (data.appClock || []).filter((n) => data.staff.includes(n)); // app clock only for people still here
+      data.extraHours = (data.extraHours || []).filter((n) => data.staff.includes(n));
       const doc = { version: (current.version || 0) + 1, data, updatedAt: new Date().toISOString() };
       await store.saveSchedule(doc);
       await store.removeConfirmations(resetKeys).catch(() => {});
