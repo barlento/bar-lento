@@ -5,7 +5,7 @@ set -u
 cd "$(dirname "$0")"
 export NODE_PATH="${NODE_PATH:-/opt/node22/lib/node_modules}"
 (fuser -k 4173/tcp >/dev/null 2>&1 || true); sleep 1
-WHATSNEW_OFF=1 node devserver.js > out.devserver.log 2>&1 &   # the shared server never announces (mail counts in docs/mail); the whatsnew suite spawns its own
+WHATSNEW_OFF=1 TOAST_CACHE_OFF=1 node devserver.js > out.devserver.log 2>&1 &   # the shared server never announces (mail counts in docs/mail); the whatsnew suite spawns its own
 DEV=$!; sleep 2
 status=0
 for t in ui docs rules mail it punch autoout sync backfill presence notify chef ai requests smart bar whatsnew; do   # autoout before sync (sync removes Luca, the auto-closed entry is his)
