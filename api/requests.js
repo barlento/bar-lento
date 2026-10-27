@@ -1,4 +1,4 @@
-// Time off and shift cover requests. GET = what the signed-in person (or manager) sees; POST {action} = off | cover | offer | withdraw | cancel | approve | decline.
+// Time off, shift cover and shift swap requests. GET = what the signed-in person (or manager) sees; POST {action} = off | cover | swap | swapAccept | swapDecline | offer | withdraw | cancel | approve | decline.
 const store = require("../lib/store");
 const auth = require("../lib/auth");
 const accounts = require("../lib/accounts");
@@ -20,6 +20,8 @@ module.exports = async (req, res) => {
     if (b.action === "off") r = name ? await requests.createOff(doc, name, b) : { status: 403, body: { error: "no_person" } };
     else if (b.action === "cover") r = name ? await requests.createCover(doc, name, b) : { status: 403, body: { error: "no_person" } };
     else if (b.action === "offer" || b.action === "withdraw") r = name ? await requests.volunteer(doc, name, b, b.action === "offer") : { status: 403, body: { error: "no_person" } };
+    else if (b.action === "swap") r = name ? await requests.createSwap(doc, name, b) : { status: 403, body: { error: "no_person" } };
+    else if (b.action === "swapAccept" || b.action === "swapDecline") r = name ? await requests.respondSwap(doc, name, b, b.action === "swapAccept") : { status: 403, body: { error: "no_person" } };
     else if (b.action === "cancel") r = name ? await requests.cancel(name, b) : { status: 403, body: { error: "no_person" } };
     else if (b.action === "approve" || b.action === "decline") r = await requests.decide(doc, role, name, b);
     else r = { status: 400, body: { error: "bad_action" } };
