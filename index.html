@@ -1204,6 +1204,8 @@
   .bar-hint{font-size:.78rem;color:var(--ink-muted);margin:0 0 4px;line-height:1.4}
   body.chef #barEdit,body.viewstaff #barEdit{display:none!important}
   @media (max-width:640px){.field textarea,.field input,.field select{font-size:16px}} /* iOS: no zoom on focus (this block comes after the Refit sizes) */
+  .kindchips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 12px} .kindchip{height:32px;padding:0 12px;border-radius:999px;border:1px solid var(--border);background:var(--surface);font:inherit;font-size:13px;font-weight:500;color:var(--ink);cursor:pointer} .kindchip.sel{border-color:transparent;font-weight:600}
+  .k-happy.sel,.badge.k-happy{background:#FFF1D6;color:#8A5A00} .k-engagement.sel,.badge.k-engagement{background:#FDE4EA;color:#A61B3F} .k-birthday.sel,.badge.k-birthday{background:#ECE6FB;color:#5B3DB5} .k-corporate.sel,.badge.k-corporate{background:#E3ECF8;color:#1F4E8C} .k-wedding.sel,.badge.k-wedding{background:#E2F3E8;color:#1F6B3A} .k-other.sel{background:var(--teal-soft);color:var(--teal)} /* private event kinds: soft tints, the one place with colour per kind (manager's request 2026-10-27) */
   .tc-row.ghost{opacity:.6} .tc-row.ghost .nm small.ghost{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.25;color:var(--ink-muted)} /* a tap by mistake at the terminal: shown, never counted */
 </style>
 </head>
@@ -1387,6 +1389,7 @@
       <option value=""></option><option value="half"></option><option value="closed"></option><option value="holiday"></option><option value="event"></option>
     </select>
     <div id="dayMore" style="display:none">
+      <div id="eventKinds" style="display:none"><div class="hint" id="eventKindLbl"></div><div class="kindchips" id="kindChips"></div></div>
       <div class="row2" id="halfHours" style="display:none">
         <div class="field"><label for="halfOpen" data-t="opens">Opens</label><select id="halfOpen" class="mono"></select></div>
         <div class="field"><label for="halfClose" data-t="closes">Closes</label><select id="halfClose" class="mono"></select></div>
@@ -1730,6 +1733,9 @@
   var DAY_KEY_BY_JSDAY=["sun","mon","tue","wed","thu","fri","sat"];
   var STATUS_LABEL={closed:"Closed",holiday:"Holiday · closed",half:"Half day",event:"Private event"};
   function statusLabel(st){ return t({closed:"stClosedLbl",holiday:"stHolidayLbl",half:"stHalfLbl",event:"stEventLbl"}[st]||"stClosedLbl"); }
+  // Private event kinds (manager's request 2026-10-27): same table as lib/events.js; the kind lives in notes[day].kind
+  var EVENT_KINDS=["happy","engagement","birthday","corporate","wedding","other"];
+  function eventLabel(note){ if(!note||note.status!=="event") return statusLabel(note&&note.status); var k=note.kind&&EVENT_KINDS.indexOf(note.kind)!==-1?note.kind:"other"; return t("ev"+k.charAt(0).toUpperCase()+k.slice(1)); }
   function hoursFor(wk,day){ var n=dayNote(wk,day); if(n&&(n.status==="half"||n.status==="event")&&n.open&&n.close) return {open:n.open,close:n.close}; var b=OPENING[day]; if(b) return b; return {open:"",close:"",closed:!(n&&n.status==="event")}; } // closed:true = a day the bar is closed by default (Monday) unless Day settings open it
   var PW_KEY="bl_admin_pw", ARCHIVE_KEY="bl_show_archive", LANG_KEY="bl_lang", ME_TOKEN_KEY="bl_me_token", ME_NAME_KEY="bl_me_name";
 
@@ -1764,7 +1770,7 @@
       openNow:"Open now", closedNow:"Closed now", closedToday:"Closed today", closedTodayHol:"Closed today · Holiday", closedFor:"Closed for {r}", holidayWord:"the holiday", privateEventTag:"Private event", halfDayWord:"Half day", halfDayTag:"(half day)", workingToday:"Working today:", noShiftsToday:"No shifts assigned for today",
       thisWeek:"This week", nextWeek:"Next week", pastWeek:"Past week", weekTag:"Week", hidePast:"Hide past weeks", pastArchive:"Archive ({n})", noWeeks:"No weeks published yet.",
       todayTag:"· today", noShiftsClosed:"No shifts — closed", noShiftsAssigned:"No shifts assigned", allConfirmed:"✓ all confirmed", confirmedN:"{c}/{n} confirmed", bdayChip:"{n} birthday",
-      stClosedLbl:"Closed", stHolidayLbl:"Holiday · closed", stHalfLbl:"Half day", stEventLbl:"Private event",
+      stClosedLbl:"Closed", stHolidayLbl:"Holiday · closed", stHalfLbl:"Half day", stEventLbl:"Private event", evHappy:"Happy hour", evEngagement:"Engagement party", evBirthday:"Birthday party", evCorporate:"Corporate event", evWedding:"Wedding", evOther:"Private event", eventKindLbl:"What kind of event? Everyone sees it on the day.", reasonPhEvent:"e.g. DJ from 8 PM · 40 guests · set menu",
       notClockedIn:"not clocked in", clockedIn:"clocked in {t}", lateBy:" · {t} late", onBreakSince:"on break · {t}", onBreakBadge:"on break since {t}",
       footStaff:"Tap your shift to confirm you've seen it. Your shifts are marked YOU.", copyBtn:"Copy as text", copied:"Copied to clipboard.", nothingToCopy:"Nothing to copy", copyFail:"Copy failed",
       tcTitle:"Time clock", tcLead:"Clock-ins and clock-outs from Toast, live.", today:"Today", yesterday:"Yesterday", tomorrow:"Tomorrow", onTheClock:"on the clock", people:"people", person:"person", totalHours:"total hours",
@@ -1826,7 +1832,7 @@
       openNow:"Aperto ora", closedNow:"Chiuso ora", closedToday:"Chiuso oggi", closedTodayHol:"Chiuso oggi · Festivo", closedFor:"Chiuso per {r}", holidayWord:"festività", privateEventTag:"Evento privato", halfDayWord:"Mezza giornata", halfDayTag:"(mezza giornata)", workingToday:"Oggi lavorano:", noShiftsToday:"Nessun turno assegnato per oggi",
       thisWeek:"Questa", nextWeek:"Prossima", pastWeek:"Scorsa", weekTag:"Settimana", hidePast:"Nascondi passate", pastArchive:"Archivio ({n})", noWeeks:"Nessuna settimana pubblicata.",
       todayTag:"· oggi", noShiftsClosed:"Nessun turno — chiuso", noShiftsAssigned:"Nessun turno assegnato", allConfirmed:"✓ tutti confermati", confirmedN:"{c}/{n} confermati", bdayChip:"compleanno di {n}",
-      stClosedLbl:"Chiuso", stHolidayLbl:"Festivo · chiuso", stHalfLbl:"Mezza giornata", stEventLbl:"Evento privato",
+      stClosedLbl:"Chiuso", stHolidayLbl:"Festivo · chiuso", stHalfLbl:"Mezza giornata", stEventLbl:"Evento privato", evHappy:"Happy hour", evEngagement:"Festa di fidanzamento", evBirthday:"Festa di compleanno", evCorporate:"Evento aziendale", evWedding:"Matrimonio", evOther:"Evento privato", eventKindLbl:"Che evento è? Lo vedono tutti sul giorno.", reasonPhEvent:"es. DJ dalle 20 · 40 ospiti · menu fisso",
       notClockedIn:"non ha timbrato", clockedIn:"timbrato {t}", lateBy:" · {t} di ritardo", onBreakSince:"in pausa · {t}", onBreakBadge:"in pausa da {t}",
       footStaff:"Tocca il tuo turno per confermare di averlo visto. I tuoi turni sono segnati YOU.", copyBtn:"Copia come testo", copied:"Copiato negli appunti.", nothingToCopy:"Niente da copiare", copyFail:"Copia non riuscita",
       tcTitle:"Timbrature", tcLead:"Entrate e uscite da Toast, in tempo reale.", today:"Oggi", yesterday:"Ieri", tomorrow:"Domani", onTheClock:"al lavoro", people:"persone", person:"persona", totalHours:"ore totali",
@@ -2200,7 +2206,7 @@
     // The headline says WHY, automatically, from what the manager set in Day settings (or the US holiday calendar):
     // "Closed for Christmas Day", "Closed for Staff party", "Open now · Private event", "Open now · Half day"; plain days stay "Open now" / "Closed now".
     var reason = note&&note.status==="holiday" ? ((note.text&&note.text.trim())||(hol&&hol.name)||t("holidayWord")) : (note&&note.status==="closed"&&note.text&&note.text.trim()) ? note.text.trim() : "";
-    var statusText = closedToday ? (reason?t("closedFor",{r:h(reason)}):t("closedToday")) : (isOpen?t("openNow"):t("closedNow"))+(note&&note.status==="event"?" · "+t("privateEventTag"):"")+(note&&note.status==="half"?" · "+t("halfDayWord"):"");
+    var statusText = closedToday ? (reason?t("closedFor",{r:h(reason)}):t("closedToday")) : (isOpen?t("openNow"):t("closedNow"))+(note&&note.status==="event"?" · "+h(eventLabel(note)):"")+(note&&note.status==="half"?" · "+t("halfDayWord"):"");
     var sub = closedToday ? DAY_NAMES[todayKey] : DAY_NAMES[todayKey]+" · "+range12(hours.open,hours.close)+(note&&note.status!=="half"&&note.status!=="event"&&note.text?" · "+h(note.text):"")+((note&&(note.status==="event"||note.status==="half")&&note.text)?" · "+h(note.text):"");
     if(hol&&!(note&&note.status==="holiday")) sub+=" · "+h(hol.name);
     el.innerHTML='<div class="status"><span class="led"></span><div><div class="text">'+statusText+'</div><div class="sub">'+sub+'</div></div></div>'
@@ -2480,7 +2486,7 @@
           +'<span class="main"><span class="who">'+h(s.name)+(s.station?'<span class="st">'+h(s.station)+'</span>':(s.src==="toast"?'<span class="st">Toast</span>':s.src==="app"?'<span class="st">App</span>':""))+'</span><span class="when mono">'+range12(s.start,s.end)+'</span>'+clockBadge(wk,key,s,isToday,isPast)+'</span>'
           +'<span class="edit" aria-hidden="true"></span></button>';
       }).join(""):'<div class="empty-note">'+(closed?t("noShiftsClosed"):t("noShiftsAssigned"))+'</div>';
-      var badge=note&&note.status?'<span class="badge '+note.status+'">'+statusLabel(note.status)+'</span>':hours.closed?'<span class="badge closed">'+statusLabel("closed")+'</span>':"";
+      var badge=note&&note.status?'<span class="badge '+note.status+(note.status==="event"&&note.kind?" k-"+note.kind:"")+'">'+h(eventLabel(note))+'</span>':hours.closed?'<span class="badge closed">'+statusLabel("closed")+'</span>':"";
       var noteHtml=note&&note.text?'<div class="daynote">'+h(note.text)+'</div>':"";
       var hol=holidayOn(date), bdays=birthdaysOn(date);
       var chips=offChips(toISO(date))+(hol?'<span class="holichip">'+h(hol.name)+'</span>':"")+bdays.map(function(n){return '<span class="bdaychip">'+t("bdayChip",{n:lang==="it"?h(n):h(possessive(n))})+'</span>';}).join("");
@@ -2689,14 +2695,14 @@
   // ---------- day settings (admin) ----------
   // Extra fields only when the choice needs them: hours for a half day, the reason for "closed — other"; Save appears with them.
   function syncHalfHours(){
-    var st=$("dayStatus").value, half=st==="half", closed=st==="closed";
-    $("halfHours").style.display=half?"grid":"none"; $("dayNoteField").style.display=(half||closed)?"":"none";
-    $("dayMore").style.display=(half||closed)?"":"none"; $("daySave").style.display=(half||closed)?"":"none";
-    if(half){ $("dayNote").placeholder=t("reasonPhHalf"); } else if(closed){ $("dayNote").placeholder=t("reasonPh2"); }
+    var st=$("dayStatus").value, half=st==="half", closed=st==="closed", ev=st==="event";
+    $("halfHours").style.display=half?"grid":"none"; $("eventKinds").style.display=ev?"":"none"; $("dayNoteField").style.display=(half||closed||ev)?"":"none";
+    $("dayMore").style.display=(half||closed||ev)?"":"none"; $("daySave").style.display=(half||closed||ev)?"":"none";
+    if(half){ $("dayNote").placeholder=t("reasonPhHalf"); } else if(closed){ $("dayNote").placeholder=t("reasonPh2"); } else if(ev){ $("dayNote").placeholder=t("reasonPhEvent"); }
   }
   function openDayEditor(wk,day){
-    state.dayEditing={week:wk,day:day};
     var date=addDays(fromISO(wk),DAY_KEYS.indexOf(day)); var note=dayNote(wk,day)||{status:"",text:""};
+    state.dayEditing={week:wk,day:day,kind:note.kind||""};
     var hol=holidayOn(date), base=OPENING[day]||{open:"12:00",close:"22:00",closed:true};
     $("dayLead").textContent=DAY_NAMES[day]+", "+dateShort(date)+" · "+(base.closed?statusLabel("closed"):t("usually")+" "+range12(base.open,base.close));
     $("dayStatus").value=note.status||""; $("dayNote").value=note.text||""; $("dayErr").textContent="";
@@ -2710,7 +2716,7 @@
       {ic:"",label:t("pOpen"),sub:range12(base.open,base.close),status:"",text:""},
       hol?{ic:"",label:t("pClosedFor",{h:hol.name}),sub:t("pFullDay"),status:"holiday",text:"Closed for "+hol.name}:null,
       hol?{ic:"",label:t("pHalfFor",{h:hol.name}),sub:t("pHalfSub"),status:"half",text:"Half day · "+hol.name,half:true}:{ic:"",label:t("pHalf"),sub:t("pHalfSub"),status:"half",text:"",half:true},
-      {ic:"",label:t("pEvent"),sub:t("pEventSub"),status:"event",text:"Private event"},
+      {ic:"",label:t("pEvent"),sub:t("pEventSub"),status:"event",text:"",event:true},
       {ic:"",label:t("pOther"),sub:t("pOtherSub"),status:"closed",text:"",focus:true}
     ].filter(Boolean);
     var pe=$("dayPresets");
@@ -2718,22 +2724,26 @@
     pe.querySelectorAll(".preset").forEach(function(b){b.addEventListener("click",function(){
       var p=presets[Number(b.getAttribute("data-i"))];
       $("dayStatus").value=p.status; syncHalfHours();
-      if(p.text||p.status===""||p.status==="holiday"||p.status==="event") $("dayNote").value=p.text;
+      if(p.text||p.status===""||p.status==="holiday") $("dayNote").value=p.text;
       pe.querySelectorAll(".preset").forEach(function(x){x.classList.remove("active");}); b.classList.add("active");
       if(p.focus){ $("dayNote").focus(); }
-      else if(!p.half){ saveDayFromEditor(); toast(p.status?t("markedClosed",{h:p.label}):t("dayOpenSet")); }
+      else if(!p.half){ saveDayFromEditor(!!p.event); toast(p.status?t("markedClosed",{h:p.label}):t("dayOpenSet")); } // a private event stays open: pick the kind below
     });});
+    $("eventKindLbl").textContent=t("eventKindLbl"); var kc=$("kindChips");
+    var drawChips=function(){ kc.innerHTML=EVENT_KINDS.map(function(k){ return '<button type="button" class="kindchip k-'+k+(state.dayEditing&&state.dayEditing.kind===k?" sel":"")+'" data-kind="'+k+'">'+h(eventLabel({status:"event",kind:k}))+'</button>'; }).join("");
+      kc.querySelectorAll(".kindchip").forEach(function(b){ b.addEventListener("click",function(){ if(!state.dayEditing) return; state.dayEditing.kind=b.getAttribute("data-kind"); drawChips(); saveDayFromEditor(true); toast(eventLabel({status:"event",kind:state.dayEditing.kind})); }); }); };
+    drawChips();
     $("dayOverlay").classList.add("show");
   }
-  function saveDayFromEditor(){
+  function saveDayFromEditor(stay){ // stay = save and keep the sheet open (a private event: the kind and the note come next)
     var e=state.dayEditing; if(!e) return;
     var w=state.data.weeks[e.week]; if(!w) return; if(!w.notes) w.notes={};
     var status=$("dayStatus").value, text=$("dayNote").value.trim().slice(0,140);
     if(status==="closed"&&!text){ $("dayErr").textContent=t("errReason"); $("dayNote").focus(); return; }
-    var n={status:status,text:text};
+    var n={status:status,text:text}; if(status==="event"&&e.kind) n.kind=e.kind;
     if(status==="half"){ n.open=$("halfOpen").value; n.close=$("halfClose").value; if(mins(n.close)<=mins(n.open)){$("dayErr").textContent=t("errClose");return;} }
     if(!status&&!text) delete w.notes[e.day]; else w.notes[e.day]=n;
-    state.dayEditing=null; $("dayOverlay").classList.remove("show");
+    if(!stay){ state.dayEditing=null; $("dayOverlay").classList.remove("show"); }
     renderDays(); renderHero(); scheduleSave();
   }
 
@@ -3191,7 +3201,7 @@
       var date=addDays(start,i), hours=hoursFor(wk,key), note=dayNote(wk,key);
       var head=L_EN.days[key]+" "+L_EN.months[date.getMonth()]+" "+date.getDate();
       if(note&&isClosedStatus(note.status)) head+=" — "+STATUS_LABEL[note.status].toUpperCase();
-      else head+=(hours.closed?" — CLOSED":" ("+range12(hours.open,hours.close)+")")+(note&&note.status==="event"?" — PRIVATE EVENT":"")+(note&&note.status==="half"?" — HALF DAY":"");
+      else head+=(hours.closed?" — CLOSED":" ("+range12(hours.open,hours.close)+")")+(note&&note.status==="event"?" — "+eventLabel(note).toUpperCase():"")+(note&&note.status==="half"?" — HALF DAY":"");
       lines.push(head); if(note&&note.text) lines.push("  Note: "+note.text);
       var shifts=sortShifts(((state.data.weeks[wk]||{})[key]||[]).filter(function(s){return canSee(s.name);}));
       if(shifts.length) shifts.forEach(function(s){lines.push("  • "+s.name+(s.station?" ("+s.station+")":"")+" "+range12(s.start,s.end));});

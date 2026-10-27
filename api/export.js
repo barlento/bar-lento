@@ -17,6 +17,7 @@ const pdf = require("../lib/pdf");
 
 const DAY_LONG = { mon: "Monday", tue: "Tuesday", wed: "Wednesday", thu: "Thursday", fri: "Friday", sat: "Saturday", sun: "Sunday" };
 const STATUS_LABEL = { "": "Open", closed: "Closed", holiday: "Holiday", half: "Half day", event: "Private event" };
+const events = require("../lib/events"); const dayLabel = (note) => (note && note.status === "event" ? events.label(note) : STATUS_LABEL[(note && note.status) || ""] || "Open"); // the kind of private event when the manager picked one
 const TZ = "America/New_York";
 
 // ---------- small helpers ----------
@@ -103,7 +104,7 @@ async function collectArchive() {
     store.DAY_KEYS.forEach((d) => {
       const note = (w.notes && w.notes[d]) || { status: "", text: "" };
       const date = isoDate(wk, d);
-      const statusLabel = (STATUS_LABEL[note.status] || "Open") + (note.status === "half" ? ` ${fmt12(note.open)}–${fmt12(note.close)}` : "");
+      const statusLabel = dayLabel(note) + (note.status === "half" ? ` ${fmt12(note.open)}–${fmt12(note.close)}` : "");
       days.push({ date, weekday: DAY_LONG[d], week: wk, status: statusLabel, note: note.text || "", people: (w[d] || []).length });
       (w[d] || []).slice().sort((a, b) => a.start.localeCompare(b.start) || a.name.localeCompare(b.name)).forEach((s) => {
         const mins = Math.max(0, minutesOf(s.end) - minutesOf(s.start) + (minutesOf(s.end) < minutesOf(s.start) ? 1440 : 0));
@@ -170,7 +171,7 @@ async function collectPerson(name, doc, confirmations, fromISO, toISO) {
         const mins = Math.max(0, minutesOf(sh.end) - minutesOf(sh.start) + (minutesOf(sh.end) < minutesOf(sh.start) ? 1440 : 0));
         const conf = confirmations[`${wk}:${d}:${sh.id}`]; const note = (w.notes && w.notes[d]) || {};
         const m = M(date); m.scheduled += mins / 60; m.shifts++;
-        shifts.push({ date, weekday: weekdayOf(date), start: fmt12(sh.start), end: fmt12(sh.end), hours: round2(mins / 60), station: sh.station || "", confirmed: conf ? nyParts(conf).stamp : "not confirmed", day: STATUS_LABEL[note.status] || "Open", week: wk, id: sh.id });
+        shifts.push({ date, weekday: weekdayOf(date), start: fmt12(sh.start), end: fmt12(sh.end), hours: round2(mins / 60), station: sh.station || "", confirmed: conf ? nyParts(conf).stamp : "not confirmed", day: dayLabel(note), week: wk, id: sh.id });
       });
     });
   });
