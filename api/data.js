@@ -98,6 +98,21 @@ async function migrationExtraLuis(doc) {
   await store.appendLog({ at: new Date().toISOString(), version: next.version, changes: ["Luis: extra hours outside the opening hours are counted in the reports (owner's decision)"] }).catch(() => {});
   return next;
 }
+// Owner 2026-10-27: Marta keeps the app clock (salaried, works extra hours, the only way to see her time); Giordano and Luis
+// clock on the Toast terminal. One-time: the explicit list becomes ["Marta"]; the person sheet switch changes it from here on.
+async function migrationMartaAppOnly(doc) {
+  if (!store.hasStorage()) return doc;
+  const FLAG = "barlento:migr:2026-10-27-marta-app-only";
+  if (await store._redis("GET", FLAG).catch(() => null)) return doc;
+  await store._redis("SET", FLAG, new Date().toISOString()).catch(() => {});
+  const staff = doc.data.staff || []; const list = Array.isArray(doc.data.appClock) ? doc.data.appClock : [];
+  const next_list = staff.includes("Marta") ? ["Marta"] : [];
+  if (JSON.stringify(list) === JSON.stringify(next_list)) return doc;
+  const next = { version: (doc.version || 0) + 1, data: store.normalizeData(Object.assign({}, doc.data, { appClock: next_list })), updatedAt: doc.updatedAt };
+  await store.saveSchedule(next);
+  await store.appendLog({ at: new Date().toISOString(), version: next.version, changes: [`App clock: ${next_list.length ? next_list.join(", ") + " clock" + (next_list.length === 1 ? "s" : "") + " in from the app" : "nobody from the list"}; everyone else on Toast clocks in on the terminal (owner's decision)`] }).catch(() => {});
+  return next;
+}
 async function migrationSalariedAppClock(doc) {
   if (!store.hasStorage()) return doc;
   const FLAG = "barlento:migr:2026-09-21-salaried-app";
@@ -125,7 +140,8 @@ module.exports = async (req, res) => {
       const docE = await migrationEmptyWeeks(docM).catch(() => docM);
       const docT = await migrationTestFloor(docE).catch(() => docE);
       const docL = await migrationSalariedAppClock(docT).catch(() => docT);
-      const doc = await migrationExtraLuis(docL).catch(() => docL);
+      const docX = await migrationExtraLuis(docL).catch(() => docL);
+      const doc = await migrationMartaAppOnly(docX).catch(() => docX);
       // Past weeks follow Toast by themselves (real clock-ins replace the plan; last 8 weeks, every 6 h).
       const doc1 = await backfill.auto(doc, doc0.updatedAt).catch(() => doc);
       // A signed-in device polling = that person has the app open: note it for the manager's live Staff list.
