@@ -39,9 +39,9 @@ async function j(p,o){const r=await fetch(B+p,o);let x=null,txt="";try{txt=await
   const tp=await fetch(B+"/api/export?team=1&from="+wk+"&to="+wk.slice(0,8)+String(Number(wk.slice(8))+6).padStart(2,"0")+"&label=Test%20week",{headers:M}); const tb=Buffer.from(await tp.arrayBuffer());
   console.log("8b team PDF:",tp.status,tp.headers.get("content-type"),"| bytes:",tb.length,"| is PDF:",tb.slice(0,5).toString()==="%PDF-"); if(tp.status!==200||tb.length<3000) errors.push("team pdf failed");
   const pp=await fetch(B+"/api/export?person=Astrea&from="+wk+"&to="+wk,{headers:M}); console.log("8c person PDF one day:",pp.status,pp.headers.get("content-type")); if(pp.status!==200) errors.push("person pdf failed");
-  // Marta: manager AND worker → team report with her PIN, plus her own report for one day (owner 2026-09-24)
+  // Marta: manager AND worker → team report with her PIN (owner 2026-09-24); her OWN report is refused since she is salaried (owner 2026-11-01, 403 "salaried")
   const tm=await tokOf("Marta","6161"); const mt=await fetch(B+"/api/export?team=1&from="+wk+"&to="+wk,{headers:{"x-staff-token":tm}}); const mm=await fetch(B+"/api/export?mine=1&from="+wk+"&to="+wk+"&label=Today",{headers:{"x-staff-token":tm}});
-  console.log("8c2 Marta team PDF:",mt.status,"| Marta own report (today):",mm.status,mm.headers.get("content-type")); if(mt.status!==200||mm.status!==200) errors.push("Marta reports wrong");
+  console.log("8c2 Marta team PDF:",mt.status,"| Marta own report (salaried → 403):",mm.status); if(mt.status!==200||mm.status!==403) errors.push("Marta reports wrong");
   const lg=await j("/api/me",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"login",name:"Astrea",pin:"1111"})}); console.log("8d login carries the profile:",!!(lg.j&&lg.j.who&&lg.j.who.name==="Astrea"),"| appClock:",lg.j&&lg.j.who&&lg.j.who.appClock); if(!(lg.j&&lg.j.who)) errors.push("login without who");
   // ---- checks card (manager) + calendar sheet (staff)
   const b=await chromium.launch();

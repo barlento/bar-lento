@@ -52,6 +52,7 @@ module.exports = async (req, res) => {
     const sent = [], skipped = [], failed = [], changed = [];
     for (const name of doc.data.staff) {
       if (/^test\b/i.test(name)) { skipped.push(`${name} (test)`); continue; }
+      if (auth.isSalaried(doc.data, name)) { skipped.push(`${name} (salaried: no hours emails)`); continue; } // owner 2026-11-01
       try {
         const rAck = await accounts.getRulesAck(name).catch(() => null);
         const emp = map[name] && emps.find((e) => e.guid === map[name]);

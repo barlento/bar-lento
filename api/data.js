@@ -113,6 +113,23 @@ async function migrationMartaAppOnly(doc) {
   await store.appendLog({ at: new Date().toISOString(), version: next.version, changes: [`App clock: ${next_list.length ? next_list.join(", ") + " clock" + (next_list.length === 1 ? "s" : "") + " in from the app" : "nobody from the list"}; everyone else on Toast clocks in on the terminal (owner's decision)`] }).catch(() => {});
   return next;
 }
+// Owner 2026-11-01 ("Giordano, Luis e Marta sono a paga fissa: via mail non deve arrivare più nulla, e togli le timbrature dall'app"):
+// one-time: data.salaried = those three (Marta leaves the app clock). From here on the owner switches anyone in the person sheet.
+async function migrationSalaried(doc) {
+  if (!store.hasStorage()) return doc;
+  const FLAG = "barlento:migr:2026-11-01-salaried";
+  if (await store._redis("GET", FLAG).catch(() => null)) return doc;
+  await store._redis("SET", FLAG, new Date().toISOString()).catch(() => {});
+  const staff = doc.data.staff || []; const names = ["Giordano", "Luis", "Marta"].filter((n) => staff.includes(n));
+  for (const n of names) { if (await punch.openEntry(n).catch(() => null)) await punch.punch(n, false, "migration salaried").catch(() => {}); } // an app clock-in still open is closed now: there is no Clock out button any more
+  const salaried = (Array.isArray(doc.data.salaried) ? doc.data.salaried : []).concat(names.filter((n) => !(doc.data.salaried || []).includes(n)));
+  const appClock = (Array.isArray(doc.data.appClock) ? doc.data.appClock : []).filter((n) => !names.includes(n));
+  if (JSON.stringify(salaried) === JSON.stringify(doc.data.salaried || []) && JSON.stringify(appClock) === JSON.stringify(doc.data.appClock || [])) return doc;
+  const next = { version: (doc.version || 0) + 1, data: store.normalizeData(Object.assign({}, doc.data, { salaried, appClock })), updatedAt: doc.updatedAt };
+  await store.saveSchedule(next);
+  await store.appendLog({ at: new Date().toISOString(), version: next.version, changes: [`Salaried (owner's decision): ${names.join(", ") || "nobody"} — no hours emails, no clock-ins in their app`] }).catch(() => {});
+  return next;
+}
 async function migrationSalariedAppClock(doc) {
   if (!store.hasStorage()) return doc;
   const FLAG = "barlento:migr:2026-09-21-salaried-app";
@@ -141,7 +158,8 @@ module.exports = async (req, res) => {
       const docT = await migrationTestFloor(docE).catch(() => docE);
       const docL = await migrationSalariedAppClock(docT).catch(() => docT);
       const docX = await migrationExtraLuis(docL).catch(() => docL);
-      const doc = await migrationMartaAppOnly(docX).catch(() => docX);
+      const docMA = await migrationMartaAppOnly(docX).catch(() => docX);
+      const doc = await migrationSalaried(docMA).catch(() => docMA);
       // Past weeks follow Toast by themselves (real clock-ins replace the plan; last 8 weeks, every 6 h).
       const doc1 = await backfill.auto(doc, doc0.updatedAt).catch(() => doc);
       // A signed-in device polling = that person has the app open: note it for the manager's live Staff list.
@@ -195,6 +213,9 @@ module.exports = async (req, res) => {
         const top = (d) => new Set((d.staff || []).filter((n) => ["management", "owner"].includes((d.dept || {})[n])));
         const before = top(current.data), after = top(data);
         if ([...before].some((n) => !after.has(n)) || [...after].some((n) => !before.has(n))) return send(res, 403, { error: "owner_only", detail: "Only the owner can change who is Management or Owner" });
+        const both = (n) => (current.data.staff || []).includes(n) && (data.staff || []).includes(n); // removing a salaried person from staff is still the manager's (the set is compared on the names present in both)
+        const sb = new Set(auth.salariedNames(current.data).filter(both)), sa = new Set(auth.salariedNames(data).filter(both)); // who is salaried is the owner's call too (2026-11-01)
+        if ([...sb].some((n) => !sa.has(n)) || [...sa].some((n) => !sb.has(n))) return send(res, 403, { error: "owner_only", detail: "Only the owner can change who is salaried" });
       }
       const { changes, resetKeys, notable, newWeeks } = diffData(current.data, data);
       // Someone removed from staff loses their personal access (PIN + devices). Past shifts stay in the archive,
@@ -205,8 +226,10 @@ module.exports = async (req, res) => {
       data.toastIgnore = Array.from(ignore);
       data.appClock = (data.appClock || []).filter((n) => data.staff.includes(n)); // app clock only for people still here
       data.extraHours = (data.extraHours || []).filter((n) => data.staff.includes(n));
+      data.salaried = (data.salaried || []).filter((n) => data.staff.includes(n)); // salaried only for people still here
       const doc = { version: (current.version || 0) + 1, data, updatedAt: new Date().toISOString() };
       await store.saveSchedule(doc);
+      for (const n of auth.salariedNames(data).filter((x) => !auth.salariedNames(current.data).includes(x))) { if (await punch.openEntry(n).catch(() => null)) await punch.punch(n, false, "set salaried").catch(() => {}); } // a clock-in left open could never be closed again (no button any more)
       await store.removeConfirmations(resetKeys).catch(() => {});
       await store.pruneConfirmations(data).catch(() => {});
       if (gone.length) {

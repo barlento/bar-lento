@@ -17,6 +17,9 @@ function send(res, status, body) {
 // GET ?action=mystats[&period=] (x-staff-token, or manager + &name=) → one person's own stats + team totals
 // GET ?action=leaderboard[&period=] (manager) → full ranking
 // GET ?action=employees (manager)  → Toast employee list, to map names
+// Names whose app clock-ins the Time clock shows: whoever clocks in from the app today, plus salaried people (owner 2026-11-01: they
+// cannot clock in any more, but their past app clock-ins stay visible as history).
+const appNamesForClock = async (data) => { const set = await punch.appClockNames(data); auth.salariedNames(data).forEach((n) => set.add(n)); return set; };
 module.exports = async (req, res) => {
   try {
     if (req.method !== "GET") { res.setHeader("Allow", "GET"); return send(res, 405, { error: "method_not_allowed" }); }
@@ -47,7 +50,7 @@ module.exports = async (req, res) => {
       const status = await toast.dayStatus(date, map);
       // people who clock in from the app (not in Toast) join the same day view
       const b = toast.dayBounds(date);
-      for (const n of await punch.appClockNames(doc.data)) { const l = await punch.between(n, b.start, b.end).catch(() => []); if (l.length) status.byName[n] = l.map((e) => ({ in: e.in, out: e.out, breakMin: e.breakMin, breakStart: e.breakStart })); }
+      for (const n of await appNamesForClock(doc.data)) { const l = await punch.between(n, b.start, b.end).catch(() => []); if (l.length) status.byName[n] = l.map((e) => ({ in: e.in, out: e.out, breakMin: e.breakMin, breakStart: e.breakStart })); }
       return send(res, 200, status);
     }
     // Public time clock: everyone who punched in on that day (Toast names), newest day first. Last 31 days only.
@@ -66,7 +69,7 @@ module.exports = async (req, res) => {
       const list = entries
         .filter((t) => byGuid[t.employeeGuid] && !/^test\b/i.test(byGuid[t.employeeGuid].name) && t.in && toast.shiftDate(t.in) === date) // one bar day per page: a punch before 6 AM belongs to the evening before, never to two days
         .map((t) => ({ name: guidToShort[t.employeeGuid] || byGuid[t.employeeGuid].name, full: byGuid[t.employeeGuid].name, in: t.in, out: t.out, breakMin: t.breakMin, breakStart: t.breakStart, auto: t.auto, ghost: t.ghost }));
-      for (const n of await punch.appClockNames(doc.data)) { const l = (await punch.between(n, b.start, b.end).catch(() => [])).filter((e) => toast.shiftDate(e.in) === date); l.forEach((e) => list.push({ name: n, full: n, in: e.in, out: e.out, app: true, breakMin: e.breakMin, breakStart: e.breakStart })); }
+      for (const n of await appNamesForClock(doc.data)) { const l = (await punch.between(n, b.start, b.end).catch(() => [])).filter((e) => toast.shiftDate(e.in) === date); l.forEach((e) => list.push({ name: n, full: n, in: e.in, out: e.out, app: true, breakMin: e.breakMin, breakStart: e.breakStart })); }
       list.sort((a, b) => String(a.in).localeCompare(String(b.in)));
       return send(res, 200, { date, today, entries: list, fetchedAt: new Date().toISOString() });
     }
@@ -89,7 +92,8 @@ module.exports = async (req, res) => {
       const doc = await store.getSchedule();
       const asked = String(url.searchParams.get("name") || "").trim().slice(0, 60);
       let name = await accounts.whoIs(req.headers["x-staff-token"], doc.data.staff);
-      if (asked) { const role = await auth.roleFrom(req); if (auth.isManagerish(role) || (role === "chef" && auth.kitchenNames(doc.data).includes(asked))) name = asked; }
+      const caller = name; let managed = false; if (asked) { const role = await auth.roleFrom(req); if (auth.isManagerish(role) || (role === "chef" && auth.kitchenNames(doc.data).includes(asked))) { name = asked; managed = true; } }
+      if (name && auth.isSalaried(doc.data, name) && (!managed || name === caller)) return send(res, 403, { error: "salaried" }); // a salaried person never sees their own stats, whatever their role // fixed pay (owner 2026-11-01): no hours in their app
       if (!name) return send(res, 401, { error: "unauthorized" });
       const full = await lb.leaderboard(period);
       const me = full.rows.find((r) => r.name === name);

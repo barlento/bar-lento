@@ -324,6 +324,7 @@ module.exports = async (req, res) => {
       const doc0 = await store.getSchedule();
       const who = await accounts.whoIs(String(req.headers["x-staff-token"] || ""), doc0.data.staff);
       if (!who) return res.status(401).send("unauthorized");
+      if (auth.isSalaried(doc0.data, who)) return res.status(403).send("salaried"); // fixed pay (owner 2026-11-01): no hours report for them
       const isD = (v) => /^\d{4}-\d{2}-\d{2}$/.test(v || "");
       let from = url.searchParams.get("from"), to = url.searchParams.get("to");
       if (!isD(from)) { const t = todayNY(); const d = new Date(t + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7)); from = d.toISOString().slice(0, 10); }

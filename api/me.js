@@ -150,7 +150,7 @@ async function whoPayload(doc, name) {
   const [ack, ident, docAcks, pinRec, appClock] = await Promise.all([accounts.getRulesAck(name).catch(() => null), toastIdentity(doc.data, name), accounts.docAcksFor(name, DOC_IDS).catch(() => null), accounts.getPinRecord(name).catch(() => null), punch.isAppClock(doc.data, name).catch(() => false)]);
   const docsOut = {}; if (docAcks) DOC_IDS.forEach((id) => { docsOut[id] = ackView(docAcks[id]); });
   const openP = appClock ? await punch.openEntry(name).catch(() => null) : null;
-  return { name, role: auth.isTestName(name) ? null : auth.roleOfDept((doc.data.dept || {})[name]), appClock, open: openP ? openView(openP) : null, rulesAck: ackView(ack), rulesVersion: RULES.version || null, docAcks: docAcks ? docsOut : undefined, docsVersions: docVersions(), since: pinRec && pinRec.createdAt || null, fullName: ident ? ident.fullName : null, email: ident ? ident.email : null, mail: mail.enabled() };
+  return { name, role: auth.isTestName(name) ? null : auth.roleOfDept((doc.data.dept || {})[name]), appClock, salaried: auth.isSalaried(doc.data, name), open: openP ? openView(openP) : null, rulesAck: ackView(ack), rulesVersion: RULES.version || null, docAcks: docAcks ? docsOut : undefined, docsVersions: docVersions(), since: pinRec && pinRec.createdAt || null, fullName: ident ? ident.fullName : null, email: ident ? ident.email : null, mail: mail.enabled() };
 }
 const openView = (e) => { const v = punch.view(e); return { in: v.in, breakStart: v.breakStart || null, breakMin: v.breakMin || 0 }; };
 // minutes worked = in → out (or now) minus unpaid breaks (Toast terminal breaks and app breaks alike)
@@ -224,10 +224,11 @@ module.exports = async (req, res) => {
       }
       if (action === "hours") {
         const asked = String(url.searchParams.get("name") || "");
-        if (asked && mayManage(asked)) name = doc.data.staff.includes(asked) ? asked : null;
+        const caller = name; const managed = !!(asked && mayManage(asked)); if (managed) name = doc.data.staff.includes(asked) ? asked : null;
         if (!name) return send(res, 401, { error: "unauthorized" });
         const week = String(url.searchParams.get("week") || "");
         if (!/^\d{4}-\d{2}-\d{2}$/.test(week)) return send(res, 400, { error: "bad_week" });
+        if (auth.isSalaried(doc.data, name) && (!managed || name === caller)) return send(res, 200, { name, week, salaried: true, linked: false, entries: [] }); // fixed pay (owner 2026-11-01): a salaried person never sees their own hours, whatever their role (Marta is management, Giordano the chef); a manager asking about someone else still gets everything
         // Every real clock-in of the week: Toast entries when the person is linked, app entries always (Pietro clocks in from the app;
         // Marta, Giordano and Luis did until 2026-10-26 and that history stays). Owner 2026-10-26: whoever is in Toast clocks on Toast.
         const isApp = await punch.isAppClock(doc.data, name);
@@ -241,10 +242,11 @@ module.exports = async (req, res) => {
       // App time clock record for one month: the person's own, or any person for the manager.
       if (action === "punches") {
         const asked = String(url.searchParams.get("name") || "");
-        if (asked && mayManage(asked)) name = doc.data.staff.includes(asked) ? asked : null;
+        const caller = name; const managed = !!(asked && mayManage(asked)); if (managed) name = doc.data.staff.includes(asked) ? asked : null;
         if (!name) return send(res, 401, { error: "unauthorized" });
         const ym = String(url.searchParams.get("month") || "");
         if (!/^\d{4}-\d{2}$/.test(ym)) return send(res, 400, { error: "bad_month" });
+        if (auth.isSalaried(doc.data, name) && (!managed || name === caller)) return send(res, 200, { name, month: ym, salaried: true, appClock: false, entries: [], totalMinutes: 0, open: null }); // fixed pay: never their own clock-ins
         const entries = await punch.month(name, ym);
         return send(res, 200, { name, month: ym, appClock: await punch.isAppClock(doc.data, name), entries, totalMinutes: Math.round(punch.minutes(entries)), open: entries.find((e) => !e.out) || null, fetchedAt: new Date().toISOString() });
       }
@@ -253,6 +255,7 @@ module.exports = async (req, res) => {
         if (!name) return send(res, 401, { error: "unauthorized" });
         const week = String(url.searchParams.get("week") || "");
         if (!/^\d{4}-\d{2}-\d{2}$/.test(week)) return send(res, 400, { error: "bad_week" });
+        if (auth.isSalaried(doc.data, name)) return send(res, 200, { name, week, salaried: true }); // fixed pay: nothing to review
         const [wy, wm, wd] = week.split("-").map(Number);
         const prevISO = new Date(Date.UTC(wy, wm - 1, wd - 7)).toISOString().slice(0, 10);
         let guid = null;
