@@ -16,6 +16,9 @@ async function signAll(p){ // rules + packet, stop at training
   const m=await (await b.newContext({viewport:{width:1200,height:900}})).newPage(); m.on("pageerror",e=>errors.push("mgr pageerror: "+e.message));
   await m.goto(B+"/?v=p1"); await m.waitForSelector("#whoOverlay.show"); await m.click("#whoManager"); await m.fill("#pwInput","segreta"); await m.click("#loginGo"); await m.waitForTimeout(800);
   await m.click("#staffBtn"); await m.waitForSelector("#staffOverlay.show"); await m.waitForFunction(()=>/PIN|signed/.test(document.getElementById("rosterList").textContent),null,{timeout:8000});
+  const tmail=await m.evaluate(()=>{ const a=document.getElementById("teamMailBtn"), row=document.getElementById("rosterMail"); return {shown:!!row&&getComputedStyle(row).display!=="none", href:a?decodeURIComponent(a.getAttribute("href")||""):"", k:a&&a.getAttribute("data-k"), miss:a&&a.getAttribute("data-miss")}; });
+  console.log("0 Email the team:", tmail.shown, "| Bcc has Joe's Toast email:", tmail.href.startsWith("mailto:?bcc=")&&tmail.href.includes("joe@example.com"), "| addresses:", tmail.k, "| no email:", tmail.miss, "(Pietro is not in Toast)");
+  if(!tmail.shown||!tmail.href.includes("joe@example.com")||tmail.href.includes("pietro")||!/Pietro/.test(tmail.miss||"")) errors.push("Email the team button wrong: "+JSON.stringify(tmail));
   await m.click('.person[data-name="Pietro"]'); await m.waitForSelector("#personOverlay.show"); await m.waitForTimeout(300);
   console.log("1 clock card for Pietro (no Toast):", (await m.textContent("#personBody")).includes("Clocks in from the app"), "| for Joe should be absent later");
   await m.waitForTimeout(900); console.log("2 punches box:", (await m.textContent("#personPunches")).trim().slice(0,60));

@@ -37,7 +37,8 @@ function nyInstant(dateISO, hh, mm) { // approximate: use offset -4 (EDT) — en
   const [y, m, d] = dateISO.split("-").map(Number); return new Date(Date.UTC(y, m - 1, d, hh + 4, mm)).toISOString();
 }
 process.env.AI_FAKE = process.env.AI_FAKE || "1"; // the assistant answers with canned text (no Anthropic key needed in the suites)
-process.env.BACKFILL_UNTIL = process.env.BACKFILL_UNTIL || "2099-12-31"; // the fake bar is always "before launch": the import rule stays testable
+process.env.BACKFILL_UNTIL = process.env.BACKFILL_UNTIL || "2099-12-31";
+process.env.BACKFILL_AUTO_WEEKS = process.env.BACKFILL_AUTO_WEEKS || "60"; // the fake late-August clock-ins must stay inside the automatic run, whatever today is // the fake bar is always "before launch": the import rule stays testable
 const seed = JSON.parse(fs.readFileSync(path.join(ROOT, "data.json"), "utf8"));
 // GUIDE_STAFF=1 → invented names for the welcome-guide screenshots (never real staff names in the PDF)
 const GUIDE = process.env.GUIDE_STAFF === "1";
